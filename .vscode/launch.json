@@ -1,0 +1,105 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run app",
+            "type": "python",
+            "request": "launch",
+            "module": "uvicorn",
+            "args": [
+                "app.main:app",
+                "--reload",
+                "--port",
+                "8000"
+
+            ],
+            "jinja": true,
+            "justMyCode": true
+        },
+        {
+            "name": "Python: Debug Tests",
+            "type": "python",
+            "request": "launch",
+            "module": "pytest",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
+            "name": "Dummy Data",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "dummy-data"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "daily report",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "send-daily-report"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "coach product",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "get-coach-subscription"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Send message to coach",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "message-to-coach",
+                "--author=student1@gmail.com",
+                "--receiver=coach1@gmail.com",
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Send message to student",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "message-to-student",
+                "--author=coach2@gmail.com",
+                "--receiver=student1@gmail.com",
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Real coaches",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "create-real-coaches-data"
+            ],
+            "justMyCode": true
+        },
+        {
+            "name": "Create sessions",
+            "type": "python",
+            "request": "launch",
+            "module": "invoke",
+            "args": [
+                "create-sessions"
+            ],
+            "justMyCode": true
+        }
+    ]
+}
