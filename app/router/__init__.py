@@ -2,13 +2,11 @@
 from fastapi import APIRouter, Request
 
 from .auth import auth_router
-from .post import post_router
 from .user import user_router
 
 router = APIRouter(prefix="/api", tags=["API"])
 
 router.include_router(auth_router)
-router.include_router(post_router)
 router.include_router(user_router)
 
 
