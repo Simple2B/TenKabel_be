@@ -43,10 +43,12 @@ def sign_up(
     data: s.BaseUser,
     db: Session = Depends(get_db),
 ):
+    # TODO twillio sign in
     user: m.User = m.User(
         username=data.username,
         email=data.email,
         password=data.password,
+        phone=data.phone,
     )
     db.add(user)
     try:
