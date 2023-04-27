@@ -36,9 +36,7 @@ def login(
     )
 
 
-@auth_router.post(
-    "/sign-up", status_code=status.HTTP_201_CREATED, response_model=s.User
-)
+@auth_router.post("/sign-up", status_code=status.HTTP_201_CREATED)
 def sign_up(
     data: s.BaseUser,
     db: Session = Depends(get_db),
@@ -57,7 +55,7 @@ def sign_up(
             status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
         )
     log(log.INFO, "User [%s] signed up", user.email)
-    return user
+    return status.HTTP_201_CREATED
 
 
 @auth_router.post("/google-oauth", status_code=status.HTTP_200_OK)
@@ -73,7 +71,6 @@ def google_auth(
             username=username,
             password="*",
             google_openid=user_data.google_openid,
-            is_verified=True,
         )
         db.add(user)
         try:
