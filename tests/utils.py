@@ -26,6 +26,7 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 email=u.email,
                 password=u.password,
                 is_verified=u.is_verified,
+                phone=u.phone,
             )
         )
         db.commit()
@@ -36,6 +37,7 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 email=u.email,
                 password=u.password,
                 is_verified=u.is_verified,
+                phone=u.phone,
             )
         )
         db.commit()

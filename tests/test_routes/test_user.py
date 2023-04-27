@@ -22,6 +22,7 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
         username=test_data.test_user.username,
         email=test_data.test_user.email,
         password=test_data.test_user.password,
+        phone=test_data.test_user.phone,
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response and response.status_code == 201
