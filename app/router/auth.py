@@ -58,3 +58,43 @@ def sign_up(
         )
     log(log.INFO, "User [%s] signed up", user.email)
     return user
+
+
+@auth_router.post("/google-oauth", status_code=status.HTTP_200_OK)
+def google_auth(
+    user_data: s.BaseUserGoogle,
+    db: Session = Depends(get_db),
+):
+    user: m.User | None = db.query(m.User).filter_by(email=user_data.email).first()
+    if not user:
+        username = user_data.username if user_data.username else user_data.email
+        user = m.User(
+            email=user_data.email,
+            username=username,
+            password="*",
+            google_openid=user_data.google_openid,
+            is_verified=True,
+        )
+        db.add(user)
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            log(log.INFO, "Error - [%s]", e)
+            raise HTTPException(
+                status=status.HTTP_409_CONFLICT,
+                detail="Error while saving creating a user",
+            )
+        log(
+            log.INFO,
+            "User [%s] has been created (via Google OAuth))",
+            user.email,
+        )
+    user.is_verified = True
+    db.commit()
+    user.authenticate(db, user.username, user.password)
+    log(log.INFO, "Authenticating user - [%s]", user.email)
+    access_token = create_access_token(data={"user_id": user.id})
+    return s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
