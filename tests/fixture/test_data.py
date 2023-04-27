@@ -11,6 +11,7 @@ class TestUser(BaseModel):
     email: str
     password: str
     is_verified: bool | None = True
+    phone_number: str | None
 
 
 class TestData(BaseModel):

@@ -15,6 +15,7 @@ class BaseUser(BaseModel):
     username: str
     email: EmailStr
     password: str
+    phone_number: str | None
 
     class Config:
         orm_mode = True
@@ -24,7 +25,6 @@ class UserProfile(BaseModel):
     first_name: str
     last_name: str
     phone_number: str
-    password: str
 
 
 class User(BaseModel):

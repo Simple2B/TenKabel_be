@@ -12,9 +12,10 @@ from app.database import get_db
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
 
-def generate_otp_code(user: m.User):
+def generate_otp_code(user: m.User, db: Session):
     # TODO integrate with UP send
     user.otp_code = "".join(random.choice("1234567890") for _ in range(4))
+    db.flush()
 
 
 @user_router.post("/", status_code=201, response_model=s.User)
@@ -51,10 +52,8 @@ def update_user_phone(
     current_user.first_name = data.first_name
     current_user.last_name = data.last_name
     current_user.phone_number = data.phone_number
-    current_user.password = data.password
-
     # TODO - sending SMS OTP
-    generate_otp_code(current_user)
+    generate_otp_code(current_user, db)
     try:
         db.commit()
     except SQLAlchemyError as e:
