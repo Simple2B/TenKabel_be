@@ -1,7 +1,9 @@
 from sqlalchemy.orm import Session
 from invoke import task
-from app.config import settings
+from app.config import Settings, get_settings
 from app.model import User
+
+settings: Settings = get_settings()
 
 NUM_TEST_USERS = 10
 
@@ -31,7 +33,6 @@ def init_db(_, test_data=False):
 
 
 def fill_test_data(db: Session):
-
     for uid in range(NUM_TEST_USERS):
         user = User(username=f"User{uid}", password="pa$$", email=f"user{uid}@test.com")
         db.add(user)
