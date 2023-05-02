@@ -1,11 +1,8 @@
-<<<<<<< HEAD
-# TenKabel_be
-=======
 # FastApi.app
 
 Here you can find basic app with PostgreSQL
 
-## Migations
+## Migrations
 
 ### Create new migration revision
 
@@ -18,4 +15,3 @@ alembic revision -m '<message>' --autogenerate
 ```bash
 alembic upgrade head
 ```
->>>>>>> fbb8983 (init project)
