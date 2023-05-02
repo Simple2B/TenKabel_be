@@ -17,7 +17,9 @@ def db(test_data: TestData) -> Generator:
 
     settings: Settings = get_test_settings()
 
-    engine = create_engine(settings.DB_URI, connect_args={"check_same_thread": False})
+    engine = create_engine(
+        settings.DATABASE_URI, connect_args={"check_same_thread": False}
+    )
     TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
     Base.metadata.drop_all(bind=engine)

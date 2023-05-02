@@ -1,5 +1,6 @@
 from invoke import task
-from sqlalchemy.orm import Session
+
+# from sqlalchemy.orm import Session
 from app.model import User
 
 TEST_USER_FIRST_NAME = "Mark"
