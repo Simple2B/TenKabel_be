@@ -5,25 +5,11 @@ from sqlalchemy.orm import relationship
 
 from app.database import Base
 from app.utils import generate_uuid
+from app import schema as s
 
 
 class Job(Base):
     __tablename__ = "jobs"
-
-    class JobStatus(enum.Enum):
-        PENDING = "pending"
-        LATE = "late"
-        STARTED = "Started"
-        COMPLETED = "Completed"
-        FULFILED = "Fulfiled"
-
-    class PaymentStatus(enum.Enum):
-        PAID = "paid"
-        UNPAID = "unpaid"
-
-    class CommissionStatus(enum.Enum):
-        PAID = "paid"
-        UNPAID = "unpaid"
 
     id = Column(Integer, primary_key=True)
 
@@ -37,9 +23,13 @@ class Job(Base):
     description = Column(String(512), default="")
     is_deleted = Column(Boolean, default=False)
 
-    status = Column(Enum(JobStatus), default=JobStatus.PENDING)
-    payment_status = Column(Enum(PaymentStatus), default=PaymentStatus.UNPAID)
-    commission_status = Column(Enum(CommissionStatus), default=CommissionStatus.UNPAID)
+    status = Column(Enum(s.Job.Status), default=s.Job.Status.PENDING)
+    payment_status = Column(
+        Enum(s.Job.PaymentStatus), default=s.Job.PaymentStatus.UNPAID
+    )
+    commission_status = Column(
+        Enum(s.Job.CommissionStatus), default=s.Job.CommissionStatus.UNPAID
+    )
 
     created_at = Column(DateTime, default=datetime.now)
 

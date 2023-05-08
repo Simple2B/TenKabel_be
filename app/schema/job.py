@@ -1,7 +1,6 @@
+import enum
 from pydantic import BaseModel
 
-
-import app.model as m
 from .user import User
 
 
@@ -15,9 +14,24 @@ class BaseJob(BaseModel):
 
 
 class Job(BaseJob):
-    status: m.Job.JobStatus
-    payment_status: m.Job.PaymentStatus
-    commission_status: m.Job.CommissionStatus
+    class Status(enum.Enum):
+        PENDING = "pending"
+        LATE = "late"
+        STARTED = "Started"
+        COMPLETED = "Completed"
+        FULFILLED = "Fulfilled"
+
+    class PaymentStatus(enum.Enum):
+        PAID = "paid"
+        UNPAID = "unpaid"
+
+    class CommissionStatus(enum.Enum):
+        PAID = "paid"
+        UNPAID = "unpaid"
+
+    status: Status
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
     is_deleted: bool
     owner: User
     worker: User

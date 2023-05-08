@@ -1,16 +1,25 @@
-from sqlalchemy import Column, Integer, String
+# from sqlalchemy import Column, Integer, String
 
-from app.database import Base
+import sqlalchemy as sa
+from sqlalchemy import orm
+
+from app.database import db
 from app.utils import generate_uuid
 
 
-class Profession(Base):
+class Profession(db.Model):
     __tablename__ = "professions"
-    id = Column(Integer, primary_key=True)
 
-    uuid = Column(String(36), default=generate_uuid)
+    id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+    # id = Column(Integer, primary_key=True)
 
-    name = Column(String(64), default="")
+    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
 
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
+    # uuid = Column(String(36), default=generate_uuid)
+
+    name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
+
+    # name = Column(String(64), default="")
+
+    # def __repr__(self):
+    #     return f"<{self.id}: {self.name}>"

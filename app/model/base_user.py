@@ -1,25 +1,48 @@
 from datetime import datetime
 from typing import Self
 
+import sqlalchemy as sa
+from sqlalchemy import orm
+
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, func, or_
+from sqlalchemy.orm import Session
 
 from app.hash_utils import make_hash, hash_verify
-from app.database import SessionLocal
 from app.utils import generate_uuid
 
 
 class BaseUser:
-    id = Column(Integer, primary_key=True)
+    id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
+    # id = Column(Integer, primary_key=True)
+    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
 
-    uuid = Column(String(36), default=generate_uuid)
+    # uuid = Column(String(36), default=generate_uuid)
 
-    email = Column(String(128), nullable=True, unique=True)
-    username = Column(String(128), default="", unique=True)
+    email: orm.Mapped[str] = orm.mapped_column(
+        sa.String(128), nullable=True, unique=True
+    )
 
-    password_hash = Column(String(128), nullable=False)
-    created_at = Column(DateTime, default=datetime.now)
+    # email = Column(String(128), nullable=True, unique=True)
 
-    is_verified = Column(Boolean, default=False)
+    username: orm.Mapped[str] = orm.mapped_column(
+        sa.String(128), default="", unique=True
+    )
+
+    # username = Column(String(128), default="", unique=True)
+
+    password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=False)
+
+    # password_hash = Column(String(128), nullable=False)
+
+    created_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=datetime.utcnow
+    )
+
+    # created_at = Column(DateTime, default=datetime.now)
+
+    is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
+
+    # is_verified = Column(Boolean, default=False)
 
     @property
     def password(self):
@@ -30,7 +53,7 @@ class BaseUser:
         self.password_hash = make_hash(value)
 
     @classmethod
-    def authenticate(cls, db: SessionLocal, user_id: str, password: str) -> Self:
+    def authenticate(cls, db: Session, user_id: str, password: str) -> Self:
         user = (
             db.query(cls)
             .filter(
