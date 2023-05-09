@@ -4,9 +4,6 @@ from typing import Self
 import sqlalchemy as sa
 from sqlalchemy import orm
 
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, func, or_
-from sqlalchemy.orm import Session
-
 from app.hash_utils import make_hash, hash_verify
 from app.utils import generate_uuid
 
@@ -35,13 +32,13 @@ class BaseUser:
         self.password_hash = make_hash(value)
 
     @classmethod
-    def authenticate(cls, db: Session, user_id: str, password: str) -> Self:
+    def authenticate(cls, db: orm.Session, user_id: str, password: str) -> Self:
         user = (
             db.query(cls)
             .filter(
-                or_(
-                    func.lower(cls.username) == func.lower(user_id),
-                    func.lower(cls.email) == func.lower(user_id),
+                sa.or_(
+                    sa.func.lower(cls.username) == sa.func.lower(user_id),
+                    sa.func.lower(cls.email) == sa.func.lower(user_id),
                 )
             )
             .first()

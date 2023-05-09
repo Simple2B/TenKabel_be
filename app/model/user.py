@@ -1,9 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy import orm
 
-# from sqlalchemy import Column, String
-# from sqlalchemy.orm import relationship
-
 from app.database import db
 from .user_profession import users_professions
 from .base_user import BaseUser
