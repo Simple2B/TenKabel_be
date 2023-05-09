@@ -7,6 +7,7 @@ from sqlalchemy import orm
 from app.database import db
 from .user_profession import users_professions
 from .base_user import BaseUser
+from .profession import Profession
 
 
 class User(db.Model, BaseUser):
@@ -25,7 +26,7 @@ class User(db.Model, BaseUser):
 
     # last_name = Column(String(64), default="")
 
-    professions: orm.Mapped["Profession"] = orm.relationship(
+    professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )
 

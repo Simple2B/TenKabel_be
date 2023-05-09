@@ -1,20 +1,10 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+import sqlalchemy as sa
 
-from app.database import Base
-from app.utils import generate_uuid
+from app.database import db
 
-
-class UserLocation(Base):
-    __tablename__ = "users_locations"
-
-    id = Column(Integer, primary_key=True)
-
-    uuid = Column(String(36), default=generate_uuid)
-
-    user_id = Column(ForeignKey("users.id"), nullable=False)
-    location_id = Column(ForeignKey("locations.id"), nullable=False)
-
-    name = Column(String(64), default="")
-
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
+users_locations = sa.Table(
+    "users_locations",
+    db.Model.metadata,
+    sa.Column("user_id", sa.ForeignKey("users.id"), primary_key=True),
+    sa.Column("location_id", sa.ForeignKey("locations.id"), primary_key=True),
+)
