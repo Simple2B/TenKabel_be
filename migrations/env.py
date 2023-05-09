@@ -5,8 +5,10 @@ from sqlalchemy import pool
 
 from alembic import context
 
-from app.model import Base
-from app.database import DB_URI
+from app.model import db
+from app.config import get_settings, Settings
+
+settings: Settings = get_settings()
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,13 +20,13 @@ if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
 # override sqlalchemy.url value
-config.set_main_option("sqlalchemy.url", DB_URI)
+config.set_main_option("sqlalchemy.url", settings.DATABASE_URI)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
 
 
-target_metadata = Base.metadata
+target_metadata = db.Model.metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

@@ -6,3 +6,4 @@ from .superuser import SuperUser
 from .jobs import Job
 
 from .location import Location
+from app.database import db

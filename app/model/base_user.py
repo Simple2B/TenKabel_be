@@ -13,36 +13,18 @@ from app.utils import generate_uuid
 
 class BaseUser:
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    # id = Column(Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
-
-    # uuid = Column(String(36), default=generate_uuid)
-
     email: orm.Mapped[str] = orm.mapped_column(
         sa.String(128), nullable=True, unique=True
     )
-
-    # email = Column(String(128), nullable=True, unique=True)
-
     username: orm.Mapped[str] = orm.mapped_column(
         sa.String(128), default="", unique=True
     )
-
-    # username = Column(String(128), default="", unique=True)
-
-    password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=False)
-
-    # password_hash = Column(String(128), nullable=False)
-
+    password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=True)
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
-
-    # created_at = Column(DateTime, default=datetime.now)
-
     is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
-
-    # is_verified = Column(Boolean, default=False)
 
     @property
     def password(self):
@@ -68,4 +50,4 @@ class BaseUser:
             return user
 
     def __repr__(self):
-        return f"<{self.id}: {self.email}>"
+        return f"<{self.id}: {self.username}>"
