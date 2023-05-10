@@ -11,5 +11,10 @@
       "sqlalchemy",
       "starlette",
       "viewonly"
-    ]
+    ],
+    "python.formatting.provider": "none",
+    "[python]": {
+      "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "editor.defaultFormatter": null
   }

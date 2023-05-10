@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 import app.schema as s
@@ -26,4 +27,6 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response and response.status_code == 201
-    assert db.query(m.User).filter_by(email=test_data.test_user.email)
+    assert db.execute(
+        sa.select(m.User).where(m.User.email == test_data.test_user.email)
+    ).one()

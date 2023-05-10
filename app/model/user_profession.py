@@ -1,23 +1,11 @@
-from datetime import datetime
+import sqlalchemy as sa
 
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-
-
-from app.database import Base
-from app.utils import generate_uuid
+from app.database import db
 
 
-class UserProfession(Base):
-    __tablename__ = "users_professions"
-
-    id = Column(Integer, primary_key=True)
-
-    uuid = Column(String(36), default=generate_uuid)
-
-    user_id = Column(ForeignKey("users.id"), nullable=False)
-    profession_id = Column(ForeignKey("professions.id"), nullable=False)
-
-    created_at = Column(DateTime, default=datetime.now)
-
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
+users_professions = sa.Table(
+    "users_professions",
+    db.Model.metadata,
+    sa.Column("user_id", sa.ForeignKey("users.id"), primary_key=True),
+    sa.Column("profession_id", sa.ForeignKey("professions.id"), primary_key=True),
+)
