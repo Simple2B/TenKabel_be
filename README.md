@@ -15,3 +15,14 @@ alembic revision -m '<message>' --autogenerate
 ```bash
 alembic upgrade head
 ```
+### init db (for development)
+```bash
+./clear_prepare_db.sh
+inv create-jobs
+```
+<!-- execute all test users -->
+```bash
+inv shell
+# example:
+users = db.scalars(sa.select(m.User).order_by(m.User.id)).all()
+```
