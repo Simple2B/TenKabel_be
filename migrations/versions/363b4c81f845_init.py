@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 191e7f1373bd
+Revision ID: 363b4c81f845
 Revises: 
-Create Date: 2023-05-09 15:15:53.568877
+Create Date: 2023-05-15 16:24:14.751406
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '191e7f1373bd'
+revision = '363b4c81f845'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -21,13 +21,15 @@ def upgrade():
     op.create_table('locations',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.String(length=36), nullable=False),
-    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('name_en', sa.String(length=64), nullable=False),
+    sa.Column('name_hebrew', sa.String(length=64), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_locations'))
     )
     op.create_table('professions',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('uuid', sa.String(length=36), nullable=False),
-    sa.Column('name', sa.String(length=64), nullable=False),
+    sa.Column('name_en', sa.String(length=64), nullable=False),
+    sa.Column('name_hebrew', sa.String(length=64), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_professions'))
     )
     op.create_table('superusers',
