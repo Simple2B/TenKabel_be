@@ -6,11 +6,15 @@ from .user import User
 
 class BaseJob(BaseModel):
     owner_id: int
-    worker_id: int
+    worker_id: int | None
     profession_id: int
 
     name: str
     description: str
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
 
 
 class Job(BaseJob):
@@ -29,9 +33,17 @@ class Job(BaseJob):
         PAID = "paid"
         UNPAID = "unpaid"
 
-    status: Status
-    payment_status: PaymentStatus
-    commission_status: CommissionStatus
+    status: Status | str
+    payment_status: PaymentStatus | str
+    commission_status: CommissionStatus | str
     is_deleted: bool
-    owner: User
-    worker: User
+    owner: User | None
+    worker: User | None
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
+
+
+class ListJob(BaseModel):
+    jobs: list[Job]

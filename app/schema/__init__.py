@@ -4,4 +4,4 @@ from .token import Token, TokenData
 
 from .profession import BaseProfession, Profession
 from .location import BaseLocation, Location
-from .job import BaseJob, Job
+from .job import BaseJob, Job, ListJob
