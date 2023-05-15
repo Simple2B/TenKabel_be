@@ -22,6 +22,8 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
     for u in test_data.test_users:
         db.add(
             m.User(
+                first_name=u.username,
+                last_name=u.username,
                 username=u.username,
                 email=u.email,
                 password=u.password,
@@ -33,6 +35,8 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
     for u in test_data.test_authorized_users:
         db.add(
             m.User(
+                first_name=u.username,
+                last_name=u.username,
                 username=u.username,
                 email=u.email,
                 password=u.password,
