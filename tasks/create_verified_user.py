@@ -11,7 +11,7 @@ TEST_PASSWORD = "password"
 
 @task
 def create_verified_user(_):
-    """Create a verified user"""
+    """Create a verified user for test"""
 
     from app.database import db
 
@@ -20,7 +20,7 @@ def create_verified_user(_):
             phone=TEST_USER_PHONE,
             first_name=TEST_USER_FIRST_NAME,
             last_name=TEST_USER_LAST_NAME,
-            password_hash=TEST_PASSWORD,
+            password=TEST_PASSWORD,
             is_verified=True,
         )
         conn.add(user)
