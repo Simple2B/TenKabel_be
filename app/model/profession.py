@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 from app.database import db
-from app.utils import generate_uuid
+from app.utility import generate_uuid
 
 
 class Profession(db.Model):

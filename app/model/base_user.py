@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 from app.hash_utils import make_hash, hash_verify
-from app.utils import generate_uuid
+from app.utility import generate_uuid
 
 
 class BaseUser:

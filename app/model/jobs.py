@@ -3,11 +3,9 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 from app.database import db
-from app.utils import generate_uuid
+from app.utility import generate_uuid
 from app import schema as s
-
-from .user import User
-from .profession import Profession
+from app import model as m
 
 
 class Job(db.Model):
@@ -39,13 +37,13 @@ class Job(db.Model):
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
-    worker: orm.Mapped[User] = orm.relationship(
+    worker: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[worker_id], viewonly=True
     )
-    owner: orm.Mapped[User] = orm.relationship(
+    owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True
     )
-    profession: orm.Mapped[Profession] = orm.relationship("Profession", viewonly=True)
+    profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
