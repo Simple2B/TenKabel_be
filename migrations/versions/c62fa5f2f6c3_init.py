@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 363b4c81f845
+Revision ID: c62fa5f2f6c3
 Revises: 
-Create Date: 2023-05-15 16:24:14.751406
+Create Date: 2023-05-16 16:24:42.179713
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '363b4c81f845'
+revision = 'c62fa5f2f6c3'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -70,6 +70,10 @@ def upgrade():
     sa.Column('description', sa.String(length=512), nullable=False),
     sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.Column('status', sa.Enum('PENDING', 'LATE', 'STARTED', 'COMPLETED', 'FULFILLED', name='status'), nullable=False),
+    sa.Column('payment', sa.Integer(), nullable=False),
+    sa.Column('commission', sa.Float(), nullable=False),
+    sa.Column('city', sa.String(length=64), nullable=False),
+    sa.Column('time', sa.String(length=64), nullable=False),
     sa.Column('payment_status', sa.Enum('PAID', 'UNPAID', name='paymentstatus'), nullable=False),
     sa.Column('commission_status', sa.Enum('PAID', 'UNPAID', name='commissionstatus'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),

@@ -13,7 +13,7 @@ class BaseJob(BaseModel):
     description: str
 
     class Config:
-        use_enum_values = True
+        # use_enum_values = True
         orm_mode = True
 
 
@@ -39,6 +39,10 @@ class Job(BaseJob):
     is_deleted: bool
     owner: User | None
     worker: User | None
+    payment: int | None
+    commission: int | None
+    city: str
+    time: str
 
     class Config:
         use_enum_values = True

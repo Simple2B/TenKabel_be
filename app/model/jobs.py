@@ -28,6 +28,13 @@ class Job(db.Model):
     status: orm.Mapped[s.Job.Status] = orm.mapped_column(
         sa.Enum(s.Job.Status), default=s.Job.Status.PENDING
     )
+
+    payment: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
+    commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
+
+    city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+    time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+
     payment_status: orm.Mapped[s.Job.PaymentStatus] = orm.mapped_column(
         sa.Enum(s.Job.PaymentStatus), default=s.Job.PaymentStatus.UNPAID
     )

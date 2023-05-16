@@ -20,7 +20,7 @@ def login(
 ):
     user: m.User = m.User.authenticate_with_phone(
         db,
-        user_credentials.username,
+        user_credentials.username.strip(),
         user_credentials.password,
     )
 
