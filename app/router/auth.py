@@ -18,7 +18,7 @@ def login(
     user_credentials: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
-    user: m.User = m.User.authenticate(
+    user: m.User = m.User.authenticate_with_phone(
         db,
         user_credentials.username,
         user_credentials.password,
