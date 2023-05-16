@@ -9,6 +9,7 @@ import app.model as m
 import app.schema as s
 
 from app.utility.create_test_users import fill_test_data
+from app.utility import create_locations
 
 NUM_TEST_JOBS = 27
 TEST_CITIES = [
@@ -36,6 +37,8 @@ TEST_TIMES = [
     "Within next 3h",
     "ASAP",
 ]
+TEST_MIN_PRICE = 1
+TEST_MAX_PRICE = 40
 
 
 def test_get_jobs(client: TestClient, db: Session):
@@ -45,6 +48,8 @@ def test_get_jobs(client: TestClient, db: Session):
     create_professions(db)
     # get all users
     owners = db.query(m.User).all()
+    # get locations
+    create_locations(db)
     # get all professions
     professions = db.query(m.Profession).all()
     for uid in range(NUM_TEST_JOBS):
@@ -65,3 +70,33 @@ def test_get_jobs(client: TestClient, db: Session):
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     assert len(resp_obj.jobs) > 0
+
+    # filtering jobs with profession_id=1
+    response = client.get("api/jobs?profession_id=1")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.profession_id == 1
+
+    # filtering jobs with profession_id=1
+    test_location = db.query(m.Location).first()
+    assert test_location
+    response = client.get(f"api/jobs?city={test_location.name_en}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.city == test_location.name_en
+
+    # filtering jobs by min price
+    response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.payment >= TEST_MIN_PRICE
+
+    # filtering jobs by max price
+    response = client.get(f"api/jobs?max_price={TEST_MAX_PRICE}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.payment <= TEST_MAX_PRICE
