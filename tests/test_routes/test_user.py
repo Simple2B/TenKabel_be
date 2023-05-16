@@ -9,7 +9,7 @@ from tests.fixture import TestData
 
 def test_auth(client: TestClient, db: Session, test_data: TestData):
     request_data = s.BaseUser(
-        username=test_data.test_users[0].username,
+        username=test_data.test_users[0].phone,
         email=test_data.test_users[0].email,
         password=test_data.test_users[0].password,
     )
