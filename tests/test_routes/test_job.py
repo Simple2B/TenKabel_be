@@ -1,8 +1,12 @@
 import random
+
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from app.utility import create_professions
+
 import app.model as m
+import app.schema as s
 
 from app.utility.create_test_users import fill_test_data
 
@@ -58,4 +62,6 @@ def test_get_jobs(client: TestClient, db: Session):
         db.add(job)
     db.commit()
     response = client.get("api/jobs")
-    assert response
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    assert len(resp_obj.jobs) > 0

@@ -2,7 +2,8 @@ from pydantic import BaseModel
 
 
 class BaseProfession(BaseModel):
-    name: str
+    name_en: str
+    name_hebrew: str
 
     class Config:
         orm_mode = True
@@ -14,3 +15,7 @@ class Profession(BaseProfession):
 
     class Config:
         orm_mode = True
+
+
+class ProfessionList(BaseModel):
+    professions: list[Profession]
