@@ -2,6 +2,6 @@
 from .user import BaseUser, User
 from .token import Token, TokenData
 
-from .profession import BaseProfession, Profession
-from .location import BaseLocation, Location
+from .profession import BaseProfession, Profession, ProfessionList
+from .location import BaseLocation, Location, LocationList
 from .job import BaseJob, Job, ListJob
