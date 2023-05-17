@@ -13,6 +13,7 @@ class Job(db.Model):
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+
     owner_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
     )
@@ -44,6 +45,8 @@ class Job(db.Model):
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
+
+    # relationships
     worker: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[worker_id], viewonly=True
     )

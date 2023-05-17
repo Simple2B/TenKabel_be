@@ -4,7 +4,6 @@ from typing import Generator
 # from alchemical.aio import Alchemical
 from alchemical import Alchemical
 from sqlalchemy import Engine, create_engine
-
 from sqlalchemy.orm import Session
 
 from app.config import get_settings, Settings
