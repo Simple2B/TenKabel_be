@@ -41,7 +41,7 @@ TEST_MIN_PRICE = 1
 TEST_MAX_PRICE = 40
 
 
-def test_get_jobs(client: TestClient, db: Session):
+def test_jobs(client: TestClient, db: Session):
     # create users
     fill_test_data(db)
     # create professions
@@ -66,13 +66,13 @@ def test_get_jobs(client: TestClient, db: Session):
         )
         db.add(job)
     db.commit()
-    response = client.get("api/jobs")
+    response = client.get("api/job/jobs")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     assert len(resp_obj.jobs) > 0
 
     # filtering jobs with profession_id=1
-    response = client.get("api/jobs?profession_id=1")
+    response = client.get("api/job/jobs?profession_id=1")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
@@ -81,22 +81,30 @@ def test_get_jobs(client: TestClient, db: Session):
     # filtering jobs with profession_id=1
     test_location = db.query(m.Location).first()
     assert test_location
-    response = client.get(f"api/jobs?city={test_location.name_en}")
+    response = client.get(f"api/job/jobs?city={test_location.name_en}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.city == test_location.name_en
 
     # filtering jobs by min price
-    response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
+    response = client.get(f"api/job/jobs?min_price={TEST_MIN_PRICE}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.payment >= TEST_MIN_PRICE
 
     # filtering jobs by max price
-    response = client.get(f"api/jobs?max_price={TEST_MAX_PRICE}")
+    response = client.get(f"api/job/jobs?max_price={TEST_MAX_PRICE}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.payment <= TEST_MAX_PRICE
+
+    # get single job
+    job: m.Job = db.query(m.Job).first()
+    assert job
+    response = client.get(f"api/job/{job.uuid}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Job.parse_obj(response.json())
+    assert resp_obj.uuid == job.uuid

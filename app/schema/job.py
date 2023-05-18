@@ -33,6 +33,7 @@ class Job(BaseJob):
         PAID = "paid"
         UNPAID = "unpaid"
 
+    uuid: str
     status: Status | str
     payment_status: PaymentStatus | str
     commission_status: CommissionStatus | str
