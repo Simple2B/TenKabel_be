@@ -20,6 +20,7 @@ class Job(db.Model):
     worker_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=True
     )
+
     profession_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("professions.id"), nullable=True
     )

@@ -2,12 +2,14 @@ import enum
 from pydantic import BaseModel
 
 from .user import User
+from .profession import Profession
 
 
 class BaseJob(BaseModel):
     owner_id: int
     worker_id: int | None
     profession_id: int
+    profession: Profession
 
     name: str
     description: str
@@ -52,3 +54,14 @@ class Job(BaseJob):
 
 class ListJob(BaseModel):
     jobs: list[Job]
+
+
+class JobIn(BaseModel):
+    profession: Job
+    city: str
+    worker_id: int | None
+    payment: int
+    commission: int
+
+    name: str
+    description: str
