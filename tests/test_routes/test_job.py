@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -109,3 +110,26 @@ def test_jobs(client: TestClient, db: Session):
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Job.parse_obj(response.json())
     assert resp_obj.uuid == job.uuid
+
+
+def test_create_job(
+    client: TestClient,
+    db: Session,
+    authorized_users_tokens: list[s.Token],
+):
+    request_data = s.JobIn(
+        profession_id=1,
+        city="Test City",
+        payment=10000,
+        commission=10000,
+        name="Test Task",
+        description="Just do anything",
+        time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    ).dict()
+    response = client.post(
+        "api/job",
+        json=request_data,
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert db.query(m.Job).filter_by(city=request_data["city"]).first()

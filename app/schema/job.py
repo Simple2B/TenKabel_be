@@ -57,11 +57,10 @@ class ListJob(BaseModel):
 
 
 class JobIn(BaseModel):
-    profession: Job
+    profession_id: int
     city: str
-    worker_id: int | None
     payment: int
     commission: int
-
     name: str
     description: str
+    time: str
