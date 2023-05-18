@@ -3,13 +3,14 @@ import random
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.utility import create_professions
 
 import app.model as m
 import app.schema as s
-
-from app.utility.create_test_users import fill_test_data
-from app.utility import create_locations
+from app.utility import (
+    fill_test_data,
+    create_locations,
+    create_professions,
+)
 
 NUM_TEST_JOBS = 27
 TEST_CITIES = [

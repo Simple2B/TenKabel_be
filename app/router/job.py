@@ -30,6 +30,26 @@ def get_jobs(
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
 
+@job_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
+def get_current_user_jobs(
+    profession_id: int = None,
+    city: str = None,
+    min_price: int = None,
+    max_price: int = None,
+    db: Session = Depends(get_db),
+):
+    query = select(m.Job)
+    if profession_id:
+        query = query.where(m.Job.profession_id == profession_id)
+    if city:
+        query = query.where(m.Job.city.ilike(f"%{city}%"))
+    if min_price:
+        query = query.where(m.Job.payment >= min_price)
+    if max_price:
+        query = query.where(m.Job.payment <= max_price)
+    return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
+
+
 @job_router.get("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def get_job(
     job_uuid: str,
