@@ -17,6 +17,7 @@ services:
 
   app:
     build: .
+    image: simple2b/tenkabel-be:latest
     restart: always
     command: bash ./start_server.sh
     environment:
