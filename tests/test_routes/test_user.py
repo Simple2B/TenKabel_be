@@ -38,14 +38,6 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
     ).one()
 
 
-# def test_user_jobs(
-#     client: TestClient,
-#     db: Session,
-# ):
-#     for job in resp_obj.jobs:
-#         assert job.worker_id == user.id
-
-
 def test_get_user_profile(
     client: TestClient,
     db: Session,
