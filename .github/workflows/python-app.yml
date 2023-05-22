@@ -68,4 +68,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
-          script: whoami
+          script: cd s2b
+            cd tenkabel_be_deploy
+            docker compose pull
+            docker compose up -d --force-recreate
