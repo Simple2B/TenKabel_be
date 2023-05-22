@@ -2,7 +2,6 @@ from fastapi import HTTPException, Depends, APIRouter, status
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 
 import app.model as m
 import app.schema as s
@@ -12,13 +11,15 @@ from app.database import get_db
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
+
 @user_router.get("", response_model=s.User)
 def get_current_user_profile(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-   return current_user
-  
+    return current_user
+
+
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_jobs(
     db: Session = Depends(get_db),
@@ -45,7 +46,6 @@ def get_user_postings(
         .where(m.Job.owner_id == current_user.id)
     ).all()
     return s.ListJob(jobs=jobs)
-   
 
 
 @user_router.get("/{user_uuid}", response_model=s.User)
@@ -64,4 +64,3 @@ def get_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
-

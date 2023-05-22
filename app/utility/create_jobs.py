@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from faker import Faker
 
 from app import model as m
@@ -22,11 +23,11 @@ JOBS_LIST = [
 
 
 def create_jobs(db: Session):
-    worker_ids = [worker.id for worker in db.scalars(db.query(m.User)).all()] + [None]
+    worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
 
-    profession_ids = [profession.id for profession in db.query(m.Profession).all()] + [
-        None
-    ]
+    profession_ids = [
+        profession.id for profession in db.scalars(select(m.Profession)).all()
+    ] + [None]
     for _ in range(len(worker_ids)):
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),

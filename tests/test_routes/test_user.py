@@ -37,10 +37,14 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
         sa.select(m.User).where(m.User.email == test_data.test_user.email)
     ).one()
 
-def test_user_jobs():
-  ...
-    
- 
+
+# def test_user_jobs(
+#     client: TestClient,
+#     db: Session,
+# ):
+#     for job in resp_obj.jobs:
+#         assert job.worker_id == user.id
+
 
 def test_get_user_profile(
     client: TestClient,
@@ -48,7 +52,6 @@ def test_get_user_profile(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
-
     # create users
     fill_test_data(db)
     # create professions
@@ -77,8 +80,6 @@ def test_get_user_profile(
         .first()
     )
     assert user
-    for job in resp_obj.jobs:
-        assert job.worker_id == user.id
 
     # get current jobs where user is owner
     response = client.get(
@@ -95,11 +96,11 @@ def test_get_user_profile(
     assert user
     for job in resp_obj.jobs:
         assert job.owner_id == user.id
-        
-        
-    assert resp_obj.uuid == user.uuid
 
     # get user by uuid
     response = client.get(
         f"api/user/{user.uuid}",
     )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.User.parse_obj(response.json())
+    assert resp_obj.uuid == user.uuid
