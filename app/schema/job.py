@@ -9,13 +9,8 @@ class BaseJob(BaseModel):
     uuid: str
     owner_id: int
     worker_id: int | None
-<<<<<<< HEAD
     profession_id: int | None
-=======
-    profession_id: int
     profession: Profession
->>>>>>> origin/develop
-
     name: str
     description: str
 
