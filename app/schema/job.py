@@ -5,10 +5,9 @@ from .user import User
 
 
 class BaseJob(BaseModel):
-    uuid: str
     owner_id: int
     worker_id: int | None
-    profession_id: int | None
+    profession_id: int
 
     name: str
     description: str
