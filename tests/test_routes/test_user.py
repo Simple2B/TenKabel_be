@@ -1,9 +1,15 @@
+from fastapi import status
 from fastapi.testclient import TestClient
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
 import app.schema as s
 import app.model as m
+from app.utility import (
+    fill_test_data,
+    create_professions,
+    create_jobs,
+)
 from tests.fixture import TestData
 
 
@@ -38,6 +44,20 @@ def test_get_user_profile(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
+    # create users
+    fill_test_data(db)
+    # create professions
+    create_professions(db)
+    # create jobs
+    create_jobs(db)
+    # get current jobs where user is worker
+    response = client.get(
+        "api/user/jobs",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
     response = client.get(
         "api/user",
         headers={
@@ -52,10 +72,27 @@ def test_get_user_profile(
         .first()
     )
     assert user
-    assert resp_obj.uuid == user.uuid
+
+    # get current jobs where user is owner
+    response = client.get(
+        "api/user/postings",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    user = (
+        db.query(m.User)
+        .filter_by(email=test_data.test_authorized_users[0].email)
+        .first()
+    )
+    assert user
+    for job in resp_obj.jobs:
+        assert job.owner_id == user.id
 
     # get user by uuid
     response = client.get(
         f"api/user/{user.uuid}",
     )
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.User.parse_obj(response.json())
+    assert resp_obj.uuid == user.uuid

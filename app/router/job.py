@@ -1,7 +1,9 @@
 from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
+from app.dependency import get_current_user
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -43,3 +45,31 @@ def get_job(
             detail="Job not found",
         )
     return job
+
+
+@job_router.post("", status_code=status.HTTP_201_CREATED)
+def create_job(
+    data: s.JobIn,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    new_job = m.Job(
+        owner_id=current_user.id,
+        profession_id=data.profession_id,
+        name=data.name,
+        description=data.description,
+        payment=data.payment,
+        commission=data.commission,
+        city=data.city,
+        time=data.time,
+    )
+    db.add(new_job)
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.ERROR, "Error while creating new job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error creating new job"
+        )
+
+    return status.HTTP_201_CREATED
