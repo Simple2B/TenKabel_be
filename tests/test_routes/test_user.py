@@ -76,4 +76,4 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
     assert user
 
     response = client.post("api/auth/google", json=request_data)
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
