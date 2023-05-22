@@ -16,5 +16,5 @@
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "editor.defaultFormatter": null,
-  "python.terminal.activateEnvironment": false
+  "python.terminal.activateEnvironment": true
 }
