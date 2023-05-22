@@ -28,6 +28,7 @@ anyio = "^3.6.2"
 fastapi-mail = "^1.2.7"
 alchemical = "^0.7.1"
 faker = "^18.9.0"
+pytest = "7.3.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "^5.0.4"
