@@ -56,9 +56,9 @@ jobs:
         id: set_tag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "export TAG=prod" >> $GITHUB_ENV
+            export TAG=prod >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "export TAG=latest" >> $GITHUB_ENV
+            export TAG=latest >> $GITHUB_ENV
           fi
           echo $TAG
           echo $TAG
