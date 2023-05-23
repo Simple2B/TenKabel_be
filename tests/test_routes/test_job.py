@@ -89,6 +89,12 @@ def test_jobs(client: TestClient, db: Session):
     for job in resp_obj.jobs:
         assert job.city == test_location.name_en
 
+    response = client.get(f"api/job/jobs?city=  ){test_location.name_en} & && !*?'  ")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.city == test_location.name_en
+
     # filtering jobs by min price
     response = client.get(f"api/job/jobs?min_price={TEST_MIN_PRICE}")
     assert response.status_code == status.HTTP_200_OK
