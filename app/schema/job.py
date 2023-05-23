@@ -10,7 +10,7 @@ class BaseJob(BaseModel):
     owner_id: int
     worker_id: int | None
     profession_id: int | None
-    profession: Profession
+    profession: Profession | None
     name: str
     description: str
 
