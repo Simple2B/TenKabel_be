@@ -32,12 +32,12 @@ class Job(db.Model):
     )
 
     customer_first_name: orm.Mapped[str] = orm.mapped_column(
-        sa.String(128), nullable=False
+        sa.String(64), nullable=False
     )
     customer_last_name: orm.Mapped[str] = orm.mapped_column(
-        sa.String(128), nullable=False
+        sa.String(64), nullable=False
     )
-    customer_phone: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=False)
+    customer_phone: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     customer_street_address: orm.Mapped[str] = orm.mapped_column(
         sa.String(128), nullable=False
     )

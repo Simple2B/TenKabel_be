@@ -122,10 +122,10 @@ def test_create_job(
         customer_last_name="test_last_name",
         customer_phone="+3800000000",
         customer_street_address="test_location",
-    ).dict()
+    )
     response = client.post(
         "api/job",
-        json=request_data,
+        json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
@@ -136,4 +136,4 @@ def test_create_job(
         .filter_by(customer_last_name=request_data.customer_last_name)
         .first()
     )
-    assert db.query(m.Job).filter_by(time=request_data.customer_last_name).first()
+    assert db.query(m.Job).filter_by(time=request_data.time).first()
