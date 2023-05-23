@@ -51,11 +51,24 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Set Docker image tag
+        id: set_tag
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "::set-output name=tag::simple2b/tenkabel-be:prod"
+          elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
+            echo "::set-output name=tag::simple2b/tenkabel-be:latest"
+          else
+            echo "::set-output name=tag::myregistry/myimage:${{ github.ref_slug }}"
+          fi
+
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
+          context: .
           push: true
-          tags: simple2b/tenkabel-be:latest
+          tags: ${{ steps.set_tag.outputs.tag }}
 
   # deploy:
   #   name: Deploy
