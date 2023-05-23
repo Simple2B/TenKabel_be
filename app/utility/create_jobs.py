@@ -22,13 +22,13 @@ JOBS_LIST = [
 ]
 
 
-def create_jobs(db: Session, NUM_TEST_JOBS: int = 27):
+def create_jobs(db: Session, test_jobs_num: int = 27):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
 
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
-    for _ in range(NUM_TEST_JOBS):
+    for _ in range(test_jobs_num):
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
             worker_id=random.choice(worker_ids),

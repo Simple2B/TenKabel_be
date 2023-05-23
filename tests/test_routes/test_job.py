@@ -110,7 +110,7 @@ def test_create_job(
     db: Session,
     authorized_users_tokens: list[s.Token],
 ):
-    request_data = s.JobIn(
+    request_data: s.JobIn = s.JobIn(
         profession_id=1,
         city="Test City",
         payment=10000,
@@ -130,10 +130,10 @@ def test_create_job(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert db.query(m.Job).filter_by(city=request_data["city"]).first()
+    assert db.query(m.Job).filter_by(city=request_data.city).first()
     assert (
         db.query(m.Job)
-        .filter_by(customer_last_name=request_data["customer_last_name"])
+        .filter_by(customer_last_name=request_data.customer_last_name)
         .first()
     )
-    assert db.query(m.Job).filter_by(time=request_data["time"]).first()
+    assert db.query(m.Job).filter_by(time=request_data.customer_last_name).first()
