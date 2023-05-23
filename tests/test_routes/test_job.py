@@ -146,7 +146,7 @@ def test_search_job(
     create_jobs(db)
 
     response = client.get("api/job/search")
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
