@@ -60,6 +60,9 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             echo "export TAG=latest" >> $GITHUB_ENV
           fi
+          echo $TAG
+          echo $TAG
+          echo $TAG
 
       - name: Build and push
         uses: docker/build-push-action@v4
