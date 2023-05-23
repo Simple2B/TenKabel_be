@@ -27,7 +27,7 @@ def create_jobs(db: Session):
 
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
-    ] + [None]
+    ]
     for _ in range(len(worker_ids)):
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
@@ -44,5 +44,12 @@ def create_jobs(db: Session):
             commission_status=random.choice([e for e in s.Job.CommissionStatus]),
         )
         db.add(job)
+        db.commit()
+
+    # owner can't work on his own job
+    for job in db.query(m.Job).all():
+        while job.owner_id == job.worker_id:
+            job.worker_id = random.choice(worker_ids)
+
         db.commit()
     log(log.INFO, "Jobs created - %s", db.query(m.Job).count())
