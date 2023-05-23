@@ -6,11 +6,11 @@ from .profession import Profession
 
 
 class BaseJob(BaseModel):
+    uuid: str
     owner_id: int
     worker_id: int | None
-    profession_id: int
+    profession_id: int | None
     profession: Profession
-
     name: str
     description: str
 
