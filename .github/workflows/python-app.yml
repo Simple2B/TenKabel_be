@@ -52,20 +52,19 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set Docker Tags
-        id: tags
+      - name: Set Docker tag
         run: |
-          if [[ ${{ github.ref == 'refs/heads/main' }} ]]; then
-            echo "::set-output name=tag::simple2b/tenkabel-be:prod"
-          elif [[ ${{ github.ref == 'refs/heads/develop' }} ]]; then
-            echo "::set-output name=tag::simple2b/tenkabel-be:latest"
+          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
+              echo "TAG=prod" >> "$GITHUB_ENV"
+          else
+              echo "TAG=latest" >> "$GITHUB_ENV"
           fi
 
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ${{ steps.tags.outputs.tag }}
+          tags: ${{ format('{0}:{1}', 'simple2b/tenkabel-be', env.TAG) }}
 
   # deploy:
   #   name: Deploy
