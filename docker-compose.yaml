@@ -1,0 +1,31 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+      POSTGRES_DB: db
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      PGUSER: ${DATABASE_USERNAME:-postgres}
+      PGDATABASE: db
+      PGPASSWORD: ${DATABASE_PASSWORD:-password}
+    ports:
+      - 127.0.0.1:${DATABASE_LOCAL_PORT:-5432}:5432
+    restart: always
+
+  app:
+    build: .
+    image: simple2b/tenkabel-be:latest
+    restart: always
+    command: bash ./start_server.sh
+    environment:
+      DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+    ports:
+      - 127.0.0.1:8008:80
+    depends_on:
+      - db
+
+volumes:
+  db_data:

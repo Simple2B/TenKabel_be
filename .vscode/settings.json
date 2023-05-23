@@ -1,0 +1,20 @@
+{
+  "python.testing.pytestArgs": ["tests"],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "cSpell.words": [
+    "fastapi",
+    "pydantic",
+    "sqladmin",
+    "sqlalchemy",
+    "starlette",
+    "viewonly"
+  ],
+  "python.formatting.provider": "black",
+  "editor.formatOnSave": true,
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "editor.defaultFormatter": null,
+  "python.terminal.activateEnvironment": true
+}
