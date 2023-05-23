@@ -56,11 +56,11 @@ jobs:
         id: set_tag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "::set-output name=tag::simple2b/tenkabel-be:prod"
+            echo "tag=simple2b/tenkabel-be:prod" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "::set-output name=tag::simple2b/tenkabel-be:latest"
+            echo "tag=simple2b/tenkabel-be:latest" >> $GITHUB_ENV
           else
-            echo "::set-output name=tag::myregistry/myimage:${{ github.ref_slug }}"
+            echo "tag=simple2b/tenkabel-be:${{ github.ref_slug }}" >> $GITHUB_ENV
           fi
 
       - name: Build and push
