@@ -56,21 +56,18 @@ jobs:
         id: set_tag
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "tag=simple2b/tenkabel-be:prod" >> $GITHUB_ENV
-            echo "::set-env name=TAG::simple2b/tenkabel-be:prod" >> $GITHUB_ENV
+            echo "export TAG=simple2b/tenkabel-be:prod" >> $GITHUB_ENV
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
-            echo "tag=simple2b/tenkabel-be:latest" >> $GITHUB_ENV
-            echo "::set-env name=TAG::simple2b/tenkabel-be:latest" >> $GITHUB_ENV
+            echo "export TAG=simple2b/tenkabel-be:latest" >> $GITHUB_ENV
           else
-            echo "tag=simple2b/tenkabel-be:${{ github.ref_slug }}" >> $GITHUB_ENV
-            echo "::set-env name=TAG::simple2b/tenkabel-be:${{ github.ref_slug }}" >> $GITHUB_ENV
+            echo "export TAG=simple2b/tenkabel-be:${{ github.ref_slug }}" >> $GITHUB_ENV
           fi
 
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ${{ steps.set_tag.outputs.tag }}
+          tags: ${{ env.TAG }}
 
   # deploy:
   #   name: Deploy
