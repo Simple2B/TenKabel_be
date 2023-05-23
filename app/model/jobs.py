@@ -31,6 +31,17 @@ class Job(db.Model):
         sa.Enum(s.Job.Status), default=s.Job.Status.PENDING
     )
 
+    customer_first_name: orm.Mapped[str] = orm.mapped_column(
+        sa.String(128), nullable=False
+    )
+    customer_last_name: orm.Mapped[str] = orm.mapped_column(
+        sa.String(128), nullable=False
+    )
+    customer_phone: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=False)
+    customer_street_address: orm.Mapped[str] = orm.mapped_column(
+        sa.String(128), nullable=False
+    )
+
     payment: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 

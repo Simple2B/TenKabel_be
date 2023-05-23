@@ -65,6 +65,10 @@ def create_job(
         commission=data.commission,
         city=data.city,
         time=data.time,
+        customer_first_name=data.customer_first_name,
+        customer_last_name=data.customer_last_name,
+        customer_phone=data.customer_phone,
+        customer_street_address=data.customer_street_address,
     )
     db.add(new_job)
     try:
