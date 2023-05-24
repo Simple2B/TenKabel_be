@@ -10,6 +10,8 @@ class TestUser(BaseModel):
     username: str
     email: str
     password: str
+    google_openid_key: str | None
+    picture: str | None
     is_verified: bool | None = True
     phone: str | None
 
