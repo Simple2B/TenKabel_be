@@ -11,21 +11,28 @@ services:
       PGUSER: ${DATABASE_USERNAME:-postgres}
       PGDATABASE: db
       PGPASSWORD: ${DATABASE_PASSWORD:-password}
-    ports:
-      - 127.0.0.1:${DATABASE_LOCAL_PORT:-5432}:5432
     restart: always
+    networks:
+      - tenkabel_network
 
   app:
     build: .
     image: simple2b/tenkabel-be:latest
     restart: always
     command: bash ./start_server.sh
+    env_file:
+      - .env
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      SERVER_PORT: 8008
     ports:
-      - 127.0.0.1:8008:80
+      - 127.0.0.1:${SERVER_PORT:- 8008}:80
     depends_on:
       - db
+    networks:
+      - tenkabel_network
 
 volumes:
   db_data:
+networks:
+  tenkabel_network:
