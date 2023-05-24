@@ -1,6 +1,6 @@
 from invoke import task
 
-from app.utility import create_jobs as cj
+from tests.utility import create_jobs as cj
 
 
 @task

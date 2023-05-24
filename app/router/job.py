@@ -101,3 +101,10 @@ def create_job(
         )
 
     return status.HTTP_201_CREATED
+
+
+@job_router.put("/status", status_code=status.HTTP_200_OK)
+def update_job_status(
+    db: Session = Depends(get_db),
+):
+    ...
