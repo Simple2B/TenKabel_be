@@ -64,3 +64,7 @@ class JobIn(BaseModel):
     name: str
     description: str
     time: str
+    customer_first_name: str
+    customer_last_name: str
+    customer_phone: str
+    customer_street_address: str

@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 
 from fastapi import status
@@ -51,26 +50,12 @@ def test_jobs(client: TestClient, db: Session):
     fill_test_data(db)
     # create professions
     create_professions(db)
-    # get all users
-    owners = db.query(m.User).all()
     # get locations
     create_locations(db)
-    # get all professions
-    professions = db.query(m.Profession).all()
-    for uid in range(NUM_TEST_JOBS):
-        payment = 25 + uid
-        job = m.Job(
-            owner_id=owners[uid].id,
-            profession_id=professions[uid].id,
-            name="name",
-            description="description",
-            payment=payment,
-            commission=payment * 0.25,
-            city=random.choice(TEST_CITIES),
-            time=random.choice(TEST_TIMES),
-        )
-        db.add(job)
-    db.commit()
+    # create jobs
+    create_jobs(db, NUM_TEST_JOBS)
+
+    # check jobs are created
     response = client.get("api/job/jobs")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
@@ -92,6 +77,7 @@ def test_jobs(client: TestClient, db: Session):
     for job in resp_obj.jobs:
         assert job.city == test_location.name_en
 
+    # regex checking
     response = client.get(f"api/job/jobs?city=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
@@ -126,7 +112,7 @@ def test_create_job(
     db: Session,
     authorized_users_tokens: list[s.Token],
 ):
-    request_data = s.JobIn(
+    request_data: s.JobIn = s.JobIn(
         profession_id=1,
         city="Test City",
         payment=10000,
@@ -134,14 +120,25 @@ def test_create_job(
         name="Test Task",
         description="Just do anything",
         time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-    ).dict()
+        customer_first_name="test_first_name",
+        customer_last_name="test_last_name",
+        customer_phone="+3800000000",
+        customer_street_address="test_location",
+    )
     response = client.post(
         "api/job",
-        json=request_data,
+        json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
+
     assert response.status_code == status.HTTP_201_CREATED
-    assert db.query(m.Job).filter_by(city=request_data["city"]).first()
+    assert db.query(m.Job).filter_by(city=request_data.city).first()
+    assert (
+        db.query(m.Job)
+        .filter_by(customer_last_name=request_data.customer_last_name)
+        .first()
+    )
+    assert db.query(m.Job).filter_by(time=request_data.time).first()
 
 
 def test_search_job(

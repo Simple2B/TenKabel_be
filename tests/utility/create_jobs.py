@@ -22,7 +22,7 @@ JOBS_LIST = [
 ]
 
 
-def create_jobs(db: Session):
+def create_jobs(db: Session, test_jobs_num: int = 27):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
 
     profession_ids = [
@@ -42,6 +42,10 @@ def create_jobs(db: Session):
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             payment_status=random.choice([e for e in s.Job.PaymentStatus]),
             commission_status=random.choice([e for e in s.Job.CommissionStatus]),
+            customer_first_name=fake.first_name(),
+            customer_last_name=fake.last_name(),
+            customer_phone=fake.phone_number(),
+            customer_street_address=fake.address(),
         )
         db.add(job)
         db.commit()
