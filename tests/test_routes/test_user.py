@@ -38,6 +38,52 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
     ).one()
 
 
+def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
+    user: m.User = (
+        db.query(m.User).filter_by(email=test_data.test_users[0].email).first()
+    )
+    assert user
+
+    request_data = s.BaseUser(
+        email=user.email,
+        password=test_data.test_users[0].password,
+        username=user.username,
+        google_openid_key=user.google_openid_key,
+        picture=user.picture,
+        phone=user.phone,
+    ).dict()
+
+    response = client.post("api/auth/google", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    # checking non existing user
+    user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
+    assert not user
+
+    request_data = s.BaseUser(
+        email=test_data.test_user.email,
+        password=test_data.test_user.password,
+        username=test_data.test_user.username,
+        google_openid_key=test_data.test_user.google_openid_key,
+        picture=test_data.test_user.picture,
+        phone=test_data.test_user.phone,
+    ).dict()
+
+    response = client.post("api/auth/google", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    # checking if the user has created
+    user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
+    assert user
+
+    response = client.post("api/auth/google", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+
+
 def test_get_user_profile(
     client: TestClient,
     db: Session,

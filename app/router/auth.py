@@ -60,3 +60,60 @@ def sign_up(
         )
     log(log.INFO, "User [%s] signed up", user.email)
     return user
+
+
+@auth_router.post("/google", status_code=status.HTTP_200_OK, response_model=s.Token)
+def google_auth(
+    data: s.BaseUser,
+    db: Session = Depends(get_db),
+):
+    user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
+
+    if not user:
+        user: m.User = m.User(
+            email=data.email,
+            username=data.username,
+            phone=data.phone,
+            google_openid_key=data.google_openid_key,
+            password=data.password,
+            picture=data.picture,
+            is_verified=True,
+        )
+        db.add(user)
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            log(log.INFO, "Error - [%s]", e)
+            raise HTTPException(
+                status=status.HTTP_409_CONFLICT,
+                detail="Error while saving creating a user",
+            )
+        log(
+            log.INFO,
+            "User [%s] has been created (via Google account))",
+            user.email,
+        )
+
+    user.is_verified = True
+    if data.picture:
+        user.picture = data.picture
+    db.commit()
+
+    user: m.User = m.User.authenticate(
+        db,
+        data.username,
+        data.password,
+    )
+
+    if not user:
+        log(log.ERROR, "User [%s] was not authenticated", data.username)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
+
+    access_token = create_access_token(data={"user_id": user.id})
+
+    return s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
