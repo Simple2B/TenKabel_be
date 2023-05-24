@@ -5,12 +5,13 @@ from sqlalchemy.orm import Session
 
 import app.schema as s
 import app.model as m
-from app.utility import (
+
+from tests.fixture import TestData
+from tests.utility import (
+    create_jobs,
     fill_test_data,
     create_professions,
-    create_jobs,
 )
-from tests.fixture import TestData
 
 
 def test_auth(client: TestClient, db: Session, test_data: TestData):

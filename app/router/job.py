@@ -21,7 +21,7 @@ def get_jobs(
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
-):
+) -> s.ListJob:
     query = select(m.Job)
     if profession_id:
         query = query.where(m.Job.profession_id == profession_id)
@@ -39,7 +39,7 @@ def get_jobs(
 def get_job(
     job_uuid: str,
     db: Session = Depends(get_db),
-):
+) -> s.Job:
     job: m.Job | None = db.scalars(select(m.Job)).first()
     if not job:
         log(log.INFO, "Job wasn`t found %s", job_uuid)
@@ -55,7 +55,7 @@ def search_job(
     title: str | None = None,
     city: str | None = None,
     db: Session = Depends(get_db),
-):
+) -> s.ListJob:
     query = select(m.Job)
 
     if title:

@@ -5,7 +5,7 @@ from app.config import Settings, get_settings
 from app.model import User, Profession, Job
 from app.logger import log
 from app.utility import create_locations, create_professions
-from app.utility.create_test_users import fill_test_data
+from tests.utility.create_test_users import fill_test_data
 
 settings: Settings = get_settings()
 

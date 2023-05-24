@@ -8,11 +8,12 @@ from sqlalchemy import select
 
 import app.model as m
 import app.schema as s
-from app.utility import (
+
+from tests.utility import (
+    create_jobs,
     fill_test_data,
     create_locations,
     create_professions,
-    create_jobs,
 )
 
 NUM_TEST_JOBS = 27
