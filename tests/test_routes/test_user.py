@@ -1,6 +1,5 @@
 from fastapi import status
 from fastapi.testclient import TestClient
-from fastapi import status
 import sqlalchemy as sa
 from sqlalchemy.orm import Session
 
@@ -37,7 +36,6 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
     assert db.execute(
         sa.select(m.User).where(m.User.email == test_data.test_user.email)
     ).one()
-
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
@@ -84,6 +82,7 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
 
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
+
 
 def test_get_user_profile(
     client: TestClient,
@@ -143,4 +142,3 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.User.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
-
