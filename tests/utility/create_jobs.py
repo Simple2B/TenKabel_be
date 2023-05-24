@@ -28,11 +28,7 @@ def create_jobs(db: Session, test_jobs_num: int = 27):
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
-<<<<<<< HEAD:app/utility/create_jobs.py
-    for _ in range(test_jobs_num):
-=======
     for _ in range(len(worker_ids)):
->>>>>>> develop:tests/utility/create_jobs.py
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
             worker_id=random.choice(worker_ids),
@@ -54,10 +50,7 @@ def create_jobs(db: Session, test_jobs_num: int = 27):
         db.add(job)
         db.commit()
 
-<<<<<<< HEAD:app/utility/create_jobs.py
-=======
     # owner can't work on his own job
->>>>>>> develop:tests/utility/create_jobs.py
     for job in db.query(m.Job).all():
         while job.owner_id == job.worker_id:
             job.worker_id = random.choice(worker_ids)

@@ -13,7 +13,6 @@ from tests.utility import (
     fill_test_data,
     create_locations,
     create_professions,
-    create_jobs,
 )
 
 NUM_TEST_JOBS = 27
@@ -133,7 +132,6 @@ def test_create_job(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-<<<<<<< HEAD
     assert db.query(m.Job).filter_by(city=request_data.city).first()
     assert (
         db.query(m.Job)
@@ -141,8 +139,6 @@ def test_create_job(
         .first()
     )
     assert db.query(m.Job).filter_by(time=request_data.time).first()
-=======
-    assert db.query(m.Job).filter_by(city=request_data["city"]).first()
 
 
 def test_search_job(
@@ -183,4 +179,3 @@ def test_search_job(
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
->>>>>>> develop
