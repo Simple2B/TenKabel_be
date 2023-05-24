@@ -1,8 +1,8 @@
-"""init
+"""empty message
 
-Revision ID: c62fa5f2f6c3
+Revision ID: fd1a294589ff
 Revises: 
-Create Date: 2023-05-16 16:24:42.179713
+Create Date: 2023-05-24 17:47:32.212420
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'c62fa5f2f6c3'
+revision = 'fd1a294589ff'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -37,6 +37,8 @@ def upgrade():
     sa.Column('uuid', sa.String(length=36), nullable=False),
     sa.Column('email', sa.String(length=128), nullable=True),
     sa.Column('username', sa.String(length=128), nullable=False),
+    sa.Column('google_openid_key', sa.String(length=64), nullable=True),
+    sa.Column('picture', sa.String(length=128), nullable=True),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
@@ -52,6 +54,8 @@ def upgrade():
     sa.Column('uuid', sa.String(length=36), nullable=False),
     sa.Column('email', sa.String(length=128), nullable=True),
     sa.Column('username', sa.String(length=128), nullable=False),
+    sa.Column('google_openid_key', sa.String(length=64), nullable=True),
+    sa.Column('picture', sa.String(length=128), nullable=True),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
@@ -70,6 +74,10 @@ def upgrade():
     sa.Column('description', sa.String(length=512), nullable=False),
     sa.Column('is_deleted', sa.Boolean(), nullable=False),
     sa.Column('status', sa.Enum('PENDING', 'LATE', 'STARTED', 'COMPLETED', 'FULFILLED', name='status'), nullable=False),
+    sa.Column('customer_first_name', sa.String(length=64), nullable=False),
+    sa.Column('customer_last_name', sa.String(length=64), nullable=False),
+    sa.Column('customer_phone', sa.String(length=64), nullable=False),
+    sa.Column('customer_street_address', sa.String(length=128), nullable=False),
     sa.Column('payment', sa.Integer(), nullable=False),
     sa.Column('commission', sa.Float(), nullable=False),
     sa.Column('city', sa.String(length=64), nullable=False),
