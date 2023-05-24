@@ -1,7 +1,7 @@
 import re
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -21,7 +21,7 @@ def get_jobs(
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
-):
+) -> s.ListJob:
     query = select(m.Job)
     if profession_id:
         query = query.where(m.Job.profession_id == profession_id)
@@ -35,11 +35,11 @@ def get_jobs(
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
 
-@job_router.get("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
+@job_router.get("/{job_uuid}/", status_code=status.HTTP_200_OK, response_model=s.Job)
 def get_job(
     job_uuid: str,
     db: Session = Depends(get_db),
-):
+) -> s.Job:
     job: m.Job | None = db.scalars(select(m.Job)).first()
     if not job:
         log(log.INFO, "Job wasn`t found %s", job_uuid)
@@ -48,6 +48,27 @@ def get_job(
             detail="Job not found",
         )
     return job
+
+
+@job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
+def search_job(
+    title: str | None = None,
+    city: str | None = None,
+    db: Session = Depends(get_db),
+) -> s.ListJob:
+    query = select(m.Job)
+
+    if title:
+        query = query.where(
+            or_(
+                m.Job.name.icontains(f"%{title}%"),
+                m.Job.description.icontains(f"%{title}%"),
+            )
+        )
+    if city:
+        query = query.where(m.Job.city.icontains(f"%{city}%"))
+
+    return s.ListJob(jobs=db.scalars(query.order_by(m.Job.created_at.desc())).all())
 
 
 @job_router.post("", status_code=status.HTTP_201_CREATED)

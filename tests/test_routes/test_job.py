@@ -4,10 +4,13 @@ from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 import app.model as m
 import app.schema as s
-from app.utility import (
+
+from tests.utility import (
+    create_jobs,
     fill_test_data,
     create_locations,
     create_professions,
@@ -112,7 +115,7 @@ def test_jobs(client: TestClient, db: Session):
     # get single job
     job: m.Job = db.query(m.Job).first()
     assert job
-    response = client.get(f"api/job/{job.uuid}")
+    response = client.get(f"api/job/{job.uuid}/")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Job.parse_obj(response.json())
     assert resp_obj.uuid == job.uuid
@@ -139,3 +142,43 @@ def test_create_job(
     )
     assert response.status_code == status.HTTP_201_CREATED
     assert db.query(m.Job).filter_by(city=request_data["city"]).first()
+
+
+def test_search_job(
+    client: TestClient,
+    db: Session,
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    response = client.get("api/job/search")
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJob.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) > 0
+
+    job: m.Job = db.scalar(select(m.Job))
+    assert job
+
+    response = client.get("api/job/search", params={"city": f"{job.city}"})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJob.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) > 0
+    assert all([resp_job.city == job.city for resp_job in response_jobs_list.jobs])
+
+    response = client.get("api/job/search", params={"title": f"{job.name}"})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJob.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) > 0
+
+    response = client.get("api/job/search", params={"title": f"{job.description}"})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJob.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) > 0
+
+    response = client.get(
+        "api/job/search", params={"city": "non_existin_city_for_sure_123"}
+    )
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJob.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) == 0
