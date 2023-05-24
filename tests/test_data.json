@@ -5,14 +5,17 @@
       "email": "testemail1@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "123321"
+      "phone": "123321",
+      "google_openid_key": "1234567890abcdef",
+      "picture": "http://test.com"
     },
     {
       "username": "testuser2",
       "email": "testemail2@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "111111"
+      "phone": "111111",
+      "google_openid_key": "abcdef123321"
     },
     {
       "username": "testuser3",
@@ -35,7 +38,9 @@
       "email": "test_authorized_email2@gmail.com",
       "password": "1233",
       "is_verified": true,
-      "phone": "877632"
+      "phone": "877632",
+      "google_openid_key": "abcdef123321",
+      "picture": "321123321"
     },
     {
       "username": "test_authorized_user3",
@@ -50,7 +55,9 @@
     "username": "test_username",
     "password": "test_password",
     "is_verified": true,
-    "phone": "000000000"
+    "phone": "000000000",
+    "google_openid_key": "1234567890abc",
+    "picture": "http://test"
   },
   "test_superuser": {
     "username": "test_superuser",
