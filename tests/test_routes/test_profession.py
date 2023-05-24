@@ -1,11 +1,9 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from app.utility import create_professions
+from tests.utility import create_professions, fill_test_data
 
 import app.schema as s
-
-from app.utility.create_test_users import fill_test_data
 
 
 def test_get_professions(client: TestClient, db: Session):

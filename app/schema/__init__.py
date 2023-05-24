@@ -5,3 +5,4 @@ from .token import Token, TokenData
 from .profession import BaseProfession, Profession, ProfessionList
 from .location import BaseLocation, Location, LocationList
 from .job import BaseJob, Job, ListJob, JobIn
+from .pagination import Pagination

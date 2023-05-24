@@ -1,16 +1,17 @@
 from fastapi import status
 from fastapi.testclient import TestClient
-import sqlalchemy as sa
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 import app.schema as s
 import app.model as m
-from app.utility import (
+
+from tests.fixture import TestData
+from tests.utility import (
+    create_jobs,
     fill_test_data,
     create_professions,
-    create_jobs,
 )
-from tests.fixture import TestData
 
 
 def test_auth(client: TestClient, db: Session, test_data: TestData):
@@ -21,10 +22,15 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
     )
     # login by username and password
     response = client.post("api/auth/login", data=request_data.dict())
-    assert response and response.status_code == 200, "unexpected response"
+    assert response.status_code == 200, "unexpected response"
 
 
-def test_signup(client: TestClient, db: Session, test_data: TestData):
+def test_signup(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
     request_data = s.BaseUser(
         username=test_data.test_user.username,
         email=test_data.test_user.email,
@@ -32,10 +38,20 @@ def test_signup(client: TestClient, db: Session, test_data: TestData):
         phone=test_data.test_user.phone,
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
-    assert response and response.status_code == 201
-    assert db.execute(
-        sa.select(m.User).where(m.User.email == test_data.test_user.email)
-    ).one()
+    assert response.status_code == status.HTTP_201_CREATED
+    user: m.User = db.scalar(
+        select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
+    )
+    assert user
+    assert not user.is_verified
+
+    response = client.put(
+        "api/auth/verify",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    db.refresh(user)
+    assert user.is_verified
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
