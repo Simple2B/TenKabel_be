@@ -4,7 +4,7 @@
       "username": "testuser1",
       "email": "testemail1@gmail.com",
       "password": "1234",
-      "is_verified": true,
+      "is_verified": false,
       "phone": "123321",
       "google_openid_key": "1234567890abcdef",
       "picture": "http://test.com"
@@ -30,7 +30,7 @@
       "username": "test_authorized_user1",
       "email": "test_authorized_email1@gmail.com",
       "password": "1234",
-      "is_verified": true,
+      "is_verified": false,
       "phone": "734432234"
     },
     {

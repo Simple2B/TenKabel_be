@@ -4,6 +4,7 @@ from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.dependency import get_current_user
 from app.database import get_db
 import app.model as m
 import app.schema as s
@@ -60,6 +61,26 @@ def sign_up(
         )
     log(log.INFO, "User [%s] signed up", user.email)
     return user
+
+
+@auth_router.put("/verify", status_code=status.HTTP_200_OK)
+def verify(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    current_user.is_verified = True
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.ERROR, "Error signing up user - ", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
+        )
+
+    log(log.INFO, "User [%s] is verified", current_user.email)
+
+    return status.HTTP_200_OK
 
 
 @auth_router.post("/google", status_code=status.HTTP_200_OK, response_model=s.Token)
