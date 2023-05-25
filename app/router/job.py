@@ -100,6 +100,7 @@ def create_job(
 
     return status.HTTP_201_CREATED
 
+
 @job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK)
 def update_job(
     job_data: s.JobUpdate,
@@ -137,4 +138,3 @@ def update_job(
         )
 
     return status.HTTP_200_OK
-  
