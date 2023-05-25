@@ -232,11 +232,3 @@ def test_update_job(
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
     assert job.status == s.Job.Status.COMPLETED
-
-    # # non existing job
-    # response = client.put(
-    #     f"api/job/{job.uuid}000000",
-    #     json=request_data.dict(),
-    # )
-
-    # assert response.status_code == status.HTTP_404_NOT_FOUND

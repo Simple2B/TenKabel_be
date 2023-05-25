@@ -132,9 +132,10 @@ def update_job(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.ERROR, "Error while updatin job - %s", e)
+        log(log.INFO, "Error while updatin job - %s", e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
         )
 
+    log(log.INFO, "Job updated successfully - %s", job.name)
     return status.HTTP_200_OK
