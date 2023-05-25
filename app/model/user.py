@@ -1,6 +1,6 @@
 from typing import Self
 import sqlalchemy as sa
-from sqlalchemy import orm, select
+from sqlalchemy import orm, select, func
 from app.hash_utils import hash_verify
 
 from app.database import db, get_db
@@ -45,11 +45,9 @@ class User(db.Model, BaseUser):
     def jobs_count(self) -> int:
         db = get_db().__next__()
 
-        jobs_list: s.ListJob = db.scalars(
-            select(m.Job).where(m.Job.owner_id == self.id)
-        ).all()
+        count: int = db.scalar(select(func.count()).where(m.Job.owner_id == self.id))
 
-        return len(jobs_list)
+        return count
 
     def __repr__(self):
         return f"<{self.id}: {self.first_name} {self.last_name}>"
