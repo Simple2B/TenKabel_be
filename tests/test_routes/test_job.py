@@ -149,7 +149,7 @@ def test_search_job(
     create_professions(db)
     create_jobs(db)
 
-    response = client.get("api/job/search")
+    response = client.get("api/job/search", params={"q": ""})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
@@ -157,25 +157,72 @@ def test_search_job(
     job: m.Job = db.scalar(select(m.Job))
     assert job
 
-    response = client.get("api/job/search", params={"city": f"{job.city}"})
+    response = client.get("api/job/search", params={"q": f"{job.city}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
     assert all([resp_job.city == job.city for resp_job in response_jobs_list.jobs])
 
-    response = client.get("api/job/search", params={"title": f"{job.name}"})
+    response = client.get("api/job/search", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    response = client.get("api/job/search", params={"title": f"{job.description}"})
+    response = client.get("api/job/search", params={"q": f"{job.description}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
     response = client.get(
-        "api/job/search", params={"city": "non_existin_city_for_sure_123"}
+        "api/job/search", params={"q": "non_existin_city_for_sure_123"}
     )
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
+
+
+def test_update_job(
+    client: TestClient,
+    db: Session,
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    job: m.Job = db.scalar(select(m.Job))
+    request_data: s.JobUpdate = s.JobUpdate(
+        profession_id=job.profession_id,
+        city=job.city,
+        payment=job.payment,
+        commission=job.commission,
+        name=job.name,
+        description=job.description,
+        time=job.time,
+        customer_first_name=job.customer_first_name,
+        customer_last_name=job.customer_last_name,
+        customer_phone=job.customer_phone,
+        customer_street_address=job.customer_street_address,
+        status=s.Job.Status.LATE,
+    )
+    response = client.put(f"api/job/{job.uuid}/", json=request_data.json())
+
+    assert response.status_code == status.HTTP_200_OK
+    db.refresh(job)
+    assert job.status == s.Job.Status.LATE
+
+    response = client.put(
+        f"api/job/{job.uuid}/status",
+        params={"enum_status": s.Job.Status.COMPLETED.value},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    db.refresh(job)
+    assert job.status == s.Job.Status.COMPLETED
+
+    # non existing job
+    response = client.put(
+        f"api/job/{job.uuid}000000/status",
+        params={"enum_status": s.Job.Status.LATE.value},
+    )
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND

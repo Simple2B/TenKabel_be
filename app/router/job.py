@@ -40,7 +40,7 @@ def get_job(
     job_uuid: str,
     db: Session = Depends(get_db),
 ) -> s.Job:
-    job: m.Job | None = db.scalars(select(m.Job)).first()
+    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
         log(log.INFO, "Job wasn`t found %s", job_uuid)
         return HTTPException(
@@ -52,21 +52,19 @@ def get_job(
 
 @job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def search_job(
-    title: str | None = None,
-    city: str | None = None,
+    q: str | None = "",
     db: Session = Depends(get_db),
 ) -> s.ListJob:
     query = select(m.Job)
 
-    if title:
+    if q:
         query = query.where(
             or_(
-                m.Job.name.icontains(f"%{title}%"),
-                m.Job.description.icontains(f"%{title}%"),
+                m.Job.name.icontains(f"%{q}%"),
+                m.Job.description.icontains(f"%{q}%"),
+                m.Job.city.icontains(f"%{q}%"),
             )
         )
-    if city:
-        query = query.where(m.Job.city.icontains(f"%{city}%"))
 
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.created_at.desc())).all())
 
@@ -101,3 +99,38 @@ def create_job(
         )
 
     return status.HTTP_201_CREATED
+
+
+@job_router.put("/{job_uuid}/", status_code=status.HTTP_200_OK)
+def update_job_status(
+    job_data: s.JobUpdate,
+    job_uuid: str,
+    db: Session = Depends(get_db),
+):
+    update_job: m.Job | None = db.scalars(
+        select(m.Job).where(m.Job.uuid == job_uuid)
+    ).first()
+    if not update_job:
+        log(log.INFO, "Job wasn`t found %s", job_uuid)
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+
+    for var, value in vars(job_data).items():
+        setattr(update_job, var, value) if value else None
+
+    db.add(update_job)
+
+    # job: m.Job = m.Job(job_data)
+    # db.add(job)
+    try:
+        db.commit()
+        db.refresh(update_job)
+    except SQLAlchemyError as e:
+        log(log.ERROR, "Error while updatin job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
+        )
+
+    return status.HTTP_200_OK

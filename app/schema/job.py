@@ -68,3 +68,7 @@ class JobIn(BaseModel):
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
+
+
+class JobUpdate(JobIn):
+    status: Job.Status
