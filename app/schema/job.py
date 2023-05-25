@@ -68,3 +68,11 @@ class JobIn(BaseModel):
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class JobUpdate(JobIn):
+    status: Job.Status
