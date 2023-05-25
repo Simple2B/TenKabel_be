@@ -35,21 +35,6 @@ def get_jobs(
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
 
-@job_router.get("/{job_uuid}/", status_code=status.HTTP_200_OK, response_model=s.Job)
-def get_job(
-    job_uuid: str,
-    db: Session = Depends(get_db),
-) -> s.Job:
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job wasn`t found %s", job_uuid)
-        return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-    return job
-
-
 @job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def search_job(
     q: str | None = "",
@@ -67,6 +52,21 @@ def search_job(
         )
 
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.created_at.desc())).all())
+
+
+@job_router.get("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
+def get_job(
+    job_uuid: str,
+    db: Session = Depends(get_db),
+) -> s.Job:
+    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
+    if not job:
+        log(log.INFO, "Job wasn`t found %s", job_uuid)
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+    return job
 
 
 @job_router.post("", status_code=status.HTTP_201_CREATED)
@@ -101,32 +101,36 @@ def create_job(
     return status.HTTP_201_CREATED
 
 
-@job_router.put("/{job_uuid}/", status_code=status.HTTP_200_OK)
-def update_job_status(
+@job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK)
+def update_job(
     job_data: s.JobUpdate,
     job_uuid: str,
     db: Session = Depends(get_db),
 ):
-    update_job: m.Job | None = db.scalars(
-        select(m.Job).where(m.Job.uuid == job_uuid)
-    ).first()
-    if not update_job:
+    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
+    if not job:
         log(log.INFO, "Job wasn`t found %s", job_uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )
 
-    for var, value in vars(job_data).items():
-        setattr(update_job, var, value) if value else None
+    job.profession_id = job_data.profession_id
+    job.city = job_data.city
+    job.payment = job_data.payment
+    job.commission = job_data.commission
+    job.name = job_data.name
+    job.description = job_data.description
+    job.time = job_data.time
+    job.customer_first_name = job_data.customer_first_name
+    job.customer_last_name = job_data.customer_last_name
+    job.customer_phone = job_data.customer_phone
+    job.customer_street_address = job_data.customer_street_address
 
-    db.add(update_job)
+    job.status = s.Job.Status(job_data.status)
 
-    # job: m.Job = m.Job(job_data)
-    # db.add(job)
     try:
         db.commit()
-        db.refresh(update_job)
     except SQLAlchemyError as e:
         log(log.ERROR, "Error while updatin job - %s", e)
         raise HTTPException(
