@@ -4,7 +4,7 @@ from invoke import task
 from app.config import Settings, get_settings
 from app.model import User, Profession, Job
 from app.logger import log
-from app.utility import create_locations, create_professions
+from tests.utility import create_locations, create_professions, create_jobs as cj
 from tests.utility.create_test_users import fill_test_data
 
 settings: Settings = get_settings()
@@ -62,7 +62,7 @@ def init_db(_, test_data=False):
     if test_data:
         # Add test data
         fill_test_data(db)
-
+    cj(db)
     db.commit()
 
 
