@@ -8,7 +8,6 @@ from .user_profession import users_professions
 from .base_user import BaseUser
 from .profession import Profession
 from app import model as m
-from app import schema as s
 
 
 class User(db.Model, BaseUser):
@@ -46,7 +45,6 @@ class User(db.Model, BaseUser):
         db = get_db().__next__()
 
         count: int = db.scalar(select(func.count()).where(m.Job.owner_id == self.id))
-
         return count
 
     def __repr__(self):
