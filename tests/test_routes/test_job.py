@@ -101,10 +101,14 @@ def test_jobs(client: TestClient, db: Session):
     # get single job
     job: m.Job = db.query(m.Job).first()
     assert job
+
     response = client.get(f"api/job/{job.uuid}/")
     assert response.status_code == status.HTTP_200_OK
+
     resp_obj = s.Job.parse_obj(response.json())
     assert resp_obj.uuid == job.uuid
+    user: m.User = db.scalar(select(m.User).where(m.User.id == resp_obj.owner_id))
+    assert user.jobs_count
 
 
 def test_create_job(

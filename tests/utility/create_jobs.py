@@ -42,6 +42,7 @@ def create_jobs(db: Session, test_jobs_num: int = 27):
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             payment_status=random.choice([e for e in s.Job.PaymentStatus]),
             commission_status=random.choice([e for e in s.Job.CommissionStatus]),
+            who_pays=random.choice([e for e in s.Job.WhoPays]),
             customer_first_name=fake.first_name(),
             customer_last_name=fake.last_name(),
             customer_phone=fake.phone_number(),

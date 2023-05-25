@@ -1,12 +1,14 @@
 from typing import Self
 import sqlalchemy as sa
-from sqlalchemy import orm
+from sqlalchemy import orm, select
 from app.hash_utils import hash_verify
 
-from app.database import db
+from app.database import db, get_db
 from .user_profession import users_professions
 from .base_user import BaseUser
 from .profession import Profession
+from app import model as m
+from app import schema as s
 
 
 class User(db.Model, BaseUser):
@@ -20,6 +22,7 @@ class User(db.Model, BaseUser):
     professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )
+    jobs_count: orm.Mapped[int] = orm.mapped_column(sa.Integer, default=0)
 
     @classmethod
     def authenticate_with_phone(
@@ -37,6 +40,16 @@ class User(db.Model, BaseUser):
         )
         if user is not None and hash_verify(password, user.password):
             return user
+
+    @property
+    def jobs_count(self) -> int:
+        db = get_db().__next__()
+
+        jobs_list: s.ListJob = db.scalars(
+            select(m.Job).where(m.Job.owner_id == self.id)
+        ).all()
+
+        return len(jobs_list)
 
     def __repr__(self):
         return f"<{self.id}: {self.first_name} {self.last_name}>"

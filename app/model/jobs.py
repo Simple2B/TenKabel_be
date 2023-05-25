@@ -54,6 +54,11 @@ class Job(db.Model):
     commission_status: orm.Mapped[s.Job.CommissionStatus] = orm.mapped_column(
         sa.Enum(s.Job.CommissionStatus), default=s.Job.CommissionStatus.UNPAID
     )
+
+    who_pays: orm.Mapped[s.Job.WhoPays] = orm.mapped_column(
+        sa.Enum(s.Job.WhoPays), default=s.Job.WhoPays.ME
+    )
+
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
