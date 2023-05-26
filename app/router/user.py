@@ -9,6 +9,8 @@ import app.schema as s
 from app.logger import log
 from app.dependency import get_current_user
 from app.database import get_db
+from app.hash_utils import hash_verify
+
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
@@ -60,6 +62,18 @@ def update_user(
         )
 
     log(log.INFO, "User updated successfully - %s", user.username)
+    return status.HTTP_200_OK
+
+
+@user_router.post("/check-password", status_code=status.HTTP_200_OK)
+def check_password(
+    password: str,
+    current_user: m.User = Depends(get_current_user),
+):
+    if not hash_verify(password, current_user.password):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Password does not match"
+        )
     return status.HTTP_200_OK
 
 

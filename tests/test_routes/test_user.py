@@ -172,19 +172,18 @@ def test_get_user_profile(
 def test_update_user(
     client: TestClient,
     db: Session,
+    test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
 
-    response: s.User = client.get(
-        "api/user",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
     )
-
-    auth_resp_obj: s.User = s.User.parse_obj(response.json())
-    user: m.User = db.scalar(select(m.User).where(m.User.uuid == auth_resp_obj.uuid))
 
     request_data: s.User = s.User(
         professions=user.professions,
@@ -214,3 +213,29 @@ def test_update_user(
 
     db.refresh(user)
     assert user.first_name == request_data.first_name
+
+
+def test_password_update(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    assert user
+
+    response = client.post(
+        f"api/user/check-password?password={test_data.test_authorized_users[0].password}",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
