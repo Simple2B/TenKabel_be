@@ -2,6 +2,7 @@ from fastapi import HTTPException, Depends, APIRouter, status
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 
 import app.model as m
 import app.schema as s
@@ -18,6 +19,48 @@ def get_current_user_profile(
     current_user: m.User = Depends(get_current_user),
 ):
     return current_user
+
+
+@user_router.put("", status_code=status.HTTP_200_OK)
+def update_user(
+    user_data: s.User,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    user: m.User | None = db.scalars(
+        select(m.User).where(m.User.uuid == current_user.uuid)
+    ).first()
+    if not user:
+        log(log.INFO, "User wasn`t found %s", current_user.uuid)
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    if user_data.email != user.email:
+        user.email = user_data.email
+    if user_data.username != user.username:
+        user.username = user_data.username
+    user.google_openid_key = user_data.google_openid_key
+    user.picture = user_data.picture
+    user.created_at = user_data.created_at
+    user.is_verified = user_data.is_verified
+    if user_data.phone != user.phone:
+        user.phone = user_data.phone
+    user.first_name = user_data.first_name
+    user.last_name = user_data.last_name
+    if user_data.professions != user.professions:
+        user.professions = user_data.professions
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while updatin user - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
+        )
+
+    log(log.INFO, "User updated successfully - %s", user.username)
+    return status.HTTP_200_OK
 
 
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)

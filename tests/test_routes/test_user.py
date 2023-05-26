@@ -2,6 +2,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
 
 import app.schema as s
 import app.model as m
@@ -166,3 +167,50 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.User.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
+
+
+def test_update_user(
+    client: TestClient,
+    db: Session,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    response: s.User = client.get(
+        "api/user",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    auth_resp_obj: s.User = s.User.parse_obj(response.json())
+    user: m.User = db.scalar(select(m.User).where(m.User.uuid == auth_resp_obj.uuid))
+
+    request_data: s.User = s.User(
+        professions=user.professions,
+        id=user.id,
+        uuid=user.uuid,
+        jobs_completed_count=user.jobs_completed_count,
+        jobs_posted_count=user.jobs_posted_count,
+        created_at=user.created_at,
+        username=user.username,
+        first_name=user.first_name + "test",
+        last_name=user.last_name,
+        email=user.email,
+        phone=user.phone,
+        picture=user.picture,
+        google_openid_key=user.google_openid_key,
+        password=user.password,
+        is_verified=user.is_verified,
+    )
+
+    response = client.put(
+        "api/user",
+        json=jsonable_encoder(request_data),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    db.refresh(user)
+    assert user.first_name == request_data.first_name
