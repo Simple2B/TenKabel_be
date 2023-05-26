@@ -47,6 +47,8 @@ def sign_up(
     # TODO twillio sign in
     user: m.User = m.User(
         username=data.username,
+        first_name=data.first_name,
+        last_name=data.last_name,
         email=data.email,
         password=data.password,
         phone=data.phone,
