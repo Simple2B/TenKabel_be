@@ -81,6 +81,7 @@ def create_job(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User wasn`t authtorized",
         )
+
     new_job = m.Job(
         owner_id=current_user.id,
         profession_id=data.profession_id,
