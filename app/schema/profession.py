@@ -19,3 +19,6 @@ class Profession(BaseProfession):
 
 class ProfessionList(BaseModel):
     professions: list[Profession]
+
+    class Config:
+        orm_mode = True

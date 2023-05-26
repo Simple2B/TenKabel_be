@@ -87,19 +87,26 @@ def verify(
 
 @auth_router.post("/google", status_code=status.HTTP_200_OK, response_model=s.Token)
 def google_auth(
-    data: s.BaseUser,
+    data: s.GoogleAuthUser,
     db: Session = Depends(get_db),
 ):
     user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
+    password = "*"
 
     if not user:
+        if not data.display_name:
+            first_name = ""
+            last_name = ""
+        else:
+            first_name, last_name = data.display_name.split(" ")
+
         user: m.User = m.User(
             email=data.email,
-            username=data.username,
-            phone=data.phone,
-            google_openid_key=data.google_openid_key,
-            password=data.password,
-            picture=data.picture,
+            first_name=first_name,
+            last_name=last_name,
+            username=data.email,
+            google_openid_key=data.uid,
+            password=password,
             is_verified=True,
         )
         db.add(user)
@@ -116,16 +123,14 @@ def google_auth(
             "User [%s] has been created (via Google account))",
             user.email,
         )
-
-    user.is_verified = True
-    if data.picture:
-        user.picture = data.picture
+    if data.photo_url:
+        user.picture = data.photo_url
     db.commit()
 
     user: m.User = m.User.authenticate(
         db,
-        data.username,
-        data.password,
+        user.email,
+        password,
     )
 
     if not user:
