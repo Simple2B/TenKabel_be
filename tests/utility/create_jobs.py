@@ -28,7 +28,7 @@ def create_jobs(db: Session, test_jobs_num: int = 27):
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
-    for _ in range(len(worker_ids)):
+    for _ in range(test_jobs_num):
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
             worker_id=random.choice(worker_ids),

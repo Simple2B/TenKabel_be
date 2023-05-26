@@ -108,7 +108,7 @@ def test_jobs(client: TestClient, db: Session):
     resp_obj = s.Job.parse_obj(response.json())
     assert resp_obj.uuid == job.uuid
     user: m.User = db.scalar(select(m.User).where(m.User.id == resp_obj.owner_id))
-    assert user.jobs_count
+    assert user.jobs_posted_count
 
 
 def test_create_job(

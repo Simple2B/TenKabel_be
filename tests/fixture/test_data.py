@@ -8,6 +8,8 @@ class TestUser(BaseModel):
     __test__ = False
 
     username: str
+    first_name: str | None
+    last_name: str | None
     email: str
     password: str
     google_openid_key: str | None
