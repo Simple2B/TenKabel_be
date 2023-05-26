@@ -75,13 +75,6 @@ def create_job(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    if not current_user:
-        log(log.INFO, "User wasn`t authtorized")
-        return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User wasn`t authtorized",
-        )
-
     new_job = m.Job(
         owner_id=current_user.id,
         profession_id=data.profession_id,
