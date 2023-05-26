@@ -6,6 +6,7 @@ from fastapi.encoders import jsonable_encoder
 
 import app.schema as s
 import app.model as m
+from app.hash_utils import hash_verify
 
 from tests.fixture import TestData
 from tests.utility import (
@@ -60,22 +61,24 @@ def test_signup(
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
-    user: m.User = (
-        db.query(m.User).filter_by(email=test_data.test_users[0].email).first()
-    )
-    assert user
-
-    request_data = s.BaseUser(
-        email=user.email,
-        password=test_data.test_users[0].password,
-        username=user.username,
-        first_name=user.first_name,
-        last_name=user.last_name,
-        google_openid_key=user.google_openid_key,
-        picture=user.picture,
-        phone=user.phone,
+    TEST_GOOGLE_MAIL = "somemail@gmail.com"
+    request_data = s.GoogleAuthUser(
+        email=TEST_GOOGLE_MAIL,
+        photo_url="https://link_to_file/file.jpeg",
+        uid="some-rand-uid",
+        display_name="John Doe",
     ).dict()
 
+    response = client.post("api/auth/google", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
+    assert user
+    request_data = s.GoogleAuthUser(
+        email=user.email,
+    ).dict()
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Token.parse_obj(response.json())
@@ -193,7 +196,7 @@ def test_update_user(
         jobs_posted_count=user.jobs_posted_count,
         created_at=user.created_at,
         username=user.username,
-        first_name=user.first_name + "test",
+        first_name=test_data.test_authorized_users[1].first_name,
         last_name=user.last_name,
         email=user.email,
         phone=user.phone,
@@ -239,3 +242,13 @@ def test_password_update(
     )
 
     assert response.status_code == status.HTTP_200_OK
+
+    response = client.put(
+        f"api/user/change-password?password={test_data.test_authorized_users[1].password}",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    db.refresh(user)
+    assert hash_verify(test_data.test_authorized_users[1].password, user.password)

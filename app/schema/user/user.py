@@ -30,3 +30,10 @@ class User(BaseUser):
 
     class Config:
         orm_mode = True
+
+
+class GoogleAuthUser(BaseModel):
+    email: str
+    photo_url: AnyHttpUrl | None
+    uid: str | None
+    display_name: str | None

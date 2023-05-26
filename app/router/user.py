@@ -56,7 +56,7 @@ def update_user(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.INFO, "Error while updatin user - %s", e)
+        log(log.INFO, "Error while updating user - %s", e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
         )
@@ -74,6 +74,26 @@ def check_password(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Password does not match"
         )
+    return status.HTTP_200_OK
+
+
+@user_router.put("/change-password", status_code=status.HTTP_200_OK)
+def change_password(
+    password: str,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    current_user.password = password
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while updating user password - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating password"
+        )
+
+    log(log.INFO, "User password updated successfully - %s", current_user.username)
     return status.HTTP_200_OK
 
 
