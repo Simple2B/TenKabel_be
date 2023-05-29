@@ -1,6 +1,8 @@
 from pydantic import BaseModel, EmailStr, AnyHttpUrl
 from datetime import datetime
 
+from app.schema.profession import ProfessionList
+
 
 class BaseUser(BaseModel):
     username: str
@@ -26,6 +28,15 @@ class User(BaseUser):
     negative_rates_count: int
     neutral_rates_count: int
     created_at: datetime | str
+    is_verified: bool
+    professions: ProfessionList | list
 
     class Config:
         orm_mode = True
+
+
+class GoogleAuthUser(BaseModel):
+    email: str
+    photo_url: AnyHttpUrl | None
+    uid: str | None
+    display_name: str | None

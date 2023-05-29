@@ -15,7 +15,7 @@ class User(db.Model, BaseUser):
     __tablename__ = "users"
 
     phone: orm.Mapped[str] = orm.mapped_column(
-        sa.String(128), nullable=False, unique=True
+        sa.String(128), nullable=True, unique=True
     )
     first_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     last_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
