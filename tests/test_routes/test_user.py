@@ -174,6 +174,7 @@ def test_get_user_profile(
     )
 
     assert response.status_code == status.HTTP_200_OK
+
     resp_obj: s.RateList = s.RateList.parse_obj(response.json())
     user = (
         db.query(m.User)
