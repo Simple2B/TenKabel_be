@@ -16,6 +16,7 @@ class TestUser(BaseModel):
     picture: str | None
     is_verified: bool | None = True
     phone: str | None
+    rates: list | None
 
 
 class TestData(BaseModel):

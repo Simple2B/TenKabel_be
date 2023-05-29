@@ -71,7 +71,10 @@
     "is_verified": true,
     "phone": "000000000",
     "google_openid_key": "1234567890abc",
-    "picture": "http://test"
+    "picture": "http://test",
+    "rates": [{
+      "rate": "positive"
+    }, {"rate": "negative"}]
   },
   "test_superuser": {
     "username": "test_superuser",

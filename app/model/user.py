@@ -7,6 +7,8 @@ from app.database import db
 from .user_profession import users_professions
 from .base_user import BaseUser
 from .profession import Profession
+from .rate import Rate
+from .user_rate import users_rates
 from app import model as m
 from app import schema as s
 
@@ -22,6 +24,7 @@ class User(db.Model, BaseUser):
     professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )
+    rates: orm.Mapped[Rate] = orm.relationship("Rate", secondary=users_rates)
 
     @classmethod
     def authenticate_with_phone(

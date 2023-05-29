@@ -14,7 +14,6 @@ user_router = APIRouter(prefix="/user", tags=["Users"])
 
 @user_router.get("", response_model=s.User)
 def get_current_user_profile(
-    db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
     return current_user
