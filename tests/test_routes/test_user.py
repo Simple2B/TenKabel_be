@@ -158,3 +158,20 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.User.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
+
+
+def test_upload_avatar(
+    client: TestClient,
+    db: Session,
+    mock_google_cloud_storage,
+    authorized_users_tokens: list,
+):
+    # Create a mock client
+    response = client.post(
+        "api/user/upload-avatar",
+        files={
+            "profile_avatar": open("tests/test_image.png", "rb"),
+        },
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_201_CREATED

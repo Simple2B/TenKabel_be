@@ -11,6 +11,10 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: EmailStr = "admin@admin.com"
     DEFAULT_PAGE_SIZE: int
 
+    # GOOGLE
+    GOOGLE_BUCKET_NAME: str = "tenkabel"
+    GOOGLE_SERVICE_ACCOUNT_PATH: str = "./google_cloud_service_account.json"
+
     class Config:
         env_file = "project.env", ".env"
 

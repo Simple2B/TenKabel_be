@@ -1,13 +1,15 @@
-from fastapi import HTTPException, Depends, APIRouter, status
+from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+from google.api_core.exceptions import GoogleAPICallError
 
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.dependency import get_current_user
+from app.dependency import get_current_user, get_google_client
 from app.database import get_db
+from app.config import Settings, get_settings
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
@@ -64,3 +66,26 @@ def get_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
+
+
+@user_router.post("/upload-avatar", status_code=status.HTTP_201_CREATED)
+def upload_avatar(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    google_client=Depends(get_google_client),
+    profile_avatar: UploadFile = File(...),
+    settings: Settings = Depends(get_settings),
+):
+    file_path = f"{current_user.email}/images/avatar/{profile_avatar.filename}"
+    with open(profile_avatar.filename, "wb") as f:
+        f.write(profile_avatar.file.read())
+        try:
+            bucket = google_client.get_bucket(settings.GOOGLE_BUCKET_NAME)
+            blob = bucket.blob(file_path)
+            blob.upload_from_filename(file_path)
+        except GoogleAPICallError as e:
+            log(log.ERROR, "Error uploading file to google cloud storage: \n%s", e)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
+            )
+    return status.HTTP_200_OK
