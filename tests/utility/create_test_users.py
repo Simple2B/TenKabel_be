@@ -29,8 +29,8 @@ def fill_test_data(db: Session):
         rates_num_total += count_rates
         for _ in range(count_rates):
             rate = m.Rate(
-                user_id=uid_user,
-                giver_id=random.randint(1, NUM_TEST_USERS),
+                worker_id=uid_user,
+                owner_id=random.randint(1, NUM_TEST_USERS),
                 rate=random.choice([e for e in s.BaseRate.RateStatus]),
             )
             db.add(rate)

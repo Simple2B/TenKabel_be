@@ -60,17 +60,17 @@ class User(db.Model, BaseUser):
         with db.begin() as session:
             return session.scalar(
                 select(func.count()).where(
-                    (m.Rate.user_id == self.id)
+                    (m.Rate.worker_id == self.id)
                     & (m.Rate.rate == s.BaseRate.RateStatus.POSITIVE)
                 )
             )
 
     @property
     def negative_rates_count(self) -> int:
-        with db.begin() as session:  # Переконайтеся, що ви правильно налаштували підключення до бази даних
+        with db.begin() as session:
             return session.scalar(
                 select(func.count()).where(
-                    (m.Rate.user_id == self.id)
+                    (m.Rate.worker_id == self.id)
                     & (m.Rate.rate == s.BaseRate.RateStatus.NEGATIVE)
                 )
             )
@@ -80,7 +80,7 @@ class User(db.Model, BaseUser):
         with db.begin() as session:
             return session.scalar(
                 select(func.count()).where(
-                    (m.Rate.user_id == self.id)
+                    (m.Rate.worker_id == self.id)
                     & (m.Rate.rate == s.BaseRate.RateStatus.NEUTRAL)
                 )
             )

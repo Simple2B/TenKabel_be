@@ -27,7 +27,7 @@ def get_rate(
     return rate
 
 
-@rate_router.put("/{uuid}", status_code=status.HTTP_200_OK)
+@rate_router.put("/{uuid}", status_code=status.HTTP_201_CREATED)
 def update_rate(
     uuid: str,
     rate_data: s.BaseRate,
@@ -41,8 +41,8 @@ def update_rate(
             detail="Rate not found",
         )
 
-    rate.giver_id = rate_data.giver_id
-    rate.user_id = rate_data.user_id
+    rate.owner_id = rate_data.owner_id
+    rate.worker_id = rate_data.worker_id
     rate.rate = s.BaseRate.RateStatus(rate_data.rate)
 
     try:
@@ -63,8 +63,8 @@ def create_rate(
     db: Session = Depends(get_db),
 ):
     new_rate = m.Rate(
-        giver_id=rate_data.giver_id,
-        user_id=rate_data.user_id,
+        owner_id=rate_data.owner_id,
+        worker_id=rate_data.worker_id,
         rate=s.BaseRate.RateStatus(rate_data.rate),
     )
 

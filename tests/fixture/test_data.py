@@ -23,8 +23,8 @@ class TestRate(BaseModel):
     __test__ = False
 
     uuid: str | None
-    giver_id: str
-    user_id: str
+    owner_id: int
+    worker_id: int
     rate: str
 
 

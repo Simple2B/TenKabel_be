@@ -9,8 +9,8 @@ class BaseRate(BaseModel):
         NEGATIVE = "negative"
         NEUTRAL = "neutral"
 
-    giver_id: int
-    user_id: int
+    owner_id: int
+    worker_id: int
     rate: RateStatus | str
 
     class Config:

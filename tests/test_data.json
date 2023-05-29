@@ -74,10 +74,10 @@
     "picture": "http://test",
     "rates": [{
       "rate": "positive",
-      "giver_id": "5"
+      "owner_id": 5
     }, 
     {"rate": "negative",
-      "giver_id": "3"
+      "owner_id": 3
     }]
   },
   "test_superuser": {
@@ -86,14 +86,14 @@
     "password": "1234"
   },
   "test_rates":[{
-    "giver_id": "1",
-    "user_id": "2",
+    "owner_id": 1,
+    "worker_id": 2,
     "rate": "negative"
   }],
   "test_rate":{
     "uuid": "test_uuid_for_rate",
-    "giver_id": "3",
-    "user_id": "1",
+    "owner_id": 3,
+    "worker_id": 1,
     "rate": "positive"
   }
 }

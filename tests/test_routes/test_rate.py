@@ -16,10 +16,11 @@ from tests.utility import (
 def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
     request_data = s.BaseRate(
         rate=test_data.test_rate.rate,
-        giver_id=int(test_data.test_rate.giver_id),
-        user_id=int(test_data.test_rate.user_id),
+        owner_id=test_data.test_rate.owner_id,
+        worker_id=test_data.test_rate.worker_id,
     )
-    user: m.User = db.scalar(select(m.User).where(m.User.id == request_data.user_id))
+    user: m.User = db.scalar(select(m.User).where(m.User.id == request_data.worker_id))
+    assert user
     count_rates_before = user.positive_rates_count
 
     response = client.post("api/rate", data=request_data.json())
@@ -29,22 +30,23 @@ def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
     rate: m.Rate = db.scalar(
         select(m.Rate).where(
             m.Rate.rate == s.BaseRate.RateStatus(test_data.test_rate.rate)
-            and m.User.giver_id == int(test_data.test_rate.giver_id)
-            and m.User.user_id == int(test_data.test_rate.user_id)
+            and m.User.owner_id == test_data.test_rate.owner_id
+            and m.User.worker_id == test_data.test_rate.worker_id
         )
     )
-    assert rate.giver_id == int(
-        test_data.test_rate.giver_id
-    ) and rate.rate == s.BaseRate.RateStatus(test_data.test_rate.rate)
+    assert (
+        rate.owner_id == test_data.test_rate.owner_id
+        and rate.rate == s.BaseRate.RateStatus(test_data.test_rate.rate)
+    )
 
     request_data = s.BaseRate(
         rate=s.BaseRate.RateStatus.NEGATIVE,
-        giver_id=int(test_data.test_rate.giver_id),
-        user_id=int(test_data.test_rate.user_id),
+        owner_id=test_data.test_rate.owner_id,
+        worker_id=test_data.test_rate.worker_id,
     )
 
     response = client.put(f"api/rate/{rate.uuid}", data=request_data.json())
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     db.refresh(rate)
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
 
