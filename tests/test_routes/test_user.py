@@ -173,7 +173,6 @@ def test_get_user_profile(
     assert resp_obj.positive_rates_count == user.positive_rates_count
 
 
-
 def test_update_user(
     client: TestClient,
     db: Session,
@@ -211,12 +210,10 @@ def test_update_user(
     response = client.put(
         "api/user",
         json=jsonable_encoder(request_data),
-
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
     assert response.status_code == status.HTTP_200_OK
-
 
     resp_obj: s.RateList = s.RateList.parse_obj(response.json())
     user = (
@@ -267,4 +264,3 @@ def test_password_update(
 
     db.refresh(user)
     assert hash_verify(test_data.test_authorized_users[1].password, user.password)
-
