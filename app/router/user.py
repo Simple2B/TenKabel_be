@@ -17,7 +17,6 @@ user_router = APIRouter(prefix="/user", tags=["Users"])
 
 @user_router.get("", response_model=s.User)
 def get_current_user_profile(
-    db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
     return current_user
@@ -109,6 +108,17 @@ def get_user_jobs(
         .where(m.Job.worker_id == current_user.id)
     ).all()
     return s.ListJob(jobs=jobs)
+
+
+@user_router.get("/rates", status_code=status.HTTP_200_OK, response_model=s.RateList)
+def get_user_rates(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    rates: s.RateList = db.scalars(
+        select(m.Rate).where(m.Rate.worker_id == current_user.id)
+    ).all()
+    return s.RateList(rates=rates)
 
 
 @user_router.get("/postings", status_code=status.HTTP_200_OK, response_model=s.ListJob)

@@ -6,3 +6,4 @@ from .profession import BaseProfession, Profession, ProfessionList
 from .location import BaseLocation, Location, LocationList
 from .job import BaseJob, Job, ListJob, JobIn, JobUpdate
 from .pagination import Pagination
+from .rate import BaseRate, Rate, RateList

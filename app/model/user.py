@@ -51,9 +51,37 @@ class User(db.Model, BaseUser):
             return session.scalar(
                 select(func.count()).where(
                     (m.Job.worker_id == self.id)
-                    and (
-                        m.Job.status in (s.Job.Status.COMPLETED, s.Job.Status.FULFILLED)
-                    )
+                    & (m.Job.status in (s.Job.Status.COMPLETED, s.Job.Status.FULFILLED))
+                )
+            )
+
+    @property
+    def positive_rates_count(self) -> int:
+        with db.begin() as session:
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.worker_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.POSITIVE)
+                )
+            )
+
+    @property
+    def negative_rates_count(self) -> int:
+        with db.begin() as session:
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.worker_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.NEGATIVE)
+                )
+            )
+
+    @property
+    def neutral_rates_count(self) -> int:
+        with db.begin() as session:
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.worker_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.NEUTRAL)
                 )
             )
 

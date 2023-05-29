@@ -71,11 +71,29 @@
     "is_verified": true,
     "phone": "000000000",
     "google_openid_key": "1234567890abc",
-    "picture": "http://test"
+    "picture": "http://test",
+    "rates": [{
+      "rate": "positive",
+      "owner_id": 5
+    }, 
+    {"rate": "negative",
+      "owner_id": 3
+    }]
   },
   "test_superuser": {
     "username": "test_superuser",
     "email": "test_superuser@gmail.com",
     "password": "1234"
+  },
+  "test_rates":[{
+    "owner_id": 1,
+    "worker_id": 2,
+    "rate": "negative"
+  }],
+  "test_rate":{
+    "uuid": "test_uuid_for_rate",
+    "owner_id": 3,
+    "worker_id": 1,
+    "rate": "positive"
   }
 }

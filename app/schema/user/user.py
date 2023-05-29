@@ -24,6 +24,9 @@ class User(BaseUser):
     uuid: str
     jobs_posted_count: int
     jobs_completed_count: int
+    positive_rates_count: int
+    negative_rates_count: int
+    neutral_rates_count: int
     created_at: datetime | str
     is_verified: bool
     professions: ProfessionList | list
