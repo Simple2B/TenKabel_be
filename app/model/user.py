@@ -7,8 +7,6 @@ from app.database import db
 from .user_profession import users_professions
 from .base_user import BaseUser
 from .profession import Profession
-from .rate import Rate
-from .user_rate import users_rates
 from app import model as m
 from app import schema as s
 
@@ -24,7 +22,6 @@ class User(db.Model, BaseUser):
     professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )
-    rates: orm.Mapped[Rate] = orm.relationship("Rate", secondary=users_rates)
 
     @classmethod
     def authenticate_with_phone(
@@ -54,9 +51,37 @@ class User(db.Model, BaseUser):
             return session.scalar(
                 select(func.count()).where(
                     (m.Job.worker_id == self.id)
-                    and (
-                        m.Job.status in (s.Job.Status.COMPLETED, s.Job.Status.FULFILLED)
-                    )
+                    & (m.Job.status in (s.Job.Status.COMPLETED, s.Job.Status.FULFILLED))
+                )
+            )
+
+    @property
+    def positive_rates_count(self) -> int:
+        with db.begin() as session:
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.user_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.POSITIVE)
+                )
+            )
+
+    @property
+    def negative_rates_count(self) -> int:
+        with db.begin() as session:  # Переконайтеся, що ви правильно налаштували підключення до бази даних
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.user_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.NEGATIVE)
+                )
+            )
+
+    @property
+    def neutral_rates_count(self) -> int:
+        with db.begin() as session:
+            return session.scalar(
+                select(func.count()).where(
+                    (m.Rate.user_id == self.id)
+                    & (m.Rate.rate == s.BaseRate.RateStatus.NEUTRAL)
                 )
             )
 

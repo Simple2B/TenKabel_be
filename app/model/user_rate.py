@@ -2,7 +2,6 @@ import sqlalchemy as sa
 
 from app.database import db
 
-
 users_rates = sa.Table(
     "users_rates",
     db.Model.metadata,

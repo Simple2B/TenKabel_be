@@ -149,7 +149,7 @@ def test_get_user_profile(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
+    resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     user = (
         db.query(m.User)
         .filter_by(email=test_data.test_authorized_users[0].email)
@@ -164,5 +164,23 @@ def test_get_user_profile(
         f"api/user/{user.uuid}",
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.User.parse_obj(response.json())
+    resp_obj: s.User = s.User.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
+    assert resp_obj.positive_rates_count == user.positive_rates_count
+
+    response = client.get(
+        "api/user/rates",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.RateList = s.RateList.parse_obj(response.json())
+    user = (
+        db.query(m.User)
+        .filter_by(email=test_data.test_authorized_users[0].email)
+        .first()
+    )
+    assert (
+        user.negative_rates_count + user.positive_rates_count + user.neutral_rates_count
+        == len(resp_obj.rates)
+    )

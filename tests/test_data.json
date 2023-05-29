@@ -73,12 +73,27 @@
     "google_openid_key": "1234567890abc",
     "picture": "http://test",
     "rates": [{
-      "rate": "positive"
-    }, {"rate": "negative"}]
+      "rate": "positive",
+      "giver_id": "5"
+    }, 
+    {"rate": "negative",
+      "giver_id": "3"
+    }]
   },
   "test_superuser": {
     "username": "test_superuser",
     "email": "test_superuser@gmail.com",
     "password": "1234"
+  },
+  "test_rates":[{
+    "giver_id": "1",
+    "user_id": "2",
+    "rate": "negative"
+  }],
+  "test_rate":{
+    "uuid": "test_uuid_for_rate",
+    "giver_id": "3",
+    "user_id": "1",
+    "rate": "positive"
   }
 }

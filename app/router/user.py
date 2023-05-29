@@ -33,6 +33,17 @@ def get_user_jobs(
     return s.ListJob(jobs=jobs)
 
 
+@user_router.get("/rates", status_code=status.HTTP_200_OK, response_model=s.RateList)
+def get_user_rates(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    rates: s.RateList = db.scalars(
+        select(m.Rate).where(m.Rate.user_id == current_user.id)
+    ).all()
+    return s.RateList(rates=rates)
+
+
 @user_router.get("/postings", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_postings(
     db: Session = Depends(get_db),

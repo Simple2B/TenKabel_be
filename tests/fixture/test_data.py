@@ -19,11 +19,22 @@ class TestUser(BaseModel):
     rates: list | None
 
 
+class TestRate(BaseModel):
+    __test__ = False
+
+    uuid: str | None
+    giver_id: str
+    user_id: str
+    rate: str
+
+
 class TestData(BaseModel):
     __test__ = False
 
     test_user: TestUser | None
     test_users: list[TestUser]
+    test_rate: TestRate | None
+    test_rates: list[TestRate]
 
     # authorized
     test_authorized_users: list[TestUser]
