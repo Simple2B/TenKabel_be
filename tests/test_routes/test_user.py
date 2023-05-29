@@ -228,7 +228,6 @@ def test_update_user(
         .filter_by(email=test_data.test_authorized_users[0].email)
         .first()
     )
-
     db.refresh(user)
     assert user.first_name == request_data.first_name
 
