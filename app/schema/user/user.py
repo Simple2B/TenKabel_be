@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr, AnyHttpUrl
 from datetime import datetime
+from schema.rate import RateList
 
 
 class BaseUser(BaseModel):
@@ -19,6 +20,7 @@ class User(BaseUser):
     id: int
     uuid: str
     created_at: datetime | str
+    rates: RateList
 
     class Config:
         orm_mode = True
