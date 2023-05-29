@@ -17,6 +17,8 @@ from tests.utility import (
 def test_auth(client: TestClient, db: Session, test_data: TestData):
     request_data = s.BaseUser(
         username=test_data.test_users[0].phone,
+        first_name=test_data.test_users[0].first_name,
+        last_name=test_data.test_users[0].last_name,
         email=test_data.test_users[0].email,
         password=test_data.test_users[0].password,
     )
@@ -33,6 +35,8 @@ def test_signup(
 ):
     request_data = s.BaseUser(
         username=test_data.test_user.username,
+        first_name=test_data.test_user.first_name,
+        last_name=test_data.test_user.last_name,
         email=test_data.test_user.email,
         password=test_data.test_user.password,
         phone=test_data.test_user.phone,
@@ -64,6 +68,8 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
         email=user.email,
         password=test_data.test_users[0].password,
         username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
         google_openid_key=user.google_openid_key,
         picture=user.picture,
         phone=user.phone,
@@ -82,6 +88,8 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
         email=test_data.test_user.email,
         password=test_data.test_user.password,
         username=test_data.test_user.username,
+        first_name=test_data.test_user.first_name,
+        last_name=test_data.test_user.last_name,
         google_openid_key=test_data.test_user.google_openid_key,
         picture=test_data.test_user.picture,
         phone=test_data.test_user.phone,
