@@ -11,7 +11,7 @@ import app.schema as s
 from app.oauth2 import create_access_token
 from app.logger import log
 
-auth_router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
 @auth_router.post("/login", response_model=s.Token)
