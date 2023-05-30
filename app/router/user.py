@@ -1,8 +1,10 @@
-from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile
+import io
 
+from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile
 from sqlalchemy import select
 from sqlalchemy.orm import Session
-from google.api_core.exceptions import GoogleAPICallError
+from sqlalchemy.exc import SQLAlchemyError
+from google.api_core.exceptions import GoogleAPIError
 
 import app.model as m
 import app.schema as s
@@ -76,16 +78,28 @@ def upload_avatar(
     profile_avatar: UploadFile = File(...),
     settings: Settings = Depends(get_settings),
 ):
-    file_path = f"{current_user.email}/images/avatar/{profile_avatar.filename}"
-    with open(profile_avatar.filename, "wb") as f:
-        f.write(profile_avatar.file.read())
+    with open(profile_avatar.filename, "rb") as f:
         try:
             bucket = google_client.get_bucket(settings.GOOGLE_BUCKET_NAME)
-            blob = bucket.blob(file_path)
-            blob.upload_from_filename(file_path)
-        except GoogleAPICallError as e:
+            file_object = io.BytesIO(f.read())
+            blob = bucket.blob(
+                f"images/avatars/{current_user.email}/{profile_avatar.filename}"
+            )
+            blob.upload_from_file(file_object)
+        except GoogleAPIError as e:
             log(log.ERROR, "Error uploading file to google cloud storage: \n%s", e)
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
             )
+        current_user.picture = blob.public_url
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            log(
+                log.ERROR,
+                "Error while creating picture for user: %s \n %s",
+                current_user.email,
+                e,
+            )
+    log(log.INFO, "Created picture for user: %s", current_user.email)
     return status.HTTP_200_OK
