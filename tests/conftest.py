@@ -6,6 +6,5 @@ load_dotenv("tests/test.env")
 pytest_plugins = [
     "tests.fixture.db",
     "tests.fixture.client",
-    "tests.fixture.google_client",
     "tests.fixture.test_data",
 ]

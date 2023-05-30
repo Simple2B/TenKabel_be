@@ -187,5 +187,9 @@ def upload_avatar(
                 current_user.email,
                 e,
             )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Error while saving picture for user",
+            )
     log(log.INFO, "Created picture for user: %s", current_user.email)
     return status.HTTP_200_OK

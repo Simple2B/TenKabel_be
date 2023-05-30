@@ -23,7 +23,7 @@ def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
     assert user
     count_rates_before = user.positive_rates_count
 
-    response = client.post("api/rate", data=request_data.json())
+    response = client.post("api/rate", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
 
     assert user.positive_rates_count == count_rates_before + 1
@@ -45,7 +45,7 @@ def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
         worker_id=test_data.test_rate.worker_id,
     )
 
-    response = client.put(f"api/rate/{rate.uuid}", data=request_data.json())
+    response = client.put(f"api/rate/{rate.uuid}", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(rate)
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
