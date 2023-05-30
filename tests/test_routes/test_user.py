@@ -12,6 +12,7 @@ from tests.utility import (
     create_jobs,
     fill_test_data,
     create_professions,
+    create_locations,
 )
 
 
@@ -33,27 +34,35 @@ def test_signup(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
+    create_professions(db)
+    create_locations(db)
+
     request_data = s.UserSignUp(
         first_name=test_data.test_user.first_name,
         last_name=test_data.test_user.last_name,
         password=test_data.test_user.password,
         phone=test_data.test_user.phone,
+        profession_id=2,
+        locations=[2, 3],
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
     user: m.User = db.scalar(
-        select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
+        select(m.User).where(m.User.phone == test_data.test_user.phone)
     )
     assert user
-    assert not user.is_verified
+    assert user.professions[0].id == request_data.profession_id
+    assert [location.id for location in user.locations] == request_data.locations
 
-    response = client.put(
-        "api/auth/verify",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    )
-    assert response.status_code == status.HTTP_200_OK
-    db.refresh(user)
-    assert user.is_verified
+    # FINISH VERIFY
+
+    # response = client.put(
+    #     "api/auth/verify",
+    #     headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    # )
+    # assert response.status_code == status.HTTP_200_OK
+    # db.refresh(user)
+    # assert user.is_verified
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:

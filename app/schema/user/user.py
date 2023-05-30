@@ -12,6 +12,8 @@ class AuthUser(BaseModel):
 class UserSignUp(AuthUser):
     first_name: str
     last_name: str
+    profession_id: int | None
+    locations: list[int] | None
 
 
 class GoogleAuthUser(BaseModel):

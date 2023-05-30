@@ -8,4 +8,6 @@ from .jobs import Job
 from .rate import Rate
 from .location import Location
 from .user_profession import UserProfession
+from .user_location import UserLocation
+
 from app.database import db
