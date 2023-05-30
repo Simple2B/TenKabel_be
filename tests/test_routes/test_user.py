@@ -178,6 +178,13 @@ def test_get_user_profile(
     )
 
     assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.RateList = s.RateList.parse_obj(response.json())
+    assert (
+        len(resp_obj.rates)
+        == user.positive_rates_count
+        + user.negative_rates_count
+        + user.neutral_rates_count
+    )
 
 
 def test_update_user(
