@@ -24,7 +24,7 @@ def fill_test_data(db: Session):
         db.add(user)
 
     db.commit()
-    for uid_user in range(NUM_TEST_USERS):
+    for uid_user in range(1, NUM_TEST_USERS):
         count_rates = random.randint(0, MAX_RATES_NUM)
         rates_num_total += count_rates
         for _ in range(count_rates):

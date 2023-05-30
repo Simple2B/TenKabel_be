@@ -81,7 +81,7 @@ def upgrade():
         sa.Column(
             "status",
             sa.Enum(
-                "PENDING", "LATE", "STARTED", "COMPLETED", "FULFILLED", name="status"
+                "PENDING", "APPROVED", "IN_PROGRESS", "JOB_IS_FINISHED", name="status"
             ),
             nullable=False,
         ),
