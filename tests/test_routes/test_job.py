@@ -158,7 +158,7 @@ def test_search_job(
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    job: m.Job = db.scalar(select(m.Job))
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.status == s.Job.Status.PENDING))
     assert job
 
     response = client.get("api/job/search", params={"q": f"{job.city}"})
