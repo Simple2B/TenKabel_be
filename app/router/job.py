@@ -14,6 +14,13 @@ from app.database import get_db
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
 
 
+@job_router.get(
+    "/status_list", status_code=status.HTTP_200_OK, response_model=list[str]
+)
+def get_status_list():
+    return [e.value for e in s.Job.Status]
+
+
 @job_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_jobs(
     profession_id: int = None,
