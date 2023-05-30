@@ -35,15 +35,24 @@ class Job(BaseJob):
         PAID = "paid"
         UNPAID = "unpaid"
 
-    uuid: str
+    class WhoPays(enum.Enum):
+        ME = "me"
+        CLIENT = "client"
+
+    id: str | None
     status: Status | str
     payment_status: PaymentStatus | str
     commission_status: CommissionStatus | str
+    who_pays: WhoPays | str
     is_deleted: bool
     owner: User | None
     worker: User | None
     payment: int | None
     commission: int | None
+    customer_first_name: str | None
+    customer_last_name: str | None
+    customer_phone: str | None
+    customer_street_address: str | None
     city: str
     time: str
 

@@ -2,9 +2,11 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from fastapi.encoders import jsonable_encoder
 
 import app.schema as s
 import app.model as m
+from app.hash_utils import hash_verify
 
 from tests.fixture import TestData
 from tests.utility import (
@@ -17,6 +19,8 @@ from tests.utility import (
 def test_auth(client: TestClient, db: Session, test_data: TestData):
     request_data = s.BaseUser(
         username=test_data.test_users[0].phone,
+        first_name=test_data.test_users[0].first_name,
+        last_name=test_data.test_users[0].last_name,
         email=test_data.test_users[0].email,
         password=test_data.test_users[0].password,
     )
@@ -33,6 +37,8 @@ def test_signup(
 ):
     request_data = s.BaseUser(
         username=test_data.test_user.username,
+        first_name=test_data.test_user.first_name,
+        last_name=test_data.test_user.last_name,
         email=test_data.test_user.email,
         password=test_data.test_user.password,
         phone=test_data.test_user.phone,
@@ -55,20 +61,24 @@ def test_signup(
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
-    user: m.User = (
-        db.query(m.User).filter_by(email=test_data.test_users[0].email).first()
-    )
-    assert user
-
-    request_data = s.BaseUser(
-        email=user.email,
-        password=test_data.test_users[0].password,
-        username=user.username,
-        google_openid_key=user.google_openid_key,
-        picture=user.picture,
-        phone=user.phone,
+    TEST_GOOGLE_MAIL = "somemail@gmail.com"
+    request_data = s.GoogleAuthUser(
+        email=TEST_GOOGLE_MAIL,
+        photo_url="https://link_to_file/file.jpeg",
+        uid="some-rand-uid",
+        display_name="John Doe",
     ).dict()
 
+    response = client.post("api/auth/google", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
+    assert user
+    request_data = s.GoogleAuthUser(
+        email=user.email,
+    ).dict()
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Token.parse_obj(response.json())
@@ -82,6 +92,8 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
         email=test_data.test_user.email,
         password=test_data.test_user.password,
         username=test_data.test_user.username,
+        first_name=test_data.test_user.first_name,
+        last_name=test_data.test_user.last_name,
         google_openid_key=test_data.test_user.google_openid_key,
         picture=test_data.test_user.picture,
         phone=test_data.test_user.phone,
@@ -141,7 +153,7 @@ def test_get_user_profile(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
+    resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     user = (
         db.query(m.User)
         .filter_by(email=test_data.test_authorized_users[0].email)
@@ -156,14 +168,111 @@ def test_get_user_profile(
         f"api/user/{user.uuid}",
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.User.parse_obj(response.json())
+    resp_obj: s.User = s.User.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
+    assert resp_obj.positive_rates_count == user.positive_rates_count
+
+    response = client.get(
+        "api/user/rates",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+
+def test_update_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    request_data: s.User = s.User(
+        professions=user.professions,
+        id=user.id,
+        uuid=user.uuid,
+        jobs_completed_count=user.jobs_completed_count,
+        jobs_posted_count=user.jobs_posted_count,
+        created_at=user.created_at,
+        username=user.username,
+        first_name=test_data.test_authorized_users[1].first_name,
+        last_name=user.last_name,
+        email=user.email,
+        phone=user.phone,
+        picture=user.picture,
+        google_openid_key=user.google_openid_key,
+        password=user.password,
+        is_verified=user.is_verified,
+        positive_rates_count=user.positive_rates_count,
+        negative_rates_count=user.negative_rates_count,
+        neutral_rates_count=user.neutral_rates_count,
+    )
+
+    response = client.put(
+        "api/user",
+        json=jsonable_encoder(request_data),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    user = (
+        db.query(m.User)
+        .filter_by(email=test_data.test_authorized_users[0].email)
+        .first()
+    )
+    db.refresh(user)
+    assert user.first_name == request_data.first_name
+
+
+def test_password_update(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    assert user
+
+    response = client.post(
+        f"api/user/check-password?password={test_data.test_authorized_users[0].password}",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    response = client.put(
+        f"api/user/change-password?password={test_data.test_authorized_users[1].password}",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    db.refresh(user)
+    assert hash_verify(test_data.test_authorized_users[1].password, user.password)
 
 
 def test_upload_avatar(
     client: TestClient,
     db: Session,
     mock_google_cloud_storage,
+    test_data: TestData,
     authorized_users_tokens: list,
 ):
     # Create a mock client
@@ -175,3 +284,8 @@ def test_upload_avatar(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_201_CREATED
+    assert (
+        db.query(m.User)
+        .filter_by(email=test_data.test_authorized_users[0].email)
+        .picture
+    )

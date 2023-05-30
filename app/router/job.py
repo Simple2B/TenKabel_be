@@ -98,6 +98,7 @@ def create_job(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating new job"
         )
 
+    log(log.INFO, "Job created successfully - %s", new_job.id)
     return status.HTTP_201_CREATED
 
 

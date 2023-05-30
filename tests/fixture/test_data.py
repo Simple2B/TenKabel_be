@@ -8,12 +8,24 @@ class TestUser(BaseModel):
     __test__ = False
 
     username: str
+    first_name: str | None
+    last_name: str | None
     email: str
     password: str
     google_openid_key: str | None
     picture: str | None
     is_verified: bool | None = True
     phone: str | None
+    rates: list | None
+
+
+class TestRate(BaseModel):
+    __test__ = False
+
+    uuid: str | None
+    owner_id: int
+    worker_id: int
+    rate: str
 
 
 class TestData(BaseModel):
@@ -21,6 +33,8 @@ class TestData(BaseModel):
 
     test_user: TestUser | None
     test_users: list[TestUser]
+    test_rate: TestRate | None
+    test_rates: list[TestRate]
 
     # authorized
     test_authorized_users: list[TestUser]

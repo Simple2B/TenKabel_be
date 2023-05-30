@@ -3,6 +3,8 @@
     {
       "username": "testuser1",
       "email": "testemail1@gmail.com",
+      "first_name": "test_first_name1",
+      "last_name": "test_last_name",
       "password": "1234",
       "is_verified": false,
       "phone": "123321",
@@ -11,6 +13,8 @@
     },
     {
       "username": "testuser2",
+      "first_name": "test_first_name2",
+      "last_name": "test_second_name2",
       "email": "testemail2@gmail.com",
       "password": "1234",
       "is_verified": true,
@@ -19,6 +23,8 @@
     },
     {
       "username": "testuser3",
+      "first_name": "test_first_name3",
+      "last_name": "test_second_name3",
       "email": "testemail3@gmail.com",
       "password": "1234",
       "is_verified": true,
@@ -28,6 +34,8 @@
   "test_authorized_users": [
     {
       "username": "test_authorized_user1",
+      "first_name": "test_auth_first_name1",
+      "last_name": "test_auth_second_name1",
       "email": "test_authorized_email1@gmail.com",
       "password": "1234",
       "is_verified": false,
@@ -35,6 +43,8 @@
     },
     {
       "username": "test_authorized_user2",
+      "first_name": "test_auth_first_name2",
+      "last_name": "test_auth_second_name2",
       "email": "test_authorized_email2@gmail.com",
       "password": "1233",
       "is_verified": true,
@@ -44,6 +54,8 @@
     },
     {
       "username": "test_authorized_user3",
+      "first_name": "test_auth_first_name3",
+      "last_name": "test_auth_second_name3",
       "email": "test_authorized_email3@gmail.com",
       "password": "1234",
       "is_verified": true,
@@ -53,15 +65,35 @@
   "test_user": {
     "email": "test@gmail.com",
     "username": "test_username",
+    "first_name": "test_user_first_name",
+    "last_name": "test_user_last_name",
     "password": "test_password",
     "is_verified": true,
     "phone": "000000000",
     "google_openid_key": "1234567890abc",
-    "picture": "http://test"
+    "picture": "http://test",
+    "rates": [{
+      "rate": "positive",
+      "owner_id": 5
+    }, 
+    {"rate": "negative",
+      "owner_id": 3
+    }]
   },
   "test_superuser": {
     "username": "test_superuser",
     "email": "test_superuser@gmail.com",
     "password": "1234"
+  },
+  "test_rates":[{
+    "owner_id": 1,
+    "worker_id": 2,
+    "rate": "negative"
+  }],
+  "test_rate":{
+    "uuid": "test_uuid_for_rate",
+    "owner_id": 3,
+    "worker_id": 1,
+    "rate": "positive"
   }
 }

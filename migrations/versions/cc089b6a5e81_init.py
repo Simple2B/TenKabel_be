@@ -1,8 +1,8 @@
-"""empty message
+"""init
 
-Revision ID: fd1a294589ff
+Revision ID: cc089b6a5e81
 Revises: 
-Create Date: 2023-05-24 17:47:32.212420
+Create Date: 2023-05-27 12:51:30.280107
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fd1a294589ff'
+revision = 'cc089b6a5e81'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -47,7 +47,7 @@ def upgrade():
     sa.UniqueConstraint('username', name=op.f('uq_superusers_username'))
     )
     op.create_table('users',
-    sa.Column('phone', sa.String(length=128), nullable=False),
+    sa.Column('phone', sa.String(length=128), nullable=True),
     sa.Column('first_name', sa.String(length=64), nullable=False),
     sa.Column('last_name', sa.String(length=64), nullable=False),
     sa.Column('id', sa.Integer(), nullable=False),
@@ -84,6 +84,7 @@ def upgrade():
     sa.Column('time', sa.String(length=64), nullable=False),
     sa.Column('payment_status', sa.Enum('PAID', 'UNPAID', name='paymentstatus'), nullable=False),
     sa.Column('commission_status', sa.Enum('PAID', 'UNPAID', name='commissionstatus'), nullable=False),
+    sa.Column('who_pays', sa.Enum('ME', 'CLIENT', name='whopays'), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
     sa.ForeignKeyConstraint(['owner_id'], ['users.id'], name=op.f('fk_jobs_owner_id_users')),
     sa.ForeignKeyConstraint(['profession_id'], ['professions.id'], name=op.f('fk_jobs_profession_id_professions')),
