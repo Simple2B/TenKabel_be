@@ -1,6 +1,6 @@
 import io
 
-from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile
+from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile, Form
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -27,34 +27,44 @@ def get_current_user_profile(
 
 @user_router.put("", status_code=status.HTTP_200_OK)
 def update_user(
-    user_data: s.User,
+    email: str = Form(None),
+    username: str = Form(None),
+    phone: str = Form(None),
+    first_name: str = Form(None),
+    last_name: str = Form(None),
+    google_client=Depends(get_google_client),
+    profile_avatar: UploadFile = File(None),
+    settings: Settings = Depends(get_settings),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    user: m.User | None = db.scalars(
-        select(m.User).where(m.User.uuid == current_user.uuid)
-    ).first()
-    if not user:
-        log(log.INFO, "User wasn`t found %s", current_user.uuid)
-        return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found",
-        )
-    if user_data.email != user.email:
-        user.email = user_data.email
-    if user_data.username != user.username:
-        user.username = user_data.username
-    user.google_openid_key = user_data.google_openid_key
-    user.picture = user_data.picture
-    user.created_at = user_data.created_at
-    user.is_verified = user_data.is_verified
-    if user_data.phone != user.phone:
-        user.phone = user_data.phone
-    user.first_name = user_data.first_name
-    user.last_name = user_data.last_name
-    if user_data.professions != user.professions:
-        user.professions = user_data.professions
-
+    if email:
+        current_user.email = email
+    if username:
+        current_user.username = username
+    if phone:
+        current_user.phone = phone
+    if first_name:
+        current_user.first_name = first_name
+    if last_name:
+        current_user.last_name = last_name
+    # if professions:
+    #     user.professions = user_data.professions
+    if profile_avatar:
+        with open(profile_avatar.filename, "rb") as f:
+            try:
+                bucket = google_client.get_bucket(settings.GOOGLE_BUCKET_NAME)
+                file_object = io.BytesIO(f.read())
+                blob = bucket.blob(
+                    f"images/avatars/{current_user.email}/{profile_avatar.filename}"
+                )
+                blob.upload_from_file(file_object)
+            except GoogleAPIError as e:
+                log(log.ERROR, "Error uploading file to google cloud storage: \n%s", e)
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
+                )
+        current_user.picture = blob.public_url
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -63,7 +73,7 @@ def update_user(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
         )
 
-    log(log.INFO, "User updated successfully - %s", user.username)
+    log(log.INFO, "User updated successfully - %s", current_user.username)
     return status.HTTP_200_OK
 
 
@@ -154,42 +164,3 @@ def get_user_profile(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
     return user
-
-
-@user_router.post("/upload-avatar", status_code=status.HTTP_201_CREATED)
-def upload_avatar(
-    db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
-    google_client=Depends(get_google_client),
-    profile_avatar: UploadFile = File(...),
-    settings: Settings = Depends(get_settings),
-):
-    with open(profile_avatar.filename, "rb") as f:
-        try:
-            bucket = google_client.get_bucket(settings.GOOGLE_BUCKET_NAME)
-            file_object = io.BytesIO(f.read())
-            blob = bucket.blob(
-                f"images/avatars/{current_user.email}/{profile_avatar.filename}"
-            )
-            blob.upload_from_file(file_object)
-        except GoogleAPIError as e:
-            log(log.ERROR, "Error uploading file to google cloud storage: \n%s", e)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
-            )
-        current_user.picture = blob.public_url
-        try:
-            db.commit()
-        except SQLAlchemyError as e:
-            log(
-                log.ERROR,
-                "Error while creating picture for user: %s \n %s",
-                current_user.email,
-                e,
-            )
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Error while saving picture for user",
-            )
-    log(log.INFO, "Created picture for user: %s", current_user.email)
-    return status.HTTP_200_OK

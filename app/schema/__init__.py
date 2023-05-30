@@ -1,5 +1,5 @@
 # flake8: noqa F401
-from .user import BaseUser, User, GoogleAuthUser
+from .user import BaseUser, User, GoogleAuthUser, UserSignUp, AuthUser, UserUpdate
 from .token import Token, TokenData
 
 from .profession import BaseProfession, Profession, ProfessionList

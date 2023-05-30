@@ -41,15 +41,12 @@ def login(
     "/sign-up", status_code=status.HTTP_201_CREATED, response_model=s.User
 )
 def sign_up(
-    data: s.BaseUser,
+    data: s.UserSignUp,
     db: Session = Depends(get_db),
 ):
-    # TODO twillio sign in
     user: m.User = m.User(
-        username=data.username,
         first_name=data.first_name,
         last_name=data.last_name,
-        email=data.email,
         password=data.password,
         phone=data.phone,
     )

@@ -45,7 +45,7 @@ class Job(BaseJob):
     commission_status: CommissionStatus | str
     who_pays: WhoPays | str
     is_deleted: bool
-    owner: User | None
+    owner: User
     worker: User | None
     payment: int | None
     commission: int | None
