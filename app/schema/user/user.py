@@ -48,5 +48,5 @@ class User(BaseUser):
 
 class UserUpdate(BaseUser):
     email: EmailStr | None
-    professions: list[Profession]
+    professions: list[int]
     picture: AnyHttpUrl | None

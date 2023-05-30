@@ -198,7 +198,7 @@ def test_update_user(
         last_name=test_data.test_authorized_users[1].last_name,
         email=user.email,
         phone=user.phone,
-        professions=[],
+        professions=[1, 3],
     )
     response = client.put(
         "api/user",
@@ -233,7 +233,6 @@ def test_password_update(
     )
 
     assert user
-
     response = client.post(
         f"api/user/check-password?password={test_data.test_authorized_users[0].password}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},

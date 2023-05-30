@@ -32,6 +32,7 @@ def update_user(
     phone: str = Form(None),
     first_name: str = Form(None),
     last_name: str = Form(None),
+    professions: list[int] = Form(None),
     google_client=Depends(get_google_client),
     profile_avatar: UploadFile = File(None),
     settings: Settings = Depends(get_settings),
@@ -65,6 +66,27 @@ def update_user(
                     status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
                 )
         current_user.picture = blob.public_url
+    if professions:
+        for profession in current_user.professions:
+            db.delete(profession)
+            db.flush()
+        for profession_id in professions:
+            profession = db.scalar(
+                select(m.Profession).where(m.Profession.id == profession_id)
+            )
+            user_profession = db.scalar(
+                select(m.UserProfession).where(
+                    m.UserProfession.user_id == current_user.id,
+                    m.UserProfession.profession_id == profession_id,
+                )
+            )
+            if not user_profession:
+                db.add(
+                    m.UserProfession(
+                        user_id=current_user.id, profession_id=profession_id
+                    )
+                )
+                db.flush()
     try:
         db.commit()
     except SQLAlchemyError as e:
