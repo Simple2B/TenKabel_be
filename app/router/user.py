@@ -34,7 +34,7 @@ def update_user(
     last_name: str = Form(None),
     professions: list[int] = Form(None),
     google_client=Depends(get_google_client),
-    profile_avatar: UploadFile = File(None),
+    profile_avatar: UploadFile | None = File(None),
     settings: Settings = Depends(get_settings),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
