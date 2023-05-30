@@ -13,7 +13,7 @@ class Settings(BaseSettings):
 
     # GOOGLE
     GOOGLE_BUCKET_NAME: str = "tenkabel"
-    GOOGLE_SERVICE_ACCOUNT_PATH: str = "./google_cloud_service_account.json"
+    GOOGLE_SERVICE_ACCOUNT_PATH: str = "/google_cloud_service_account.json"
 
     class Config:
         env_file = "project.env", ".env"
