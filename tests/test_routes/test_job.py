@@ -110,6 +110,9 @@ def test_jobs(client: TestClient, db: Session):
     user: m.User = db.scalar(select(m.User).where(m.User.id == resp_obj.owner_id))
     assert user.jobs_posted_count
 
+    response = client.get("api/job/status_list")
+    assert response.status_code == 200 and response.content
+
 
 def test_create_job(
     client: TestClient,
@@ -158,7 +161,7 @@ def test_search_job(
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    job: m.Job = db.scalar(select(m.Job))
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.status == s.Job.Status.PENDING))
     assert job
 
     response = client.get("api/job/search", params={"q": f"{job.city}"})
@@ -206,13 +209,13 @@ def test_update_job(
         customer_last_name=job.customer_last_name,
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
-        status=s.Job.Status.LATE,
+        status=s.Job.Status.JOB_IS_FINISHED,
     )
     response = client.put(f"api/job/{job.uuid}", json=request_data.dict())
 
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
-    assert job.status == s.Job.Status.LATE
+    assert job.status == s.Job.Status.JOB_IS_FINISHED
 
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
@@ -226,7 +229,7 @@ def test_update_job(
         customer_last_name=job.customer_last_name,
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
-        status=s.Job.Status.COMPLETED,
+        status=s.Job.Status.JOB_IS_FINISHED,
     )
     response = client.put(
         f"api/job/{job.uuid}",
@@ -235,4 +238,4 @@ def test_update_job(
 
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
-    assert job.status == s.Job.Status.COMPLETED
+    assert job.status == s.Job.Status.JOB_IS_FINISHED
