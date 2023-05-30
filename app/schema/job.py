@@ -21,11 +21,10 @@ class BaseJob(BaseModel):
 
 class Job(BaseJob):
     class Status(enum.Enum):
-        PENDING = "pending"
-        LATE = "late"
-        STARTED = "Started"
-        COMPLETED = "Completed"
-        FULFILLED = "Fulfilled"
+        PENDING = "Pending"
+        APPROVED = "Approved"
+        IN_PROGRESS = "In progress"
+        JOB_IS_FINISHED = "Job is finished"
 
     class PaymentStatus(enum.Enum):
         PAID = "paid"
