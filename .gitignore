@@ -15,5 +15,4 @@ db.sqlite3-journal
 .env
 /.venv/
 /test.db
-
 google_cloud_service_account.json

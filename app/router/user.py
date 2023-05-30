@@ -49,8 +49,6 @@ def update_user(
         current_user.first_name = first_name
     if last_name:
         current_user.last_name = last_name
-    # if professions:
-    #     user.professions = user_data.professions
     if profile_avatar:
         with open(profile_avatar.filename, "rb") as f:
             try:
