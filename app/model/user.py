@@ -5,8 +5,10 @@ from app.hash_utils import hash_verify
 
 from app.database import db
 from .user_profession import users_professions
+from .user_location import users_locations
 from .base_user import BaseUser
 from .profession import Profession
+from .location import Location
 from app import model as m
 from app import schema as s
 
@@ -21,6 +23,9 @@ class User(db.Model, BaseUser):
     last_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
+    )
+    locations: orm.Mapped[Location] = orm.relationship(
+        "Location", secondary=users_locations, viewonly=True
     )
 
     @classmethod

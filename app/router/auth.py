@@ -1,6 +1,7 @@
 # from shutil import unregister_archive_format
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -41,27 +42,57 @@ def login(
     "/sign-up", status_code=status.HTTP_201_CREATED, response_model=s.User
 )
 def sign_up(
-    data: s.BaseUser,
+    data: s.UserSignUp,
     db: Session = Depends(get_db),
 ):
-    # TODO twillio sign in
     user: m.User = m.User(
-        username=data.username,
         first_name=data.first_name,
         last_name=data.last_name,
-        email=data.email,
         password=data.password,
         phone=data.phone,
     )
     db.add(user)
     try:
         db.commit()
+        db.refresh(user)
     except SQLAlchemyError as e:
         log(log.ERROR, "Error signing up user - [%s]\n%s", data.email, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
         )
     log(log.INFO, "User [%s] signed up", user.email)
+    # Creating data about user
+    profession: m.Profession | None = db.scalar(
+        select(m.Profession).where(m.Profession.id == data.profession_id)
+    )
+    if not profession:
+        # add logs
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Location was not found"
+        )
+    db.add(
+        m.UserProfession(
+            user_id=user.id,
+            profession_id=profession.id,
+        )
+    )
+    locations: list[m.Location] = [
+        location
+        for location in db.scalars(
+            select(m.Location).where(m.Location.id.in_(data.locations))
+        )
+    ]
+    for location in locations:
+        db.add(m.UserLocation(user_id=user.id, location_id=location.id))
+        db.flush()
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.ERROR, "Error post sign up user - [%s]\n%s", data.email, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error storing user data"
+        )
+    log(log.INFO, "User [%s] COMPLETELY signed up", user.email)
     return user
 
 

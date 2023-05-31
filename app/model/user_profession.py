@@ -9,3 +9,7 @@ users_professions = sa.Table(
     sa.Column("user_id", sa.ForeignKey("users.id"), primary_key=True),
     sa.Column("profession_id", sa.ForeignKey("professions.id"), primary_key=True),
 )
+
+
+class UserProfession(db.Model):
+    __tablename__ = "users_professions"

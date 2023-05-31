@@ -62,7 +62,7 @@ def create_rate(
     rate_data: s.BaseRate,
     db: Session = Depends(get_db),
 ):
-    new_rate = m.Rate(
+    new_rate: m.Rate = m.Rate(
         owner_id=rate_data.owner_id,
         worker_id=rate_data.worker_id,
         rate=s.BaseRate.RateStatus(rate_data.rate),
