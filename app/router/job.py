@@ -5,7 +5,7 @@ from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.dependency import get_current_user
+from app.dependency import get_current_user, get_user
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -28,17 +28,22 @@ def get_jobs(
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
+    user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
     query = select(m.Job)
-    if profession_id:
-        query = query.where(m.Job.profession_id == profession_id)
-    if city:
-        city = re.sub(r"[^a-zA-Z0-9]", "", city)
-        query = query.where(m.Job.city.ilike(f"%{city}%"))
-    if min_price:
-        query = query.where(m.Job.payment >= min_price)
-    if max_price:
-        query = query.where(m.Job.payment <= max_price)
+    if user is None:
+        if profession_id:
+            query = query.where(m.Job.profession_id == profession_id)
+        if city:
+            city = re.sub(r"[^a-zA-Z0-9]", "", city)
+            query = query.where(m.Job.city.ilike(f"%{city}%"))
+        if min_price:
+            query = query.where(m.Job.payment >= min_price)
+        if max_price:
+            query = query.where(m.Job.payment <= max_price)
+    else:
+        profession_ids: list[int] = [profession.id for profession in user.professions]
+        query = query.where(m.Job.profession_id.in_(profession_ids))
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
 

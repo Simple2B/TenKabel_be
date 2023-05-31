@@ -14,6 +14,8 @@ from tests.utility import (
 
 
 def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
+    create_professions(db)
+
     request_data = s.BaseRate(
         rate=test_data.test_rate.rate,
         owner_id=test_data.test_rate.owner_id,
@@ -51,7 +53,6 @@ def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
 
     fill_test_data(db)
-    create_professions(db)
 
     rate: m.Rate = db.scalar(select(m.Rate))
     response = client.get(f"api/rate/{rate.uuid}")
