@@ -29,7 +29,7 @@ class ApplicationIn(BaseModel):
 
 
 class Application(BaseApplication):
-    id: str
+    id: int
     uuid: str
     created_at: datetime | str
 
