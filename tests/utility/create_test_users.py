@@ -1,4 +1,5 @@
 import random
+from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from app import model as m
@@ -10,6 +11,8 @@ MAX_RATES_NUM = 5
 
 
 def fill_test_data(db: Session):
+    profession_ids = [profession.id for profession in db.scalars(select(m.Profession))]
+    location_ids = [location.id for location in db.scalars(select(m.Location))]
     rates_num_total = 0
     for uid_user in range(NUM_TEST_USERS):
         user = m.User(
@@ -34,6 +37,32 @@ def fill_test_data(db: Session):
                 rate=random.choice([e for e in s.BaseRate.RateStatus]),
             )
             db.add(rate)
-
+    users: list[m.User] = db.scalars(select(m.User)).all()
+    for user in users:
+        if profession_ids:
+            profession = db.scalar(
+                select(m.Profession).where(
+                    m.Profession.id == random.randint(1, len(profession_ids))
+                )
+            )
+            db.add(
+                m.UserProfession(
+                    user_id=user.id,
+                    profession_id=profession.id,
+                )
+            )
+        if location_ids:
+            location = db.scalar(
+                select(m.Location).where(
+                    m.Location.id == random.randint(1, len(location_ids))
+                )
+            )
+            db.add(
+                m.UserLocation(
+                    user_id=user.id,
+                    location_id=location.id,
+                )
+            )
+        db.commit()
     log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
     log(log.INFO, "Rates [%d] were created", rates_num_total)
