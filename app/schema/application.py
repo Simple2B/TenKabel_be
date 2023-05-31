@@ -21,7 +21,7 @@ class BaseApplication(BaseModel):
 
 
 class ApplicationIn(BaseModel):
-    job_id = int
+    job_id: int
 
     class Config:
         use_enum_values = True

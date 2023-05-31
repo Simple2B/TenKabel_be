@@ -97,18 +97,12 @@
     "rate": "positive"
   },
   "test_application":{
-    "owner_id": 3,
-    "worker_id": 2,
-    "status": "pending"
+    "job_id": 3
   },
   "test_applications":[{
-    "owner_id": 3,
-    "worker_id": 1,
-    "status": "pending"
+    "job_id": 2
   },{
-    "owner_id": 3,
-    "worker_id": 4,
-    "status": "pending"
+    "job_id": 1
   }
 ]
 }

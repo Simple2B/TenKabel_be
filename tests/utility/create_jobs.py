@@ -22,7 +22,7 @@ JOBS_LIST = [
 ]
 
 
-def create_jobs(db: Session, test_jobs_num: int = 27):
+def create_jobs(db: Session, test_jobs_num: int = 50):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
 
     profession_ids = [

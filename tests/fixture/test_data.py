@@ -32,10 +32,7 @@ class TestRate(BaseModel):
 class TestApplication(BaseModel):
     __test__ = False
 
-    owner_id: int
-    worker_id: int
-    status: str
-    created_at: str = datetime.utcnow
+    job_id: int
 
 
 class TestData(BaseModel):
