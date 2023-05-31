@@ -7,10 +7,8 @@ import app.schema as s
 
 
 def test_get_professions(client: TestClient, db: Session):
-    # create users
-    fill_test_data(db)
-    # create professions
     create_professions(db)
+    fill_test_data(db)
 
     response = client.get("api/profession/professions")
     assert response.status_code == status.HTTP_200_OK

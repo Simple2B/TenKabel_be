@@ -68,13 +68,13 @@ def create_application(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    owner_id: int | None = db.scalar(
-        select(m.Job.owner_id).where(
+    owner: m.User = db.scalar(
+        select(m.Job).where(
             (m.Job.id == application_data.job_id)
             and (m.Job.status == s.Job.Status.PENDING)
         )
     )
-    if not owner_id:
+    if not owner:
         log(log.INFO, "Job wasn`t found %s", application_data.job_id)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,7 +96,7 @@ def create_application(
 
     application = m.Application(
         job_id=application_data.job_id,
-        owner_id=owner_id,
+        owner_id=owner.id,
         worker_id=current_user.id,
     )
     db.add(application)
