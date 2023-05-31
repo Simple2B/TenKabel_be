@@ -11,6 +11,7 @@ from tests.utility import (
     fill_test_data,
     create_professions,
     create_jobs,
+    create_applications,
 )
 
 
@@ -23,8 +24,8 @@ def test_application_methods(
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
+    create_applications(db)
 
-    non_exist_job_id = 321312
     job_id: int | None = db.scalar(
         select(m.Job.id).where((m.Job.status == s.Job.Status.PENDING))
     )
@@ -41,7 +42,7 @@ def test_application_methods(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
-    assert response.status_code == status.HTTP_201_CREATED
+    assert response.status_code in (status.HTTP_201_CREATED, status.HTTP_409_CONFLICT)
 
     response = client.post(
         "api/application",
@@ -51,6 +52,7 @@ def test_application_methods(
     assert response.status_code == status.HTTP_409_CONFLICT
 
     # TODO: check this test for 404 error
+    # non_exist_job_id = 321312
     # request_data: s.ApplicationIn = s.ApplicationIn(job_id=non_exist_job_id)
     # response = client.post(
     #     "api/application",

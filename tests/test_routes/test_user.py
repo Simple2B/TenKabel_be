@@ -13,6 +13,7 @@ from tests.utility import (
     fill_test_data,
     create_professions,
     create_locations,
+    create_applications,
 )
 
 
@@ -47,6 +48,29 @@ def test_signup(
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
+
+    request_data = s.UserSignUp(
+        first_name=test_data.test_user.first_name,
+        last_name=test_data.test_user.last_name,
+        password=test_data.test_user.password,
+        phone=test_data.test_user.phone,
+        profession_id=2,
+        locations=[2, 3],
+    )
+    response = client.post("api/auth/sign-up", json=request_data.dict())
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+    request_data = s.UserSignUp(
+        first_name=test_data.test_user.first_name + "1",
+        last_name=test_data.test_user.last_name + "1",
+        password=test_data.test_user.password + "1",
+        phone=test_data.test_user.phone + "1",
+        profession_id=2,
+        locations=[2, 3],
+    )
+    response = client.post("api/auth/sign-up", json=request_data.dict())
+    assert response.status_code == status.HTTP_201_CREATED
+
     user: m.User = db.scalar(
         select(m.User).where(m.User.phone == test_data.test_user.phone)
     )
@@ -125,12 +149,11 @@ def test_get_user_profile(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
-    # create users
     fill_test_data(db)
-    # create professions
     create_professions(db)
-    # create jobs
     create_jobs(db)
+    create_applications(db)
+
     # get current jobs where user is worker
     response = client.get(
         "api/user/jobs",
@@ -185,6 +208,19 @@ def test_get_user_profile(
     )
 
     assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.RateList = s.RateList.parse_obj(response.json())
+    for rate in resp_obj.rates:
+        assert rate.worker_id == user.id
+
+    response = client.get(
+        "api/user/applications?type=owner",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    resp_obj: s.ApplicationList = s.ApplicationList.parse_obj(response.json())
+    for rate in resp_obj.applications:
+        assert rate.owner_id == user.id
 
 
 # def test_update_user(

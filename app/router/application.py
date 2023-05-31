@@ -83,8 +83,8 @@ def create_application(
 
     already_exist_application: m.Application = db.scalar(
         select(m.Application).where(
-            m.Application.job_id == application_data.job_id
-            and m.Application.worker_id == current_user.id
+            (m.Application.job_id == application_data.job_id)
+            and (m.Application.worker_id == current_user.id)
         )
     )
     if already_exist_application:

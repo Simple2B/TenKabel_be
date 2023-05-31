@@ -9,7 +9,7 @@ from app import model as m
 from app import schema as s
 from app.logger import log
 
-fake = Faker()
+fake: Faker = Faker()
 
 
 JOBS_LIST = [
