@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 import app.model as m
 import app.schema as s
-
+from tests.fixture import TestData
 from tests.utility import (
     create_jobs,
     fill_test_data,
@@ -15,7 +15,7 @@ from tests.utility import (
     create_professions,
 )
 
-NUM_TEST_JOBS = 27
+NUM_TEST_JOBS = 200
 TEST_CITIES = [
     "Afula",
     "Akko",
@@ -45,15 +45,46 @@ TEST_MIN_PRICE = 1
 TEST_MAX_PRICE = 40
 
 
-def test_jobs(client: TestClient, db: Session):
-    # create users
-    fill_test_data(db)
+def test_auth_user_jobs(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
     # create professions
     create_professions(db)
     # get locations
     create_locations(db)
     # create jobs
     create_jobs(db, NUM_TEST_JOBS)
+    # create users
+    fill_test_data(db)
+    user: m.User = db.scalar(
+        select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
+    )
+    assert user
+    # check jobs are created
+    response = client.get(
+        "api/job/jobs",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert job.profession_id in [profession.id for profession in user.professions]
+
+
+def test_unauth_user_jobs(client: TestClient, db: Session):
+    # create users
+    # create professions
+    create_professions(db)
+    # get locations
+    create_locations(db)
+    # create jobs
+    create_jobs(db, NUM_TEST_JOBS)
+    fill_test_data(db)
 
     # check jobs are created
     response = client.get("api/job/jobs")
@@ -152,9 +183,9 @@ def test_search_job(
     client: TestClient,
     db: Session,
 ):
-    fill_test_data(db)
     create_professions(db)
     create_jobs(db)
+    fill_test_data(db)
 
     response = client.get("api/job/search")
     assert response.status_code == status.HTTP_200_OK
@@ -192,9 +223,9 @@ def test_update_job(
     client: TestClient,
     db: Session,
 ):
-    fill_test_data(db)
     create_professions(db)
     create_jobs(db)
+    fill_test_data(db)
 
     job: m.Job = db.scalar(select(m.Job))
     request_data: s.JobUpdate = s.JobUpdate(
