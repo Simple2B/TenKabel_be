@@ -56,11 +56,11 @@ def sign_up(
         db.commit()
         db.refresh(user)
     except SQLAlchemyError as e:
-        log(log.ERROR, "Error signing up user - [%s]\n%s", data.email, e)
+        log(log.ERROR, "Error signing up user - [%s]\n%s", data.phone, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
         )
-    log(log.INFO, "User [%s] signed up", user.email)
+    log(log.INFO, "User [%s] signed up", user.phone)
     # Creating data about user
     profession: m.Profession | None = db.scalar(
         select(m.Profession).where(m.Profession.id == data.profession_id)

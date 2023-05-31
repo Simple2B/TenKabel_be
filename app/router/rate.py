@@ -9,7 +9,7 @@ from app.logger import log
 from app.database import get_db
 
 
-rate_router = APIRouter(prefix="/rate", tags=["Jobs"])
+rate_router = APIRouter(prefix="/rate", tags=["Rate"])
 
 
 @rate_router.get("/{rate_uuid}", status_code=status.HTTP_200_OK, response_model=s.Rate)
@@ -48,7 +48,7 @@ def update_rate(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.INFO, "Error while updatin rate - %s", e)
+        log(log.INFO, "Error while updating rate - %s", e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating rate"
         )

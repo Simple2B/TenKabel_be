@@ -24,6 +24,7 @@ class Job(db.Model):
     profession_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("professions.id"), nullable=True
     )
+
     name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     description: orm.Mapped[str] = orm.mapped_column(sa.String(512), default="")
     is_deleted: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
@@ -70,6 +71,7 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True
     )
+
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
     def __repr__(self):

@@ -28,6 +28,12 @@ class TestRate(BaseModel):
     rate: str
 
 
+class TestApplication(BaseModel):
+    __test__ = False
+
+    job_id: int
+
+
 class TestData(BaseModel):
     __test__ = False
 
@@ -35,6 +41,8 @@ class TestData(BaseModel):
     test_users: list[TestUser]
     test_rate: TestRate | None
     test_rates: list[TestRate]
+    test_application: TestApplication
+    test_applications: list[TestApplication]
 
     # authorized
     test_authorized_users: list[TestUser]

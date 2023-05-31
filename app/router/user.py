@@ -1,4 +1,5 @@
 import io
+import datetime
 
 from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile, Form
 from sqlalchemy import select
@@ -127,6 +128,37 @@ def change_password(
 
     log(log.INFO, "User password updated successfully - %s", current_user.username)
     return status.HTTP_200_OK
+
+
+# TODO: router for owner returns all application by last day
+@user_router.get(
+    "/applications", status_code=status.HTTP_200_OK, response_model=s.ApplicationList
+)
+def get_user_applications(
+    type: str | None,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    query = select(m.Application)
+    if not type:
+        query = query.where(
+            m.Application.worker_id == current_user.id
+            or m.Application.owner_id == current_user.id
+        )
+    elif type == "owner":
+        query = query.where(
+            m.Application.owner_id == current_user.id
+            and m.Application.status == s.BaseApplication.Status.PENDING
+        )
+    elif type == "worker":
+        query = query.where(m.Application.worker_id == current_user.id).filter(
+            m.Application.created_at
+            > datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
+        )
+    else:
+        log(log.INFO, "Wrong filter %s", type)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Wrong filter")
+    return s.ApplicationList(applications=db.scalars(query).all())
 
 
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)

@@ -95,5 +95,14 @@
     "owner_id": 3,
     "worker_id": 1,
     "rate": "positive"
+  },
+  "test_application":{
+    "job_id": 3
+  },
+  "test_applications":[{
+    "job_id": 2
+  },{
+    "job_id": 1
   }
+]
 }
