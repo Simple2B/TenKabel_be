@@ -56,13 +56,15 @@ def test_signup(
 
     # FINISH VERIFY
 
-    # response = client.put(
-    #     "api/auth/verify",
-    #     headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    # )
-    # assert response.status_code == status.HTTP_200_OK
-    # db.refresh(user)
-    # assert user.is_verified
+    response = client.put(
+        "api/auth/verify",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    user: m.User = db.scalar(
+        select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
+    )
+    assert user.is_verified
 
 
 def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
