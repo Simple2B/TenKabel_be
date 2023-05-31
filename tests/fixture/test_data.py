@@ -1,4 +1,5 @@
 from typing import Generator
+from datetime import datetime
 
 import pytest
 from pydantic import BaseModel
@@ -28,6 +29,15 @@ class TestRate(BaseModel):
     rate: str
 
 
+class TestApplication(BaseModel):
+    __test__ = False
+
+    owner_id: int
+    worker_id: int
+    status: str
+    created_at: str = datetime.utcnow
+
+
 class TestData(BaseModel):
     __test__ = False
 
@@ -35,6 +45,8 @@ class TestData(BaseModel):
     test_users: list[TestUser]
     test_rate: TestRate | None
     test_rates: list[TestRate]
+    test_application: TestApplication
+    test_applications: list[TestApplication]
 
     # authorized
     test_authorized_users: list[TestUser]

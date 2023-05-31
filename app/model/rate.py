@@ -8,6 +8,8 @@ from app import model as m
 
 
 class Rate(db.Model):
+    __tablename__ = "rates"
+
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
     owner_id: orm.Mapped[int] = orm.mapped_column(

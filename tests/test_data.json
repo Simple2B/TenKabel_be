@@ -95,5 +95,20 @@
     "owner_id": 3,
     "worker_id": 1,
     "rate": "positive"
+  },
+  "test_application":{
+    "owner_id": 3,
+    "worker_id": 2,
+    "status": "pending"
+  },
+  "test_applications":[{
+    "owner_id": 3,
+    "worker_id": 1,
+    "status": "pending"
+  },{
+    "owner_id": 3,
+    "worker_id": 4,
+    "status": "pending"
   }
+]
 }

@@ -9,7 +9,7 @@ from app.logger import log
 from app.database import get_db
 
 
-rate_router = APIRouter(prefix="/rate", tags=["Jobs"])
+rate_router = APIRouter(prefix="/rate", tags=["Rate"])
 
 
 @rate_router.get("/{rate_uuid}", status_code=status.HTTP_200_OK, response_model=s.Rate)
