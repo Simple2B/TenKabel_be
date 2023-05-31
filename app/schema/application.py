@@ -21,7 +21,7 @@ class BaseApplication(BaseModel):
 
 
 class ApplicationIn(BaseModel):
-    worker_id: int | None
+    job_id = int
 
     class Config:
         use_enum_values = True
