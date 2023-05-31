@@ -130,12 +130,11 @@ def change_password(
     return status.HTTP_200_OK
 
 
-# TODO: router for owner returns all application by last day
 @user_router.get(
     "/applications", status_code=status.HTTP_200_OK, response_model=s.ApplicationList
 )
 def get_user_applications(
-    type: str | None,
+    type: str | None = None,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
