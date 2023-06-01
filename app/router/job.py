@@ -1,7 +1,7 @@
 import re
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, func
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -44,10 +44,12 @@ def get_jobs(
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         query = query.where(m.Job.profession_id.in_(profession_ids))
-        # TODO filter by city
-        # cities_name: list[str] = [location.name_en for location in user.locations]
-        # for city_name in cities_name:
-        #    query = query.where(m.Job.city.ilike())
+
+        cities_name: list[str] = [location.name_en for location in user.locations]
+        query = query.where(
+            func.lower(m.Job.city).in_([city.lower() for city in cities_name])
+        )
+
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
 

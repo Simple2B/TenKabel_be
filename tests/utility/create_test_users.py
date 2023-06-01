@@ -63,6 +63,13 @@ def fill_test_data(db: Session):
                     location_id=location.id,
                 )
             )
+            location = db.scalar(select(m.Location).where(m.Location.id != location.id))
+            db.add(
+                m.UserLocation(
+                    user_id=user.id,
+                    location_id=location.id,
+                )
+            )
         db.commit()
     log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
     log(log.INFO, "Rates [%d] were created", rates_num_total)

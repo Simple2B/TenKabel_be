@@ -6,6 +6,7 @@ jinja2.contextfunction = jinja2.pass_context
 # flake8: noqa F402
 
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from sqladmin import Admin
 
 from app.database import get_engine
@@ -32,4 +33,4 @@ app.include_router(router)
 
 @app.get("/")
 def root():
-    return {"message": "Hello"}
+    return RedirectResponse("/docs")

@@ -51,14 +51,11 @@ def test_auth_user_jobs(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
-    # create professions
     create_professions(db)
-    # get locations
     create_locations(db)
-    # create jobs
-    create_jobs(db, NUM_TEST_JOBS)
-    # create users
     fill_test_data(db)
+    create_jobs(db, 300)
+
     user: m.User = db.scalar(
         select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
     )
@@ -74,6 +71,7 @@ def test_auth_user_jobs(
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
+        assert job.city in [location.name_en for location in user.locations]
 
 
 def test_unauth_user_jobs(client: TestClient, db: Session):
