@@ -29,8 +29,8 @@ def create_applications(db: Session):
                 created_at=fake.date_time_between(start_date="-30d", end_date="now"),
                 status=random.choice(
                     [
-                        s.BaseApplication.Status.DECLINED,
-                        s.BaseApplication.Status.PENDING,
+                        s.BaseApplication.ApplicationStatus.DECLINED,
+                        s.BaseApplication.ApplicationStatus.PENDING,
                     ]
                 ),
             )

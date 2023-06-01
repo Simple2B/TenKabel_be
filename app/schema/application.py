@@ -5,15 +5,15 @@ from pydantic import BaseModel
 
 
 class BaseApplication(BaseModel):
-    class Status(enum.Enum):
-        PENDING = "pending"
-        ACCEPTED = "accepted"
-        DECLINED = "declined"
+    class ApplicationStatus(enum.Enum):
+        PENDING = "PENDING"
+        ACCEPTED = "ACCEPTED"
+        DECLINED = "DECLINED"
 
     owner_id: int
     worker_id: int
     job_id: int
-    status: Status | str = Status.PENDING
+    status: ApplicationStatus | str = ApplicationStatus.PENDING
 
     class Config:
         use_enum_values = True
@@ -32,6 +32,7 @@ class Application(BaseApplication):
     id: int
     uuid: str
     created_at: datetime | str
+    status_changed_at: datetime | str
 
     class Config:
         use_enum_values = True

@@ -23,29 +23,31 @@ def update_application(
     application: m.Application | None = db.scalar(
         select(m.Application).where(
             m.Application.uuid == uuid
-            and m.Application.owner_id
-            and m.Application.status == s.BaseApplication.Status.PENDING
+            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
         )
     )
     if not application:
-        log(log.INFO, "Application wasn`t found %s", uuid)
+        log(log.INFO, "Application (with status pending) wasn`t found %s", uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Application not found",
+            detail="Application (with status pending) not found",
         )
 
     application.worker_id = application_data.worker_id
     application.owner_id = application_data.owner_id
     application.job_id = application_data.job_id
-    application.status = s.BaseApplication.Status(application_data.status)
 
-    if application_data.status == s.BaseApplication.Status.ACCEPTED.value:
+    application.status = s.Application.ApplicationStatus(application_data.status)
+
+    if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED:
         pending_applications: list[m.Application] = db.scalars(
             select(m.Application).where(m.Application.owner_id == application.owner_id)
         ).all()
         for pending_application in pending_applications:
             if pending_application.worker_id != application.worker_id:
-                pending_application.status = s.BaseApplication.Status.DECLINED
+                pending_application.status = (
+                    s.BaseApplication.ApplicationStatus.DECLINED
+                )
         job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
         job.status = s.Job.Status.APPROVED

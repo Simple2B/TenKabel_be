@@ -2,7 +2,7 @@ import io
 import datetime
 
 from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile, Form
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from google.api_core.exceptions import GoogleAPIError
@@ -140,9 +140,11 @@ def get_user_applications(
 ):
     query = select(m.Application)
     if not type:
-        query = query.where(
-            m.Application.worker_id == current_user.id
-            or m.Application.owner_id == current_user.id
+        query = query.filter(
+            or_(
+                m.Application.worker_id == current_user.id,
+                m.Application.owner_id == current_user.id,
+            )
         )
     elif type == "owner":
         query = query.where(

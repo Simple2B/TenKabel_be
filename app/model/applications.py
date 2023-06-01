@@ -23,10 +23,21 @@ class Application(db.Model):
         sa.ForeignKey("users.id"), nullable=True
     )
 
-    status: orm.Mapped[s.BaseApplication.Status] = orm.mapped_column(
-        sa.Enum(s.Application.Status), default=s.BaseApplication.Status.PENDING
+    status: orm.Mapped[s.BaseApplication.ApplicationStatus] = orm.mapped_column(
+        sa.Enum(s.BaseApplication.ApplicationStatus),
+        default=s.BaseApplication.ApplicationStatus.PENDING,
     )
 
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
+
+    status_changed_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, default=datetime.utcnow
+    )
+
+    @orm.validates("status")
+    def update_status_changed_at(self, key, value):
+        if self.status != value:
+            self.status_changed_at = datetime.utcnow()
+        return value

@@ -74,7 +74,7 @@ def test_application_methods(
         owner_id=application.owner_id,
         worker_id=application.worker_id,
         job_id=application.job_id,
-        status=s.BaseApplication.Status.ACCEPTED,
+        status=s.BaseApplication.ApplicationStatus.ACCEPTED,
     )
     response = client.put(
         f"api/application/{application.uuid}",
@@ -84,4 +84,4 @@ def test_application_methods(
 
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(application)
-    assert application.status == s.BaseApplication.Status.ACCEPTED
+    assert application.status == s.BaseApplication.ApplicationStatus.ACCEPTED
