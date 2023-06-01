@@ -21,6 +21,27 @@ JOBS_LIST = [
     "handyman",
 ]
 
+TEST_CITIES = [
+    "Afula",
+    "Akko",
+    "Arad",
+    "Ariel",
+    "Ashdod",
+    "Ashkelon",
+    "Ashkelon",
+    "Baqa al-Gharbiyye",
+    "Bat Yam",
+    "Beer Sheva",
+    "Beit Shean",
+    "Beit Shemesh",
+    "Betar Illit",
+    "Bnei Berak",
+    "Dimona",
+    "Eilat",
+    "Elad",
+    "Givatayim",
+]
+
 
 def create_jobs(db: Session, test_jobs_num: int = 100):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
@@ -38,7 +59,7 @@ def create_jobs(db: Session, test_jobs_num: int = 100):
             status=random.choice([e for e in s.Job.Status]),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
-            city=fake.city(),
+            city=random.choice(TEST_CITIES),
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             payment_status=random.choice([e for e in s.Job.PaymentStatus]),
             commission_status=random.choice([e for e in s.Job.CommissionStatus]),

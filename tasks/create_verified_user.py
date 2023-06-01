@@ -5,7 +5,7 @@ from app.model import User
 
 TEST_USER_FIRST_NAME = "Mark"
 TEST_USER_LAST_NAME = "Levy"
-TEST_USER_PHONE = "000 000 0000 00"
+TEST_USER_PHONE = "+972 55 555 0000"
 TEST_PASSWORD = "pass"
 TEST_USER_EMAIL = "test@example.com"
 
