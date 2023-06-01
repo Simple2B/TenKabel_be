@@ -31,7 +31,7 @@ def get_jobs(
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
     query = select(m.Job)
-    if user is None:
+    if user is None or user.google_openid_key:
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if city:
