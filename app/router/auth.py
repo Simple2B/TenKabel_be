@@ -134,7 +134,11 @@ def google_auth(
             first_name = ""
             last_name = ""
         else:
-            first_name, last_name = data.display_name.split(" ")
+            names = data.display_name.split(" ")
+            if len(names) > 1:
+                first_name, last_name = names[0], " ".join(names[1:])
+            else:
+                first_name, last_name = names[0], ""
 
         user: m.User = m.User(
             email=data.email,
@@ -170,7 +174,7 @@ def google_auth(
     )
 
     if not user:
-        log(log.ERROR, "User [%s] was not authenticated", data.username)
+        log(log.ERROR, "User [%s] was not authenticated", data.email)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
         )

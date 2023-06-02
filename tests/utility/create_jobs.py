@@ -78,4 +78,4 @@ def create_jobs(db: Session, test_jobs_num: int = 100):
             job.worker_id = random.choice(worker_ids)
 
         db.commit()
-    log(log.INFO, "Jobs created - %s", db.query(m.Job).count())
+    log(log.INFO, "Jobs created - %s", test_jobs_num)
