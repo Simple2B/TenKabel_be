@@ -15,6 +15,37 @@ from app.logger import log
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 
+@auth_router.post("/login-by-phone", response_model=s.Token)
+def login_by_phone(
+    user_credentials: s.AuthUser,
+    db: Session = Depends(get_db),
+):
+    user: m.User = m.User.authenticate_with_phone(
+        db,
+        user_credentials.phone,
+        user_credentials.password,
+    )
+
+    if not user:
+        log(log.ERROR, "User [%s] was not authenticated", user_credentials.phone)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
+
+    if not user.is_verified:
+        log(log.ERROR, "User [%s] is not verified", user_credentials.phone)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
+
+    access_token: str = create_access_token(data={"user_id": user.id})
+    log(log.INFO, "Access token for User [%s] generated", user.phone)
+    return s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
+
+
 @auth_router.post("/login", response_model=s.Token)
 def login(
     user_credentials: OAuth2PasswordRequestForm = Depends(),
