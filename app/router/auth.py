@@ -32,12 +32,6 @@ def login_by_phone(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
         )
 
-    if not user.is_verified:
-        log(log.ERROR, "User [%s] is not verified", user_credentials.phone)
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
-        )
-
     access_token: str = create_access_token(data={"user_id": user.id})
     log(log.INFO, "Access token for User [%s] generated", user.phone)
     return s.Token(
