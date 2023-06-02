@@ -31,7 +31,11 @@ def get_jobs(
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
     query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
-    if user is None or user.google_openid_key:
+    if (
+        user is None
+        or user.google_openid_key
+        or any(profession_id, city, min_price, max_price)
+    ):
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if city:
