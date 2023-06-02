@@ -28,10 +28,12 @@ def login(
 
     if not user:
         log(log.ERROR, "User [%s] was not authenticated", user_credentials.username)
-        raise HTTPException(status_code=403, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
 
-    access_token = create_access_token(data={"user_id": user.id})
-
+    access_token: str = create_access_token(data={"user_id": user.id})
+    log(log.INFO, "Access token for User [%s] generated", user.username)
     return s.Token(
         access_token=access_token,
         token_type="Bearer",
@@ -76,6 +78,8 @@ def sign_up(
             profession_id=profession.id,
         )
     )
+    log(log.INFO, "UserProfession created")
+
     locations: list[m.Location] = [
         location
         for location in db.scalars(
@@ -85,14 +89,15 @@ def sign_up(
     for location in locations:
         db.add(m.UserLocation(user_id=user.id, location_id=location.id))
         db.flush()
+    log(log.INFO, "UserLocation created")
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.ERROR, "Error post sign up user - [%s]\n%s", data.email, e)
+        log(log.ERROR, "Error post sign up user - [%s]\n%s", data.phone, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error storing user data"
         )
-    log(log.INFO, "User [%s] COMPLETELY signed up", user.email)
+    log(log.INFO, "User [%s] COMPLETELY signed up", user.phone)
     return user
 
 
@@ -106,12 +111,12 @@ def verify(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.ERROR, "Error signing up user - ", e)
+        log(log.ERROR, "Error signing up user [%s] - ", current_user.phone, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
         )
 
-    log(log.INFO, "User [%s] is verified", current_user.email)
+    log(log.INFO, "User [%s] is verified", current_user.phone)
 
     return status.HTTP_200_OK
 
@@ -171,7 +176,7 @@ def google_auth(
         )
 
     access_token = create_access_token(data={"user_id": user.id})
-
+    log(log.INFO, "Access token for User [%s] generated", user.email)
     return s.Token(
         access_token=access_token,
         token_type="Bearer",

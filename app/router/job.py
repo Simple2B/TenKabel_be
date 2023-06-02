@@ -30,7 +30,7 @@ def get_jobs(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
-    query = select(m.Job)
+    query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
     if user is None or user.google_openid_key:
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
@@ -41,6 +41,11 @@ def get_jobs(
             query = query.where(m.Job.payment >= min_price)
         if max_price:
             query = query.where(m.Job.payment <= max_price)
+        log(
+            log.INFO,
+            f"Job filtered by profession_id={profession_id}, city={city}",
+            f"min_price={min_price}, max_price={max_price}",
+        )
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         query = query.where(m.Job.profession_id.in_(profession_ids))
@@ -49,6 +54,7 @@ def get_jobs(
         query = query.where(
             func.lower(m.Job.city).in_([city.lower() for city in cities_name])
         )
+        log(log.INFO, "Job filtered by [%s] user interests", user.phone)
 
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
 
@@ -69,6 +75,7 @@ def search_job(
             )
         )
 
+    log(log.INFO, "Job filtered by [%s] containing", q)
     return s.ListJob(jobs=db.scalars(query.order_by(m.Job.created_at.desc())).all())
 
 
@@ -79,11 +86,13 @@ def get_job(
 ) -> s.Job:
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
-        log(log.INFO, "Job wasn`t found %s", job_uuid)
+        log(log.INFO, "Job wasn`t found [%s]", job_uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )
+
+    log(log.INFO, "Job [%s] info", job_uuid)
     return job
 
 
@@ -116,7 +125,7 @@ def create_job(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating new job"
         )
 
-    log(log.INFO, "Job created successfully - %s", new_job.id)
+    log(log.INFO, "Job [%s] created successfully", new_job.id)
     return status.HTTP_201_CREATED
 
 
@@ -128,7 +137,7 @@ def update_job(
 ):
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
-        log(log.INFO, "Job wasn`t found %s", job_uuid)
+        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
@@ -151,10 +160,10 @@ def update_job(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.INFO, "Error while updatin job - %s", e)
+        log(log.INFO, "Error while updating job - %s", e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
         )
 
-    log(log.INFO, "Job updated successfully - %s", job.name)
+    log(log.INFO, "Job [%s] updated successfully", job.name)
     return status.HTTP_200_OK

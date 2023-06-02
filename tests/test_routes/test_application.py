@@ -76,6 +76,7 @@ def test_application_methods(
         job_id=application.job_id,
         status=s.BaseApplication.ApplicationStatus.ACCEPTED,
     )
+
     response = client.put(
         f"api/application/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
@@ -85,3 +86,17 @@ def test_application_methods(
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(application)
     assert application.status == s.BaseApplication.ApplicationStatus.ACCEPTED
+
+    job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
+    assert (
+        job.status == s.Job.Status.APPROVED and job.worker_id == application.worker_id
+    )
+    applications = db.scalars(
+        select(m.Application).where((m.Application.job_id == application.job_id))
+    ).all()
+
+    for exist_application in applications:
+        if exist_application.id != application.id:
+            assert (
+                exist_application.status == s.BaseApplication.ApplicationStatus.DECLINED
+            )

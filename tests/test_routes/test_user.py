@@ -2,6 +2,7 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from pydantic.error_wrappers import ValidationError
 
 import app.schema as s
 import app.model as m
@@ -22,6 +23,18 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
     response = client.post(
         "api/auth/login",
         data={
+            # testing wrong phone number (via whitespace)
+            "username": test_data.test_users[0].phone[:-1]
+            + " "
+            + test_data.test_users[0].phone[-1],
+            "password": test_data.test_users[0].password,
+        },
+    )
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+
+    response = client.post(
+        "api/auth/login",
+        data={
             "username": test_data.test_users[0].phone,
             "password": test_data.test_users[0].password,
         },
@@ -37,34 +50,57 @@ def test_signup(
 ):
     create_professions(db)
     create_locations(db)
+    TEST_PHONE_NUMBER = test_data.test_user.phone
+    TEST_PHONE_WRONG_NUMBER = TEST_PHONE_NUMBER[:-1] + " " + TEST_PHONE_NUMBER[-1]
+    TEST_PHONE_WRONG_NUMBER_LETTERS = "3123DASD211"
+
+    try:
+        request_data = s.UserSignUp(
+            first_name=test_data.test_user.first_name,
+            last_name=test_data.test_user.last_name,
+            password=test_data.test_user.password,
+            phone=TEST_PHONE_WRONG_NUMBER_LETTERS,
+            profession_id=2,
+            locations=[2, 3],
+        )
+    except ValidationError:
+        assert True
+    else:
+        assert False
 
     request_data = s.UserSignUp(
         first_name=test_data.test_user.first_name,
         last_name=test_data.test_user.last_name,
         password=test_data.test_user.password,
-        phone=test_data.test_user.phone,
+        phone=TEST_PHONE_NUMBER,
         profession_id=2,
         locations=[2, 3],
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
 
-    request_data = s.UserSignUp(
-        first_name=test_data.test_user.first_name,
-        last_name=test_data.test_user.last_name,
-        password=test_data.test_user.password,
-        phone=test_data.test_user.phone,
-        profession_id=2,
-        locations=[2, 3],
-    )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_409_CONFLICT
+
+    try:
+        request_data = s.UserSignUp(
+            first_name=test_data.test_user.first_name,
+            last_name=test_data.test_user.last_name,
+            password=test_data.test_user.password,
+            phone=TEST_PHONE_WRONG_NUMBER,
+            profession_id=2,
+            locations=[2, 3],
+        )
+    except ValidationError:
+        assert True
+    else:
+        assert False
 
     request_data = s.UserSignUp(
         first_name=test_data.test_user.first_name + "1",
         last_name=test_data.test_user.last_name + "1",
         password=test_data.test_user.password + "1",
-        phone=test_data.test_user.phone + "1",
+        phone=TEST_PHONE_NUMBER[:-1] + "5",
         profession_id=2,
         locations=[2, 3],
     )

@@ -3,9 +3,15 @@ from datetime import datetime
 
 from app.schema.profession import Profession
 
+phone_field = constr(
+    max_length=128,
+    strip_whitespace=True,
+    regex=r"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$",
+)
+
 
 class AuthUser(BaseModel):
-    phone: constr(max_length=128, strip_whitespace=True)
+    phone: phone_field
     password: constr(max_length=128, strip_whitespace=True)
 
 

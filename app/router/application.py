@@ -27,7 +27,7 @@ def update_application(
         )
     )
     if not application:
-        log(log.INFO, "Application (with status pending) wasn`t found %s", uuid)
+        log(log.INFO, "Application (with status pending) wasn`t found [%s]", uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application (with status pending) not found",
@@ -41,16 +41,19 @@ def update_application(
 
     if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED:
         pending_applications: list[m.Application] = db.scalars(
-            select(m.Application).where(m.Application.owner_id == application.owner_id)
+            select(m.Application).where(m.Application.job_id == application.job_id)
         ).all()
         for pending_application in pending_applications:
             if pending_application.worker_id != application.worker_id:
                 pending_application.status = (
                     s.BaseApplication.ApplicationStatus.DECLINED
                 )
+        log(log.INFO, "Applications to [%s] job updated", application.job_id)
+
         job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
         job.status = s.Job.Status.APPROVED
+        log(log.INFO, "Jop [%s] status updated", job.id)
 
     try:
         db.commit()
@@ -60,7 +63,7 @@ def update_application(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating application"
         )
 
-    log(log.INFO, "Application updated successfully - %s", application.id)
+    log(log.INFO, "Application updated successfully - [%s]", application.id)
     return status.HTTP_201_CREATED
 
 
@@ -77,7 +80,7 @@ def create_application(
         )
     )
     if not owner:
-        log(log.INFO, "Job wasn`t found %s", application_data.job_id)
+        log(log.INFO, "Job wasn`t found [%s]", application_data.job_id)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
@@ -96,7 +99,7 @@ def create_application(
             detail="Application already exist",
         )
 
-    application = m.Application(
+    application: m.Application = m.Application(
         job_id=application_data.job_id,
         owner_id=owner.id,
         worker_id=current_user.id,
@@ -112,5 +115,5 @@ def create_application(
             detail="Error creating new application",
         )
 
-    log(log.INFO, "Rate created successfully - %s", application.id)
+    log(log.INFO, "Rate created successfully - [%s]", application.id)
     return status.HTTP_201_CREATED
