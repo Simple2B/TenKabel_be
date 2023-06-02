@@ -8,6 +8,4 @@ whoami_router = APIRouter(prefix="/whoami", tags=["Whoami"])
 
 @whoami_router.get("/user", status_code=status.HTTP_200_OK)
 def whoami(current_user: m.User = Depends(get_current_user)):
-    if current_user:
-        return True
-    return False
+    return bool(current_user)
