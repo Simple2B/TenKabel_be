@@ -34,7 +34,7 @@ def get_jobs(
     if (
         user is None
         or user.google_openid_key
-        or any(profession_id, city, min_price, max_price)
+        or any([profession_id, city, min_price, max_price])
     ):
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
