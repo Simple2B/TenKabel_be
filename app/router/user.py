@@ -94,7 +94,7 @@ def update_user(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
         )
 
-    log(log.INFO, "User updated successfully - %s", current_user.username)
+    log(log.INFO, "User [%s] updated successfully", current_user.username)
     return status.HTTP_200_OK
 
 
@@ -126,7 +126,7 @@ def change_password(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating password"
         )
 
-    log(log.INFO, "User password updated successfully - %s", current_user.username)
+    log(log.INFO, "User [%s] password updated successfully", current_user.username)
     return status.HTTP_200_OK
 
 
@@ -149,7 +149,7 @@ def get_user_applications(
     elif type == "owner":
         query = query.where(
             m.Application.owner_id == current_user.id
-            and m.Application.status == s.BaseApplication.Status.PENDING
+            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
         )
     elif type == "worker":
         query = query.where(m.Application.worker_id == current_user.id).filter(
@@ -159,6 +159,8 @@ def get_user_applications(
     else:
         log(log.INFO, "Wrong filter %s", type)
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Wrong filter")
+
+    log(log.INFO, "[%s] type applications for User [%s]", type, current_user.username)
     return s.ApplicationList(applications=db.scalars(query).all())
 
 
@@ -173,6 +175,13 @@ def get_user_jobs(
         .order_by(m.Job.created_at)
         .where(m.Job.worker_id == current_user.id)
     ).all()
+    log(
+        log.INFO,
+        "User [%s] with id (%s) have [%s] jobs owning",
+        current_user.username,
+        current_user.id,
+        len(jobs),
+    )
     return s.ListJob(jobs=jobs)
 
 
@@ -184,6 +193,13 @@ def get_user_rates(
     rates: s.RateList = db.scalars(
         select(m.Rate).where(m.Rate.worker_id == current_user.id)
     ).all()
+    log(
+        log.INFO,
+        "User [%s] with id (%s) have [%s] rates total",
+        current_user.username,
+        current_user.id,
+        len(rates),
+    )
     return s.RateList(rates=rates)
 
 
@@ -198,6 +214,13 @@ def get_user_postings(
         .order_by(m.Job.created_at)
         .where(m.Job.owner_id == current_user.id)
     ).all()
+    log(
+        log.INFO,
+        "User [%s] with id (%s) have worked on [%s] jobs total",
+        current_user.username,
+        current_user.id,
+        len(jobs),
+    )
     return s.ListJob(jobs=jobs)
 
 
@@ -216,4 +239,6 @@ def get_user_profile(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
         )
+
+    log(log.INFO, "User [%s] info", user.username)
     return user

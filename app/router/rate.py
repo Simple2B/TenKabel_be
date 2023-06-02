@@ -19,11 +19,13 @@ def get_rate(
 ):
     rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == rate_uuid))
     if not rate:
-        log(log.INFO, "Rate wasn`t found %s", rate_uuid)
+        log(log.INFO, "Rate [%s] wasn`t found", rate_uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rate not found",
         )
+
+    log(log.INFO, "Rate [%s] info", rate_uuid)
     return rate
 
 
@@ -35,7 +37,7 @@ def update_rate(
 ):
     rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == uuid))
     if not rate:
-        log(log.INFO, "Rate wasn`t found %s", uuid)
+        log(log.INFO, "Rate [%s] wasn`t found ", uuid)
         return HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rate not found",
@@ -48,12 +50,12 @@ def update_rate(
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.INFO, "Error while updating rate - %s", e)
+        log(log.INFO, "Error while updating rate [%s] - %s", uuid, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating rate"
         )
 
-    log(log.INFO, "Rate updated successfully - %s", rate.id)
+    log(log.INFO, "Rate [%s] updated successfully", rate.id)
     return status.HTTP_200_OK
 
 
@@ -77,5 +79,5 @@ def create_rate(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating new rate"
         )
 
-    log(log.INFO, "Rate created successfully - %s", new_rate.id)
+    log(log.INFO, "Rate [%s] created successfully", new_rate.id)
     return status.HTTP_201_CREATED
