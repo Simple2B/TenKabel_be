@@ -52,7 +52,9 @@ def get_jobs(
         )
         log(log.INFO, "Job filtered by [%s] user interests", user.phone)
 
-    return s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
+    jobs = db.scalars(query.order_by(m.Job.id)).all()
+    log(log.INFO, "Job [%s] at all got", len(jobs))
+    return s.ListJob(jobs=jobs)
 
 
 @job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
