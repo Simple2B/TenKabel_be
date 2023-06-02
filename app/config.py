@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     ADMIN_USER: str = "admin"
     ADMIN_PASS: str = "admin"
     ADMIN_EMAIL: EmailStr = "admin@admin.com"
-    DEFAULT_PAGE_SIZE: int
+    DEFAULT_PAGE_SIZE: int = 100
 
     # GOOGLE
     GOOGLE_BUCKET_NAME: str = "tenkabel"
