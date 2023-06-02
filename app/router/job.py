@@ -41,11 +41,7 @@ def get_jobs(
             query = query.where(m.Job.payment >= min_price)
         if max_price:
             query = query.where(m.Job.payment <= max_price)
-        log(
-            log.INFO,
-            f"Job filtered by profession_id={profession_id}, city={city}",
-            f"min_price={min_price}, max_price={max_price}",
-        )
+        log(log.INFO, "Job filtered")
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         query = query.where(m.Job.profession_id.in_(profession_ids))
