@@ -33,7 +33,7 @@ def login(
         )
 
     access_token: str = create_access_token(data={"user_id": user.id})
-    log(log.INFO, "Access token for User [%s] generated", user.username)
+    log(log.INFO, "Access token for User [%s] generated", user.phone)
     return s.Token(
         access_token=access_token,
         token_type="Bearer",
@@ -175,7 +175,7 @@ def google_auth(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
         )
 
-    access_token = create_access_token(data={"user_id": user.id})
+    access_token: str = create_access_token(data={"user_id": user.id})
     log(log.INFO, "Access token for User [%s] generated", user.email)
     return s.Token(
         access_token=access_token,
