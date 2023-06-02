@@ -41,6 +41,21 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
     )
     assert response.status_code == status.HTTP_200_OK
 
+    user = db.scalar(
+        select(m.User).where(m.User.phone == test_data.test_users[0].phone)
+    )
+    user.is_verified = True
+    db.commit()
+
+    response = client.post(
+        "api/auth/login-by-phone",
+        json={
+            "phone": test_data.test_users[0].phone,
+            "password": test_data.test_users[0].password,
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+
 
 def test_signup(
     client: TestClient,
