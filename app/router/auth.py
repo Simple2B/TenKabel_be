@@ -88,22 +88,19 @@ def sign_up(
             status_code=status.HTTP_409_CONFLICT, detail="Error while signing up"
         )
     log(log.INFO, "User [%s] signed up", user.phone)
-    # Creating data about user
+
     profession: m.Profession | None = db.scalar(
         select(m.Profession).where(m.Profession.id == data.profession_id)
     )
-    if not profession:
-        # add logs
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Location was not found"
+
+    if profession:
+        db.add(
+            m.UserProfession(
+                user_id=user.id,
+                profession_id=profession.id,
+            )
         )
-    db.add(
-        m.UserProfession(
-            user_id=user.id,
-            profession_id=profession.id,
-        )
-    )
-    log(log.INFO, "UserProfession created")
+        log(log.INFO, "User's profession created [%s]", profession.name_en)
 
     locations: list[m.Location] = [
         location
@@ -114,7 +111,8 @@ def sign_up(
     for location in locations:
         db.add(m.UserLocation(user_id=user.id, location_id=location.id))
         db.flush()
-    log(log.INFO, "UserLocation created")
+
+    log(log.INFO, "User's locations created [%d]", len(user.locations))
     try:
         db.commit()
     except SQLAlchemyError as e:
