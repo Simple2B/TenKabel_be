@@ -11,7 +11,6 @@ from app.logger import log
 
 fake: Faker = Faker()
 
-
 JOBS_LIST = [
     "mechanic",
     "courier",

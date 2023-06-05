@@ -10,6 +10,15 @@ NUM_TEST_USERS = 100
 MAX_RATES_NUM = 5
 
 
+TEST_AVATAR_URLS = [
+    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_1.png",
+    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_2.png",
+    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_3.png",
+    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_5.png",
+    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_6.png",
+]
+
+
 def fill_test_data(db: Session):
     profession_ids = [profession.id for profession in db.scalars(select(m.Profession))]
     location_ids = [location.id for location in db.scalars(select(m.Location))]
@@ -23,6 +32,7 @@ def fill_test_data(db: Session):
             email=f"user{uid_user}@test.com",
             phone=f"972 54 000 {uid_user+1:04}",
             is_verified=True,
+            picture=random.choice(TEST_AVATAR_URLS),
         )
         db.add(user)
 
