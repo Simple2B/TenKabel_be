@@ -39,7 +39,7 @@ jobs:
   build:
     needs: tests
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -66,3 +66,16 @@ jobs:
         with:
           push: true
           tags: ${{ format('{0}:{1}', 'simple2b/tenkabel-be', env.TAG) }}
+  deploy:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Deploy to runner
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            cd ten_kabel
+            ./deploy_script.sh
