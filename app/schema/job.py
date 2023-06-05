@@ -38,6 +38,11 @@ class Job(BaseJob):
         ME = "me"
         CLIENT = "client"
 
+    class TabFilter(enum.Enum):
+        PENDING = "Pending"
+        ACTIVE_JOBS = "Active jobs"
+        ARCHIVE = "Archive"
+
     id: str | None
     status: Status | str
     payment_status: PaymentStatus | str

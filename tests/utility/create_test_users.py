@@ -8,6 +8,7 @@ from app.logger import log
 
 NUM_TEST_USERS = 100
 MAX_RATES_NUM = 5
+TEST_IMAGES = []
 
 
 def fill_test_data(db: Session):

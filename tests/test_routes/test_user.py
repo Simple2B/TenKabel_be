@@ -205,6 +205,9 @@ def test_get_user_profile(
     create_jobs(db)
     create_applications(db)
 
+    user: m.User = db.scalar(
+        select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
+    )
     # get current jobs where user is worker
     response = client.get(
         "api/user/jobs",
@@ -212,6 +215,19 @@ def test_get_user_profile(
     )
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.worker_id == user.id
+
+    response = client.get(
+        "api/user/jobs?manage_tab=Pending",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status == s.Job.Status.PENDING
 
     response = client.get(
         "api/user",
