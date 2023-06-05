@@ -15,6 +15,7 @@ from tests.utility import (
     create_professions,
     create_locations,
     create_applications,
+    create_job_for_user,
 )
 
 
@@ -208,6 +209,7 @@ def test_get_user_profile(
     user: m.User = db.scalar(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
+    create_job_for_user(db, user.id)
     # get current jobs where user is worker
     response = client.get(
         "api/user/jobs",
@@ -227,7 +229,30 @@ def test_get_user_profile(
     resp_obj = s.ListJob.parse_obj(response.json())
 
     for job in resp_obj.jobs:
-        assert job.status == s.Job.Status.PENDING
+        assert job.status == s.Job.Status.PENDING.value
+
+    response = client.get(
+        "api/user/jobs?manage_tab=Active jobs",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status in (
+            s.Job.Status.IN_PROGRESS.value,
+            s.Job.Status.APPROVED.value,
+        )
+
+    response = client.get(
+        "api/user/jobs?manage_tab=Archive",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status == s.Job.Status.JOB_IS_FINISHED.value
 
     response = client.get(
         "api/user",
@@ -251,14 +276,42 @@ def test_get_user_profile(
     )
     assert response.status_code == status.HTTP_200_OK
     resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
-    user = (
-        db.query(m.User)
-        .filter_by(email=test_data.test_authorized_users[0].email)
-        .first()
-    )
-    assert user
+
     for job in resp_obj.jobs:
         assert job.owner_id == user.id
+
+    response = client.get(
+        "api/user/postings?manage_tab=Pending",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status == s.Job.Status.PENDING.value
+
+    response = client.get(
+        "api/user/postings?manage_tab=Active jobs",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status in (
+            s.Job.Status.IN_PROGRESS.value,
+            s.Job.Status.APPROVED.value,
+        )
+
+    response = client.get(
+        "api/user/postings?manage_tab=Archive",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJob.parse_obj(response.json())
+
+    for job in resp_obj.jobs:
+        assert job.status == s.Job.Status.JOB_IS_FINISHED.value
 
     # get user by uuid
     response = client.get(
