@@ -49,12 +49,22 @@ def get_jobs(
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         cities_name: list[str] = [location.name_en for location in user.locations]
-        if profession_ids and cities_name:
+        if profession_ids:
             query = query.where(m.Job.profession_id.in_(profession_ids))
+            log(
+                log.INFO,
+                "Job filtered by profession ids [%s] user interests",
+                profession_ids,
+            )
+        if cities_name:
             query = query.where(
                 func.lower(m.Job.city).in_([city.lower() for city in cities_name])
             )
-            log(log.INFO, "Job filtered by [%s] user interests", user.phone)
+            log(
+                log.INFO,
+                "Job filtered by cities names [%s] user interests",
+                cities_name,
+            )
         else:
             log(log.INFO, "Job returned with no filters")
 
