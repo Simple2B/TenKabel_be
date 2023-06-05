@@ -1,4 +1,5 @@
 from functools import lru_cache
+
 from pydantic import BaseSettings, EmailStr
 
 
@@ -13,7 +14,10 @@ class Settings(BaseSettings):
 
     # GOOGLE
     GOOGLE_BUCKET_NAME: str = "tenkabel"
-    GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
+    GOOGLE_SERVICE_ACCOUNT_PATH: str = "./google_cloud_service_account.json"
+
+    # Firebase
+    FIREBASE_SERVICE_ACCOUNT_PATH: str = "./firebase_service_account.json"
 
     class Config:
         env_file = "project.env", ".env"
