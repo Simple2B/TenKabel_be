@@ -4,7 +4,11 @@ from invoke import task
 from app.config import Settings, get_settings
 from app.model import User, Profession, Job
 from app.logger import log
-from tests.utility import create_locations as cl, create_professions, create_jobs as cj
+from tests.utility import (
+    create_locations as cl,
+    create_professions as cp,
+    create_jobs as cj,
+)
 from tests.utility.create_test_users import fill_test_data
 
 settings: Settings = get_settings()
@@ -47,6 +51,14 @@ def create_locations(_):
 
 
 @task
+def create_professions(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cp(db)
+
+
+@task
 def init_db(_, test_data=False):
     """Initialization database
 
@@ -56,8 +68,8 @@ def init_db(_, test_data=False):
     from app.database import db as dbo
 
     db = dbo.Session()
-    create_professions(db)
-    create_locations(db)
+    cp(db)
+    cl(db)
     # add admin user
     admin = User(
         username=settings.ADMIN_USER,
