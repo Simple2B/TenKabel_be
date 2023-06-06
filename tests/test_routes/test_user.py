@@ -372,11 +372,10 @@ def test_passwords(
     assert user
     TEST_NEW_PASSWORD = "TEST_NEW_PASSWORD"
     # ForgotPassword
-    request_data = s.ForgotPassword(new_password=TEST_NEW_PASSWORD)
+    request_data = s.ForgotPassword(new_password=TEST_NEW_PASSWORD, phone=user.phone)
     response = client.post(
         "api/user/forgot-password",
         json=request_data.dict(),
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -387,7 +386,6 @@ def test_passwords(
     request_data = s.ChangePassword(
         current_password=TEST_NEW_PASSWORD,
         new_password=TEST_NEW_FORGOT_PASSWORD,
-        confirm_new_password=TEST_NEW_FORGOT_PASSWORD,
     )
     response = client.post(
         "api/user/change-password",

@@ -68,7 +68,7 @@ def get_jobs(
             log(
                 log.INFO,
                 "Job filtered by cities names [%s] user interests",
-                location,
+                ",".join(cities_names),
             )
         if not cities_names and not profession_ids:
             log(log.INFO, "Job returned with no filters")

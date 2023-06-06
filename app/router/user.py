@@ -114,9 +114,9 @@ def check_password(
 def forgot_password(
     data: s.ForgotPassword,
     db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
 ):
-    current_user.password = data.new_password
+    user = db.scalar(select(m.User).where(m.User.phone == data.phone))
+    user.password = data.new_password
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -125,7 +125,7 @@ def forgot_password(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating password"
         )
 
-    log(log.INFO, "User [%s] password updated successfully", current_user.username)
+    log(log.INFO, "User [%s] password updated successfully", user.username)
     return status.HTTP_201_CREATED
 
 
@@ -142,12 +142,7 @@ def change_password(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Bad current password"
         )
-    if not data.new_password == data.confirm_new_password:
-        log(log.INFO, "Passwords are not the same")
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Provided passwords is not the same",
-        )
+
     current_user.password = data.new_password
     try:
         db.commit()

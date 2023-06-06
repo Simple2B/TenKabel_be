@@ -14,4 +14,4 @@ class Profession(db.Model):
     name_hebrew: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
 
     def __repr__(self):
-        return f"<{self.id}: {self.name}>"
+        return f"<{self.id}: {self.name_en}>"

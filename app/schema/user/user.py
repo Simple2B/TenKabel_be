@@ -64,8 +64,9 @@ class UserUpdate(BaseUser):
 
 class ForgotPassword(BaseModel):
     new_password: str
+    phone: phone_field
 
 
-class ChangePassword(ForgotPassword):
+class ChangePassword(BaseModel):
     current_password: str
-    confirm_new_password: str
+    new_password: str

@@ -75,7 +75,7 @@
     "rates": [{
       "rate": "positive",
       "owner_id": 5
-    }, 
+    },
     {"rate": "negative",
       "owner_id": 3
     }]
