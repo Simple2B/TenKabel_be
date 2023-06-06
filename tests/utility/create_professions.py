@@ -1,4 +1,6 @@
 from sqlalchemy.orm import Session
+from sqlalchemy import select
+
 from app import model as m
 from app.logger import log
 
@@ -35,12 +37,15 @@ PROFESSIONS = [
 
 def create_professions(db: Session):
     for name in PROFESSIONS:
-        db.add(
-            m.Profession(
-                name_en=name["en"],
-                name_hebrew=name["hebrew"],
+        profession = db.scalars(
+            select(m.Profession).where(m.Profession.name_en == name["en"])
+        ).first()
+        if not profession:
+            db.add(
+                m.Profession(
+                    name_en=name["en"],
+                    name_hebrew=name["hebrew"],
+                )
             )
-        )
-
-    db.commit()
+            db.commit()
     log(log.INFO, "Professions [%d] were created", len(PROFESSIONS))

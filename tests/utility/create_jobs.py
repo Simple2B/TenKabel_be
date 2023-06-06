@@ -11,8 +11,10 @@ from app.logger import log
 
 fake: Faker = Faker()
 
+
 TEST_JOBS_NUM = 100
 TEST_USER_JOBS_NUM = 10
+
 
 JOBS_LIST = [
     "mechanic",

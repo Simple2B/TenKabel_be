@@ -110,14 +110,13 @@ def check_password(
     return status.HTTP_200_OK
 
 
-@user_router.put("/change-password", status_code=status.HTTP_200_OK)
-def change_password(
-    password: str,
+@user_router.post("/forgot-password", status_code=status.HTTP_201_CREATED)
+def forgot_password(
+    data: s.ForgotPassword,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    current_user.password = password
-
+    current_user.password = data.new_password
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -127,7 +126,39 @@ def change_password(
         )
 
     log(log.INFO, "User [%s] password updated successfully", current_user.username)
-    return status.HTTP_200_OK
+    return status.HTTP_201_CREATED
+
+
+@user_router.post("/change-password", status_code=status.HTTP_201_CREATED)
+def change_password(
+    data: s.ChangePassword,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    if not hash_verify(data.current_password, current_user.password):
+        log(
+            log.INFO, "Current password is not correct for user %s" % current_user.email
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Bad current password"
+        )
+    if not data.new_password == data.confirm_new_password:
+        log(log.INFO, "Passwords are not the same")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Provided passwords is not the same",
+        )
+    current_user.password = data.new_password
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while updating user password - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating password"
+        )
+
+    log(log.INFO, "User [%s] password updated successfully", current_user.username)
+    return status.HTTP_201_CREATED
 
 
 @user_router.get(

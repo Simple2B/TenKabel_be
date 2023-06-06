@@ -4,7 +4,7 @@ from invoke import task
 from app.config import Settings, get_settings
 from app.model import User, Profession, Job
 from app.logger import log
-from tests.utility import create_locations, create_professions, create_jobs as cj
+from tests.utility import create_locations as cl, create_professions, create_jobs as cj
 from tests.utility.create_test_users import fill_test_data
 
 settings: Settings = get_settings()
@@ -36,6 +36,14 @@ TEST_TIMES = [
     "Within next 3h",
     "ASAP",
 ]
+
+
+@task
+def create_locations(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cl(db)
 
 
 @task

@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 from datetime import datetime
 
 from app.schema.profession import Profession
+from app.schema.location import Location
 
 phone_field = constr(
     max_length=128,
@@ -49,6 +50,7 @@ class User(BaseUser):
     is_verified: bool
     professions: list[Profession]
     picture: AnyHttpUrl | None
+    locations: list[Location]
 
     class Config:
         orm_mode = True
@@ -58,3 +60,12 @@ class UserUpdate(BaseUser):
     email: EmailStr | None
     professions: list[int]
     picture: AnyHttpUrl | None
+
+
+class ForgotPassword(BaseModel):
+    new_password: str
+
+
+class ChangePassword(ForgotPassword):
+    current_password: str
+    confirm_new_password: str
