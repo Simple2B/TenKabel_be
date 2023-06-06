@@ -48,9 +48,9 @@ class User(BaseUser):
     neutral_rates_count: int
     created_at: datetime | str
     is_verified: bool
-    professions: list[Profession] | None
+    professions: list[Profession]
     picture: AnyHttpUrl | None
-    locations: list[Location] | None
+    locations: list[Location]
 
     class Config:
         orm_mode = True

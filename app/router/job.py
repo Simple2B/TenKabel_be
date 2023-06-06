@@ -63,7 +63,7 @@ def get_jobs(
         if cities_names:
             filter_conditions = []
             for location in cities_names:
-                filter_conditions.append(m.Job.city == location)
+                filter_conditions.append(m.Job.city.ilike(location))
             query = query.filter(or_(*filter_conditions))
             log(
                 log.INFO,
