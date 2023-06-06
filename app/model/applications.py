@@ -36,6 +36,8 @@ class Application(db.Model):
         sa.DateTime, default=datetime.utcnow
     )
 
+    # job: orm.Mapped[m.Job] = orm.relationship("Job", foreign_keys=[job_id], viewonly=True)
+
     @orm.validates("status")
     def update_status_changed_at(self, key, value):
         if self.status != value:
