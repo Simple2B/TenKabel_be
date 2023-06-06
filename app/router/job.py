@@ -48,27 +48,32 @@ def get_jobs(
         log(log.INFO, "Job filtered")
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
-        cities_name: list[str] = [location.name_en for location in user.locations]
+        cities_names: list[str] = [location.name_en for location in user.locations]
         if profession_ids:
-            query = query.where(m.Job.profession_id.in_(profession_ids))
+            filter_conditions = []
+            for prof_id in profession_ids:
+                filter_conditions.append(m.Job.profession_id == prof_id)
+            query = query.filter(or_(*filter_conditions))
+
             log(
                 log.INFO,
                 "Job filtered by profession ids [%s] user interests",
                 profession_ids,
             )
-        if cities_name:
-            query = query.where(
-                func.lower(m.Job.city).in_([city.lower() for city in cities_name])
-            )
+        if cities_names:
+            filter_conditions = []
+            for location in cities_names:
+                filter_conditions.append(m.Job.city == location)
+            query = query.filter(or_(*filter_conditions))
             log(
                 log.INFO,
                 "Job filtered by cities names [%s] user interests",
-                cities_name,
+                location,
             )
-        else:
+        if not cities_names and not profession_ids:
             log(log.INFO, "Job returned with no filters")
 
-    jobs = db.scalars(query.order_by(m.Job.id)).all()
+    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.id)).all()
     log(log.INFO, "Job [%s] at all got", len(jobs))
     return s.ListJob(jobs=jobs)
 
