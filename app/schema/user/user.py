@@ -2,6 +2,7 @@ from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 from datetime import datetime
 
 from app.schema.profession import Profession
+from app.schema.location import Location
 
 phone_field = constr(
     max_length=128,
@@ -47,8 +48,9 @@ class User(BaseUser):
     neutral_rates_count: int
     created_at: datetime | str
     is_verified: bool
-    professions: list[Profession]
+    professions: list[Profession] | None
     picture: AnyHttpUrl | None
+    locations: list[Location] | None
 
     class Config:
         orm_mode = True
