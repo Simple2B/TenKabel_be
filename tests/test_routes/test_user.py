@@ -314,7 +314,7 @@ def test_get_user_profile(
 #     assert user.last_name == request_data.last_name
 
 
-def test_password_update(
+def test_passwords(
     client: TestClient,
     db: Session,
     test_data: TestData,
@@ -331,22 +331,34 @@ def test_password_update(
     )
 
     assert user
+    TEST_NEW_PASSWORD = "TEST_NEW_PASSWORD"
+    # ForgotPassword
+    request_data = s.ForgotPassword(new_password=TEST_NEW_PASSWORD)
     response = client.post(
-        f"api/user/check-password?password={test_data.test_authorized_users[0].password}",
+        "api/user/forgot-password",
+        json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
-    assert response.status_code == status.HTTP_200_OK
-
-    response = client.put(
-        f"api/user/change-password?password={test_data.test_authorized_users[1].password}",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    )
-
-    assert response.status_code == status.HTTP_200_OK
-
+    assert response.status_code == status.HTTP_201_CREATED
     db.refresh(user)
-    assert hash_verify(test_data.test_authorized_users[1].password, user.password)
+    assert hash_verify(request_data.new_password, user.password)
+
+    TEST_NEW_FORGOT_PASSWORD = TEST_NEW_PASSWORD + "abc"
+    request_data = s.ChangePassword(
+        current_password=TEST_NEW_PASSWORD,
+        new_password=TEST_NEW_FORGOT_PASSWORD,
+        confirm_new_password=TEST_NEW_FORGOT_PASSWORD,
+    )
+    response = client.post(
+        "api/user/change-password",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        json=request_data.dict(),
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    db.refresh(user)
+    assert hash_verify(TEST_NEW_FORGOT_PASSWORD, user.password)
 
 
 # def test_upload_avatar(
