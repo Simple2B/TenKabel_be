@@ -166,11 +166,13 @@ def get_user_applications(
 
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_jobs(
-    manage_tab: str | None = None,
+    manage_tab: s.Job.TabFilter | None = None,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    query = select(m.Job).where(m.Job.worker_id == current_user.id)
+    query = select(m.Job).where(
+        or_(m.Job.worker_id == current_user.id, m.Job.owner_id == current_user.id)
+    )
     if manage_tab:
         try:
             manage_tab: s.Job.TabFilter = s.Job.TabFilter(manage_tab)
@@ -180,22 +182,29 @@ def get_user_jobs(
                 status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
             )
         if manage_tab == s.Job.TabFilter.PENDING:
-            query = query.where(m.Job.status == s.Job.Status.PENDING)
-        elif manage_tab == s.Job.TabFilter.ACTIVE_JOBS:
+            # query = select(m.Application).where(
+            #     or_(
+            #         m.Application.worker_id == current_user.id,
+            #         m.Application.owner_id == current_user.id,
+            #     )
+            # )
+            query = query.filter(m.Job.status == s.Job.Status.PENDING)
+
+        if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
                 or_(
                     m.Job.status == s.Job.Status.IN_PROGRESS,
                     m.Job.status == s.Job.Status.APPROVED,
                 )
             )
-        elif manage_tab == s.Job.TabFilter.ARCHIVE:
+        if manage_tab == s.Job.TabFilter.ARCHIVE:
             # TODO: add cancel field search in jobs
             query = query.filter(m.Job.status == s.Job.Status.JOB_IS_FINISHED)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
     log(
         log.INFO,
-        "User [%s] with id (%s) have worked on [%s] jobs total",
+        "User [%s] with id (%s) got [%s] jobs total",
         current_user.username,
         current_user.id,
         len(jobs),
@@ -223,31 +232,11 @@ def get_user_rates(
 
 @user_router.get("/postings", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_postings(
-    manage_tab: str | None = None,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
     """Get list of jobs where current user is a owner"""
     query = select(m.Job).where(m.Job.owner_id == current_user.id)
-    if manage_tab:
-        try:
-            manage_tab: s.Job.TabFilter = s.Job.TabFilter(manage_tab)
-        except SQLAlchemyError:
-            log(log.INFO, "Filter manage tab doesn't exist - %s", manage_tab)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
-            )
-        if manage_tab == s.Job.TabFilter.PENDING:
-            query = query.where(m.Job.status == s.Job.Status.PENDING)
-        elif manage_tab == s.Job.TabFilter.ACTIVE_JOBS:
-            query = query.where(
-                or_(
-                    m.Job.status == s.Job.Status.IN_PROGRESS,
-                    m.Job.status == s.Job.Status.APPROVED,
-                )
-            )
-        elif manage_tab == s.Job.TabFilter.ARCHIVE:
-            query = query.filter(m.Job.status == s.Job.Status.JOB_IS_FINISHED)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
     log(

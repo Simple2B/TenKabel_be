@@ -21,10 +21,10 @@ class BaseJob(BaseModel):
 
 class Job(BaseJob):
     class Status(enum.Enum):
-        PENDING = "Pending"
-        APPROVED = "Approved"
-        IN_PROGRESS = "In progress"
-        JOB_IS_FINISHED = "Job is finished"
+        PENDING = "pending"
+        APPROVED = "approved"
+        IN_PROGRESS = "in_progress"
+        JOB_IS_FINISHED = "job_is_finished"
 
     class PaymentStatus(enum.Enum):
         PAID = "paid"
@@ -39,9 +39,9 @@ class Job(BaseJob):
         CLIENT = "client"
 
     class TabFilter(enum.Enum):
-        PENDING = "Pending"
-        ACTIVE_JOBS = "Active jobs"
-        ARCHIVE = "Archive"
+        PENDING = "pending"
+        ACTIVE = "active"
+        ARCHIVE = "archive"
 
     id: str | None
     status: Status | str

@@ -219,10 +219,11 @@ def test_get_user_profile(
     resp_obj = s.ListJob.parse_obj(response.json())
 
     for job in resp_obj.jobs:
-        assert job.worker_id == user.id
+        assert user.id in (job.worker_id, job.owner_id)
 
     response = client.get(
-        "api/user/jobs?manage_tab=Pending",
+        "api/user/jobs",
+        params={"manage_tab": s.Job.TabFilter.PENDING.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -232,7 +233,8 @@ def test_get_user_profile(
         assert job.status == s.Job.Status.PENDING.value
 
     response = client.get(
-        "api/user/jobs?manage_tab=Active jobs",
+        "api/user/jobs",
+        params={"manage_tab": s.Job.TabFilter.ACTIVE.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -245,7 +247,8 @@ def test_get_user_profile(
         )
 
     response = client.get(
-        "api/user/jobs?manage_tab=Archive",
+        "api/user/jobs",
+        params={"manage_tab": s.Job.TabFilter.ARCHIVE.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -279,39 +282,6 @@ def test_get_user_profile(
 
     for job in resp_obj.jobs:
         assert job.owner_id == user.id
-
-    response = client.get(
-        "api/user/postings?manage_tab=Pending",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    )
-    assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
-
-    for job in resp_obj.jobs:
-        assert job.status == s.Job.Status.PENDING.value
-
-    response = client.get(
-        "api/user/postings?manage_tab=Active jobs",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    )
-    assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
-
-    for job in resp_obj.jobs:
-        assert job.status in (
-            s.Job.Status.IN_PROGRESS.value,
-            s.Job.Status.APPROVED.value,
-        )
-
-    response = client.get(
-        "api/user/postings?manage_tab=Archive",
-        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-    )
-    assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
-
-    for job in resp_obj.jobs:
-        assert job.status == s.Job.Status.JOB_IS_FINISHED.value
 
     # get user by uuid
     response = client.get(

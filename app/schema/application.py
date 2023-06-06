@@ -6,9 +6,9 @@ from pydantic import BaseModel
 
 class BaseApplication(BaseModel):
     class ApplicationStatus(enum.Enum):
-        PENDING = "PENDING"
-        ACCEPTED = "ACCEPTED"
-        DECLINED = "DECLINED"
+        PENDING = "pending"
+        ACCEPTED = "accepted"
+        DECLINED = "declined"
 
     owner_id: int
     worker_id: int
