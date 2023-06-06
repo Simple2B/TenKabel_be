@@ -68,7 +68,7 @@ def test_auth_user_jobs(
         },
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJob.parse_obj(response.json())
+    resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
         assert job.city in [location.name_en for location in user.locations]
