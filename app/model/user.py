@@ -9,8 +9,8 @@ from .user_location import users_locations
 from .base_user import BaseUser
 from .profession import Profession
 from .location import Location
-from app import model as m
 from app import schema as s
+from app import model as m
 
 
 class User(db.Model, BaseUser):

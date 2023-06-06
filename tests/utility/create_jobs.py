@@ -81,12 +81,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
 
     for job in created_jobs:
         # job status can't be pending with existing worker
-        if job.worker_id and job.status == s.Job.Status.PENDING:
-            job.status = random.choice(
-                [e for e in s.Job.Status if e != s.Job.Status.PENDING]
-            )
-        # job progress cant exist with no worker
-        if not job.worker_id and job.status != s.Job.Status.PENDING:
+
+        if job.status == s.Job.Status.PENDING:
             job.worker_id = random.choice(worker_ids[:-1])
         # owner can't work on his own job
         while job.owner_id == job.worker_id:
