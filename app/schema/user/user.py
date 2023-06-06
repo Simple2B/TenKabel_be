@@ -58,3 +58,12 @@ class UserUpdate(BaseUser):
     email: EmailStr | None
     professions: list[int]
     picture: AnyHttpUrl | None
+
+
+class ForgotPassword(BaseModel):
+    new_password: str
+
+
+class ChangePassword(ForgotPassword):
+    current_password: str
+    confirm_new_password: str
