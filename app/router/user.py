@@ -208,13 +208,15 @@ def get_user_jobs(
                 status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
             )
         if manage_tab == s.Job.TabFilter.PENDING:
-            # query = select(m.Application).where(
-            #     or_(
-            #         m.Application.worker_id == current_user.id,
-            #         m.Application.owner_id == current_user.id,
-            #     )
-            # )
-            query = query.filter(m.Job.status == s.Job.Status.PENDING)
+            jobs_ids = db.scalars(
+                select(m.Application.job_id).where(
+                    or_(
+                        m.Application.worker_id == current_user.id,
+                    )
+                )
+            ).all()
+            query = query.filter(m.Job.id.in_(jobs_ids))
+            log(log.INFO, "Jobs filtered by ids: (%s)", ",".join(map(str, jobs_ids)))
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
@@ -223,9 +225,11 @@ def get_user_jobs(
                     m.Job.status == s.Job.Status.APPROVED,
                 )
             )
+            log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:
             # TODO: add cancel field search in jobs
             query = query.filter(m.Job.status == s.Job.Status.JOB_IS_FINISHED)
+            log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
     log(
