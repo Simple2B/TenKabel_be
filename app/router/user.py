@@ -199,19 +199,24 @@ def get_user_jobs(
     query = select(m.Job).where(
         or_(m.Job.worker_id == current_user.id, m.Job.owner_id == current_user.id)
     )
+    log(log.INFO, "Manage tab query parameter: (%s)", str(manage_tab))
+
     if manage_tab:
         try:
             manage_tab: s.Job.TabFilter = s.Job.TabFilter(manage_tab)
-        except SQLAlchemyError:
+            log(log.INFO, "s.Job.TabFilter parameter: (%s)", manage_tab.value)
+        except ValueError:
             log(log.INFO, "Filter manage tab doesn't exist - %s", manage_tab)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
             )
         if manage_tab == s.Job.TabFilter.PENDING:
+            log(log.INFO, "Pending tab, getting jobs ids for user: (%s)", str(current_user.id))
             jobs_ids = db.scalars(
                 select(m.Application.job_id).where(
                     or_(
                         m.Application.worker_id == current_user.id,
+                        m.Application.owner_id == current_user.id,
                     )
                 )
             ).all()
