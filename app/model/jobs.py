@@ -6,6 +6,7 @@ from app.database import db
 from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
+from app.model.applications import Application
 
 
 class Job(db.Model):
@@ -65,6 +66,9 @@ class Job(db.Model):
     )
 
     # relationships
+    applications: orm.Mapped[list[Application]] = orm.relationship(
+        "Application", viewonly=False
+    )
     worker: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[worker_id], viewonly=True
     )
@@ -76,3 +80,7 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
+
+    @property
+    def application_worker_ids(self):
+        return [appl.worker_id for appl in self.applications]

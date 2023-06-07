@@ -1,7 +1,7 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, or_, and_
 from pydantic.error_wrappers import ValidationError
 
 import app.schema as s
@@ -204,12 +204,13 @@ def test_get_user_profile(
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
-    create_applications(db)
 
     user: m.User = db.scalar(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
     create_job_for_user(db, user.id)
+    create_applications(db)
+
     # get current jobs where user is worker
     response = client.get(
         "api/user/jobs",
@@ -229,8 +230,29 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
 
+    jobs_ids = db.scalars(
+        select(m.Application.job_id).where(
+            or_(
+                m.Application.worker_id == user.id,
+            )
+        )
+    ).all()
+    query = select(m.Job).filter(
+        and_(
+            or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
+            m.Job.status == s.Job.Status.PENDING,
+        )
+    )
+    jobs = db.scalars(query).all()
+
+    assert len(jobs) == len(resp_obj.jobs)
     for job in resp_obj.jobs:
+        assert int(job.id) in [j.id for j in jobs]
         assert job.status == s.Job.Status.PENDING.value
+        if job.owner_id != user.id:
+            assert user.id in [
+                application.worker_id for application in job.applications
+            ]
 
     response = client.get(
         "api/user/jobs",
@@ -240,11 +262,26 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
 
+    query = select(m.Job).filter(
+        and_(
+            or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
+            or_(
+                m.Job.status == s.Job.Status.IN_PROGRESS,
+                m.Job.status == s.Job.Status.APPROVED,
+            ),
+        )
+    )
+    jobs = db.scalars(query).all()
+
+    assert len(jobs) == len(resp_obj.jobs)
+
     for job in resp_obj.jobs:
+        assert int(job.id) in [j.id for j in jobs]
         assert job.status in (
             s.Job.Status.IN_PROGRESS.value,
             s.Job.Status.APPROVED.value,
         )
+        assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
         "api/user/jobs",
@@ -254,8 +291,18 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
 
+    query = select(m.Job).filter(
+        and_(
+            or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
+            m.Job.status == s.Job.Status.JOB_IS_FINISHED,
+        )
+    )
+    jobs = db.scalars(query).all()
+
     for job in resp_obj.jobs:
+        assert int(job.id) in [j.id for j in jobs]
         assert job.status == s.Job.Status.JOB_IS_FINISHED.value
+        assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
         "api/user",
