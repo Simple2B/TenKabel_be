@@ -93,7 +93,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     log(log.INFO, "Jobs created - %s", test_jobs_num)
 
 
-def create_job_for_user(
+def create_jobs_for_user(
     db: Session,
     user_id: int,
     test_jobs_num: int = TEST_USER_JOBS_NUM,

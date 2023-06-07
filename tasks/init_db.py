@@ -71,14 +71,17 @@ def init_db(_, test_data=False):
     cp(db)
     cl(db)
     # add admin user
-    admin = User(
-        username=settings.ADMIN_USER,
-        password=settings.ADMIN_PASS,
-        email=settings.ADMIN_EMAIL,
-        phone="972 54 000 00000",
-        is_verified=True,
-    )
-    db.add(admin)
+    from sqlalchemy import select
+
+    if not db.scalar(select(User).where(User.email == settings.ADMIN_EMAIL)):
+        admin = User(
+            username=settings.ADMIN_USER,
+            password=settings.ADMIN_PASS,
+            email=settings.ADMIN_EMAIL,
+            phone="972 54 000 00000",
+            is_verified=True,
+        )
+        db.add(admin)
     if test_data:
         # Add test data
         fill_test_data(db)
