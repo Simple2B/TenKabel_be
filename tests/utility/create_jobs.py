@@ -83,17 +83,17 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         # job status can't be pending with existing worker
 
         if job.status == s.Job.Status.PENDING:
-            job.worker_id = random.choice(worker_ids[:-1])
+            job.worker_id = None
         # owner can't work on his own job
         while job.owner_id == job.worker_id:
-            job.worker_id = random.choice(worker_ids)
+            job.worker_id = random.choice(worker_ids[:-1])
 
         db.commit()
 
     log(log.INFO, "Jobs created - %s", test_jobs_num)
 
 
-def create_job_for_user(
+def create_jobs_for_user(
     db: Session,
     user_id: int,
     test_jobs_num: int = TEST_USER_JOBS_NUM,
@@ -166,4 +166,4 @@ def create_job_for_user(
 
         db.commit()
 
-    log(log.INFO, "Jobs created - %s", test_jobs_num)
+    log(log.INFO, "Jobs for user [%s] created - %s", user_id, test_jobs_num)

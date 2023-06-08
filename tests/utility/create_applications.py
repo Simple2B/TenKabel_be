@@ -12,16 +12,16 @@ fake: Faker = Faker()
 
 
 def create_applications(db: Session):
-    worker_ids = [worker_id for worker_id in db.scalars(select(m.User.id)).all()]
-    owner_ids = [owner_id for owner_id in db.scalars(select(m.Job.owner_id)).all()]
-    job_ids = [job_id for job_id in db.scalars(select(m.Job.id)).all()]
+    worker_ids = db.scalars(select(m.User.id)).all()
+    job_ids = db.scalars(select(m.Job.id)).all()
 
-    for job_id in range(len(job_ids)):
-        for i in range(0, random.randint(0, 5)):
+    for job_id in job_ids:
+        for i in range(1, random.randint(1, 5)):
             worker_id = random.choice(worker_ids)
-            owner_id = random.choice(owner_ids)
+            owner_id = db.scalar(select(m.Job.id).where(m.Job.id == job_id))
+
             while owner_id == worker_id:
-                owner_id = random.choice(owner_ids)
+                worker_id = random.choice(worker_ids)
             application = m.Application(
                 job_id=job_id,
                 owner_id=owner_id,
