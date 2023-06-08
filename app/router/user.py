@@ -47,6 +47,7 @@ def update_user(
         current_user.last_name = last_name
     if picture:
         current_user.picture = bytes(picture, "UTF-8")
+        log(log.INFO, "User [%s] picture update in progress...", current_user.username)
     if professions:
         for profession in current_user.professions:
             db.delete(profession)
