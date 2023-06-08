@@ -1,5 +1,4 @@
 import datetime
-import base64
 
 from fastapi import HTTPException, Depends, APIRouter, status, Form
 from sqlalchemy import select, or_
