@@ -60,7 +60,7 @@ class User(BaseUser):
 class UserUpdate(BaseUser):
     email: EmailStr | None
     professions: list[int]
-    picture: str | None = Field(alias="avatar_decode")
+    picture: str | None
 
 
 class ForgotPassword(BaseModel):

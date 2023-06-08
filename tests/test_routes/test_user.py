@@ -343,7 +343,6 @@ def test_update_user(
         picture=PICTURE,
         professions=[1, 3],
     )
-    assert PICTURE != user.picture
 
     response = client.put(
         "api/user",
