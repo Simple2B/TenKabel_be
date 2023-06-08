@@ -1,5 +1,3 @@
-import base64
-import re
 from datetime import datetime
 from typing import Self
 
@@ -18,27 +16,13 @@ class BaseUser:
     )
     username: orm.Mapped[str] = orm.mapped_column(sa.String(128), default="")
     google_openid_key: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
-    avatar_decoded: orm.Mapped[str] = orm.mapped_column(
-        sa.Text, default=get_default_avatar()
-    )
+    picture: orm.Mapped[str] = orm.mapped_column(sa.Text, default=get_default_avatar())
 
     password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=True)
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
     is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=True)
-
-    @property
-    def picture(self):
-        return base64.b64encode(self.avatar_decoded)
-
-    @picture.setter
-    def picture(self, value: str):
-        # check for http url
-        if isinstance(value, str) and re.search(r"^(http|https)://", value):
-            self.avatar_decoded = value
-        else:
-            self.avatar_decoded = base64.b64decode(value)
 
     @property
     def password(self):

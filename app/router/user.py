@@ -31,7 +31,7 @@ def update_user(
     first_name: str = Form(None),
     last_name: str = Form(None),
     professions: list[int] = Form(None),
-    picture: str | None = Form(None),
+    picture: bytes | None = Form(None),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):

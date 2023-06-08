@@ -1,4 +1,5 @@
 import base64
+import re
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -161,12 +162,15 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
 
     user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
     assert user
+    assert re.search(r"^(http|https)://", user.picture)
+
+    # test sign in
     request_data = s.GoogleAuthUser(
         email=user.email,
     ).dict()
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.Token.parse_obj(response.json())
+    resp_obj: s.Token = s.Token.parse_obj(response.json())
     assert resp_obj.access_token
 
     # checking non existing user
@@ -314,11 +318,10 @@ def test_get_user_profile(
     )
     assert response.status_code == status.HTTP_200_OK
     resp_obj: s.User = s.User.parse_obj(response.json())
-    user: m.User = (
-        db.query(m.User)
-        .filter_by(email=test_data.test_authorized_users[0].email)
-        .first()
+    user: m.User = db.scalar(
+        select(m.User).filter_by(email=test_data.test_authorized_users[0].email)
     )
+    db.refresh(user)
     assert user.id == resp_obj.id
     assert user.picture == resp_obj.picture
     # get current jobs where user is owner
