@@ -5,7 +5,7 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 from app.hash_utils import make_hash, hash_verify
-from app.utility import generate_uuid
+from app.utility import generate_uuid, get_default_avatar
 
 
 class BaseUser:
@@ -16,7 +16,8 @@ class BaseUser:
     )
     username: orm.Mapped[str] = orm.mapped_column(sa.String(128), default="")
     google_openid_key: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
-    picture: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=True)
+    picture: orm.Mapped[str] = orm.mapped_column(sa.Text, default=get_default_avatar())
+
     password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=True)
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow

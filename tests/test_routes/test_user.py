@@ -1,3 +1,6 @@
+import base64
+import re
+
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -159,12 +162,15 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
 
     user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
     assert user
+    assert re.search(r"^(http|https)://", user.picture)
+
+    # test sign in
     request_data = s.GoogleAuthUser(
         email=user.email,
     ).dict()
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.Token.parse_obj(response.json())
+    resp_obj: s.Token = s.Token.parse_obj(response.json())
     assert resp_obj.access_token
 
     # checking non existing user
@@ -312,13 +318,12 @@ def test_get_user_profile(
     )
     assert response.status_code == status.HTTP_200_OK
     resp_obj: s.User = s.User.parse_obj(response.json())
-    user: m.User = (
-        db.query(m.User)
-        .filter_by(email=test_data.test_authorized_users[0].email)
-        .first()
+    user: m.User = db.scalar(
+        select(m.User).filter_by(email=test_data.test_authorized_users[0].email)
     )
-    assert user
-
+    db.refresh(user)
+    assert user.id == resp_obj.id
+    assert user.picture == resp_obj.picture
     # get current jobs where user is owner
     response = client.get(
         "api/user/postings",
@@ -360,44 +365,50 @@ def test_get_user_profile(
         assert rate.owner_id == user.id
 
 
-# def test_update_user(
-#     client: TestClient,
-#     db: Session,
-#     test_data: TestData,
-#     authorized_users_tokens: list[s.Token],
-# ):
-#     fill_test_data(db)
-#     create_professions(db)
-#     create_jobs(db)
+def test_update_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_professions(db)
+    create_jobs(db)
 
-#     user: m.User = db.scalar(
-#         select(m.User).where(
-#             m.User.username == test_data.test_authorized_users[0].username
-#         )
-#     )
+    with open("./test_image.png", "rb") as f:
+        PICTURE = base64.b64encode(f.read())
 
-#     request_data: s.User = s.UserUpdate(
-#         username=user.email,
-#         first_name=test_data.test_authorized_users[1].first_name,
-#         last_name=test_data.test_authorized_users[1].last_name,
-#         email=user.email,
-#         phone=user.phone,
-#         professions=[1, 3],
-#     )
-#     response = client.put(
-#         "api/user",
-#         data=request_data.dict(),
-#         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-#     )
-#     assert response.status_code == status.HTTP_200_OK
-#     user = (
-#         db.query(m.User)
-#         .filter_by(email=test_data.test_authorized_users[0].email)
-#         .first()
-#     )
-#     db.refresh(user)
-#     assert user.first_name == request_data.first_name
-#     assert user.last_name == request_data.last_name
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    request_data: s.User = s.UserUpdate(
+        username=user.email,
+        first_name=test_data.test_authorized_users[1].first_name,
+        last_name=test_data.test_authorized_users[1].last_name,
+        email=user.email,
+        phone=user.phone,
+        picture=PICTURE,
+        professions=[1, 3],
+    )
+
+    response = client.put(
+        "api/user",
+        data=request_data.dict(),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    user = (
+        db.query(m.User)
+        .filter_by(email=test_data.test_authorized_users[0].email)
+        .first()
+    )
+    db.refresh(user)
+    assert user.picture == PICTURE
+    assert user.first_name == request_data.first_name
+    assert user.last_name == request_data.last_name
 
 
 def test_passwords(
