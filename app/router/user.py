@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi import HTTPException, Depends, APIRouter, status, Form
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
