@@ -37,6 +37,8 @@ def fill_test_data(db: Session):
         )
         db.add(user)
 
+    log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
+
     db.commit()
     for uid_user in range(1, NUM_TEST_USERS):
         count_rates = random.randint(0, MAX_RATES_NUM)
@@ -82,5 +84,4 @@ def fill_test_data(db: Session):
                 )
             )
         db.commit()
-    log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
     log(log.INFO, "Rates [%d] were created", rates_num_total)

@@ -195,18 +195,23 @@ def get_user_jobs(
         if manage_tab == s.Job.TabFilter.PENDING:
             log(
                 log.INFO,
-                "Pending tab, getting jobs ids for user: (%s)",
-                str(current_user.id),
+                "Pending tab, getting jobs ids for user: (%d)",
+                current_user.id,
             )
             jobs_ids = db.scalars(
                 select(m.Application.job_id).where(
                     or_(
                         m.Application.worker_id == current_user.id,
-                        m.Application.owner_id == current_user.id,
                     )
                 )
             ).all()
-            query = query.filter(m.Job.id.in_(jobs_ids))
+            query = select(m.Job).filter(
+                and_(
+                    or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == current_user.id),
+                    m.Job.status == s.Job.Status.PENDING,
+                )
+            )
+
             log(log.INFO, "Jobs filtered by ids: (%s)", ",".join(map(str, jobs_ids)))
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
