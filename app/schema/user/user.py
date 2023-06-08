@@ -1,5 +1,6 @@
-from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 from datetime import datetime
+
+from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr, Field
 
 from app.schema.profession import Profession
 from app.schema.location import Location
@@ -49,7 +50,7 @@ class User(BaseUser):
     created_at: datetime | str
     is_verified: bool
     professions: list[Profession]
-    picture: AnyHttpUrl | None
+    picture: str | None = Field(alias="avatar_decode")
     locations: list[Location]
 
     class Config:
@@ -59,7 +60,7 @@ class User(BaseUser):
 class UserUpdate(BaseUser):
     email: EmailStr | None
     professions: list[int]
-    picture: AnyHttpUrl | None
+    picture: str | None = Field(alias="avatar_decode")
 
 
 class ForgotPassword(BaseModel):

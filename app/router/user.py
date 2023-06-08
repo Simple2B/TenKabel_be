@@ -1,18 +1,16 @@
-import io
 import datetime
+import base64
 
-from fastapi import HTTPException, Depends, APIRouter, status, File, UploadFile, Form
+from fastapi import HTTPException, Depends, APIRouter, status, Form
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
-from google.api_core.exceptions import GoogleAPIError
 
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.dependency import get_current_user, get_google_client
+from app.dependency import get_current_user
 from app.database import get_db
-from app.config import Settings, get_settings
 from app.hash_utils import hash_verify
 
 
@@ -34,9 +32,7 @@ def update_user(
     first_name: str = Form(None),
     last_name: str = Form(None),
     professions: list[int] = Form(None),
-    google_client=Depends(get_google_client),
-    profile_avatar: UploadFile | None = File(None),
-    settings: Settings = Depends(get_settings),
+    picture: str | None = Form(None),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
@@ -50,21 +46,8 @@ def update_user(
         current_user.first_name = first_name
     if last_name:
         current_user.last_name = last_name
-    if profile_avatar:
-        with open(profile_avatar.filename, "rb") as f:
-            try:
-                bucket = google_client.get_bucket(settings.GOOGLE_BUCKET_NAME)
-                file_object = io.BytesIO(f.read())
-                blob = bucket.blob(
-                    f"images/avatars/{current_user.email}/{profile_avatar.filename}"
-                )
-                blob.upload_from_file(file_object)
-            except GoogleAPIError as e:
-                log(log.ERROR, "Error uploading file to google cloud storage: \n%s", e)
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST, detail="Bad request"
-                )
-        current_user.picture = blob.public_url
+    if picture:
+        current_user.picture = picture
     if professions:
         for profession in current_user.professions:
             db.delete(profession)
@@ -211,7 +194,11 @@ def get_user_jobs(
                 status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
             )
         if manage_tab == s.Job.TabFilter.PENDING:
-            log(log.INFO, "Pending tab, getting jobs ids for user: (%s)", str(current_user.id))
+            log(
+                log.INFO,
+                "Pending tab, getting jobs ids for user: (%s)",
+                str(current_user.id),
+            )
             jobs_ids = db.scalars(
                 select(m.Application.job_id).where(
                     or_(
