@@ -31,7 +31,7 @@ def update_user(
     first_name: str = Form(None),
     last_name: str = Form(None),
     professions: list[int] = Form(None),
-    picture: bytes | None = Form(None),
+    picture: str | None = Form(None),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
@@ -46,7 +46,7 @@ def update_user(
     if last_name:
         current_user.last_name = last_name
     if picture:
-        current_user.picture = picture
+        current_user.picture = bytes(picture, "UTF-8")
     if professions:
         for profession in current_user.professions:
             db.delete(profession)
