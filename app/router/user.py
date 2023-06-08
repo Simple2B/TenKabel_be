@@ -213,8 +213,8 @@ def get_user_jobs(
         if manage_tab == s.Job.TabFilter.PENDING:
             log(
                 log.INFO,
-                "Pending tab, getting jobs ids for user: (%s)",
-                str(current_user.id),
+                "Pending tab, getting jobs ids for user: (%d)",
+                current_user.id,
             )
             jobs_ids = db.scalars(
                 select(m.Application.job_id).where(

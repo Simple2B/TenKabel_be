@@ -83,4 +83,4 @@ class Job(db.Model):
 
     @property
     def application_worker_ids(self):
-        return [appl.worker_id for appl in self.applications]
+        return [application.worker_id for application in self.applications]

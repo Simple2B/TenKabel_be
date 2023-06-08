@@ -247,7 +247,7 @@ def test_get_user_profile(
 
     assert len(jobs) == len(resp_obj.jobs)
     for job in resp_obj.jobs:
-        assert int(job.id) in [j.id for j in jobs]
+        assert job.id in [j.id for j in jobs]
         assert job.status == s.Job.Status.PENDING.value
         if job.owner_id != user.id:
             assert user.id in [
@@ -276,7 +276,7 @@ def test_get_user_profile(
     assert len(jobs) == len(resp_obj.jobs)
 
     for job in resp_obj.jobs:
-        assert int(job.id) in [j.id for j in jobs]
+        assert job.id in [j.id for j in jobs]
         assert job.status in (
             s.Job.Status.IN_PROGRESS.value,
             s.Job.Status.APPROVED.value,
@@ -310,7 +310,7 @@ def test_get_user_profile(
             "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
         },
     )
-    assert response.status_code == 200
+    assert response.status_code == status.HTTP_200_OK
     resp_obj: s.User = s.User.parse_obj(response.json())
     user: m.User = (
         db.query(m.User)

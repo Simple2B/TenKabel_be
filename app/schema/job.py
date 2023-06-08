@@ -44,7 +44,7 @@ class Job(BaseJob):
         ACTIVE = "active"
         ARCHIVE = "archive"
 
-    id: str | None
+    id: int | None
     status: Status | str
     payment_status: PaymentStatus | str
     commission_status: CommissionStatus | str
