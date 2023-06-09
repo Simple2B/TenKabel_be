@@ -23,8 +23,53 @@ def get_current_user_profile(
     return current_user
 
 
+@user_router.patch("", status_code=status.HTTP_200_OK)
+def patch_user(
+    data: s.UserUpdate,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    current_user.email = data.email
+    current_user.username = data.username
+    current_user.first_name = data.first_name
+    current_user.last_name = data.last_name
+    current_user.phone = data.phone
+    current_user.picture = bytes(data.picture, "UTF-8")
+
+    for profession in current_user.professions:
+        db.delete(profession)
+        db.flush()
+    for profession_id in data.professions:
+        profession = db.scalar(
+            select(m.Profession).where(m.Profession.id == profession_id)
+        )
+        user_profession = db.scalar(
+            select(m.UserProfession).where(
+                m.UserProfession.user_id == current_user.id,
+                m.UserProfession.profession_id == profession_id,
+            )
+        )
+        if not user_profession:
+            db.add(
+                m.UserProfession(user_id=current_user.id, profession_id=profession_id)
+            )
+            db.flush()
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while updating user [%s] - %s", current_user.id, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
+        )
+
+    log(log.INFO, "User [%s] updated successfully", current_user.id)
+    return status.HTTP_200_OK
+
+
 @user_router.put("", status_code=status.HTTP_200_OK)
 def update_user(
+    # TODO: this method is unused
     email: str = Form(None),
     username: str = Form(None),
     phone: str = Form(None),

@@ -72,6 +72,14 @@ def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
 ):
+    exist_user = db.scalar(select(m.User).where(m.User.phone == data.phone))
+    if exist_user:
+        log(log.ERROR, "User [%s] already exist", data.phone)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exist",
+        )
+
     user: m.User = m.User(
         first_name=data.first_name,
         last_name=data.last_name,
