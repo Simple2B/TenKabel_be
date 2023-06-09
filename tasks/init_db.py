@@ -8,6 +8,8 @@ from tests.utility import (
     create_locations as cl,
     create_professions as cp,
     create_jobs as cj,
+    create_applications as ca,
+    create_applications_for_user as cafu,
 )
 from tests.utility.create_test_users import fill_test_data
 
@@ -59,6 +61,22 @@ def create_professions(_):
 
 
 @task
+def create_applications(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    ca(db)
+
+
+@task
+def create_applications_for_user(_, user_id: int):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cafu(db, user_id)
+
+
+@task
 def init_db(_, test_data=False):
     """Initialization database
 
@@ -85,6 +103,8 @@ def init_db(_, test_data=False):
     if test_data:
         fill_test_data(db)
     cj(db)
+    ca(db)
+
     db.commit()
 
 
