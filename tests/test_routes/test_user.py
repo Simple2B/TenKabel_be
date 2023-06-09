@@ -384,9 +384,9 @@ def test_update_user(
         )
     )
 
-    request_data: s.User = s.UserUpdate(
+    request_data: s.UserUpdate = s.UserUpdate(
         username=user.email,
-        first_name=test_data.test_authorized_users[1].first_name,
+        first_name=test_data.test_authorized_users[1].first_name + "A1",
         last_name=test_data.test_authorized_users[1].last_name,
         email=user.email,
         phone=user.phone,
@@ -394,21 +394,25 @@ def test_update_user(
         professions=[1, 3],
     )
 
-    response = client.put(
+    response = client.patch(
         "api/user",
-        data=request_data.dict(),
+        json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-    user = (
+
+    user: m.User = (
         db.query(m.User)
         .filter_by(email=test_data.test_authorized_users[0].email)
         .first()
     )
-    db.refresh(user)
-    assert user.picture == PICTURE
+    # db.refresh(user)
+
+    # for profession in user.professions:
+    #     assert profession.id in request_data.professions
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
+    assert user.picture == PICTURE
 
 
 def test_passwords(

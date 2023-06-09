@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import HTTPException, Depends, APIRouter, status, Form
+from fastapi import HTTPException, Depends, APIRouter, status
 from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -23,62 +23,107 @@ def get_current_user_profile(
     return current_user
 
 
-@user_router.put("", status_code=status.HTTP_200_OK)
-def update_user(
-    email: str = Form(None),
-    username: str = Form(None),
-    phone: str = Form(None),
-    first_name: str = Form(None),
-    last_name: str = Form(None),
-    professions: list[int] = Form(None),
-    picture: str | None = Form(None),
+@user_router.patch("", status_code=status.HTTP_200_OK)
+def patch_user(
+    data: s.UserUpdate,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    if email:
-        current_user.email = email
-    if username:
-        current_user.username = username
-    if phone:
-        current_user.phone = phone
-    if first_name:
-        current_user.first_name = first_name
-    if last_name:
-        current_user.last_name = last_name
-    if picture:
-        current_user.picture = bytes(picture, "UTF-8")
-        log(log.INFO, "User [%s] picture update in progress...", current_user.username)
-    if professions:
-        for profession in current_user.professions:
-            db.delete(profession)
+    current_user.email = data.email
+    current_user.username = data.username
+    current_user.first_name = data.first_name
+    current_user.last_name = data.last_name
+    current_user.phone = data.phone
+    current_user.picture = bytes(data.picture, "UTF-8")
+
+    for profession in current_user.professions:
+        db.delete(profession)
+        db.flush()
+    for profession_id in data.professions:
+        profession = db.scalar(
+            select(m.Profession).where(m.Profession.id == profession_id)
+        )
+        user_profession = db.scalar(
+            select(m.UserProfession).where(
+                m.UserProfession.user_id == current_user.id,
+                m.UserProfession.profession_id == profession_id,
+            )
+        )
+        if not user_profession:
+            db.add(
+                m.UserProfession(user_id=current_user.id, profession_id=profession_id)
+            )
             db.flush()
-        for profession_id in professions:
-            profession = db.scalar(
-                select(m.Profession).where(m.Profession.id == profession_id)
-            )
-            user_profession = db.scalar(
-                select(m.UserProfession).where(
-                    m.UserProfession.user_id == current_user.id,
-                    m.UserProfession.profession_id == profession_id,
-                )
-            )
-            if not user_profession:
-                db.add(
-                    m.UserProfession(
-                        user_id=current_user.id, profession_id=profession_id
-                    )
-                )
-                db.flush()
+
     try:
         db.commit()
     except SQLAlchemyError as e:
-        log(log.INFO, "Error while updating user - %s", e)
+        log(log.INFO, "Error while updating user [%s] - %s", current_user.id, e)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
         )
 
-    log(log.INFO, "User [%s] updated successfully", current_user.username)
+    log(log.INFO, "User [%s] updated successfully", current_user.id)
     return status.HTTP_200_OK
+
+
+# @user_router.put("", status_code=status.HTTP_200_OK)
+# def update_user(
+#     # TODO: json
+#     email: str = Form(None),
+#     username: str = Form(None),
+#     phone: str = Form(None),
+#     first_name: str = Form(None),
+#     last_name: str = Form(None),
+#     professions: list[int] = Form(None),
+#     picture: str | None = Form(None),
+#     db: Session = Depends(get_db),
+#     current_user: m.User = Depends(get_current_user),
+# ):
+#     if email:
+#         current_user.email = email
+#     if username:
+#         current_user.username = username
+#     if phone:
+#         current_user.phone = phone
+#     if first_name:
+#         current_user.first_name = first_name
+#     if last_name:
+#         current_user.last_name = last_name
+#     if picture:
+#         current_user.picture = bytes(picture, "UTF-8")
+#         log(log.INFO, "User [%s] picture update in progress...", current_user.username)
+#     if professions:
+#         for profession in current_user.professions:
+#             db.delete(profession)
+#             db.flush()
+#         for profession_id in professions:
+#             profession = db.scalar(
+#                 select(m.Profession).where(m.Profession.id == profession_id)
+#             )
+#             user_profession = db.scalar(
+#                 select(m.UserProfession).where(
+#                     m.UserProfession.user_id == current_user.id,
+#                     m.UserProfession.profession_id == profession_id,
+#                 )
+#             )
+#             if not user_profession:
+#                 db.add(
+#                     m.UserProfession(
+#                         user_id=current_user.id, profession_id=profession_id
+#                     )
+#                 )
+#                 db.flush()
+#     try:
+#         db.commit()
+#     except SQLAlchemyError as e:
+#         log(log.INFO, "Error while updating user - %s", e)
+#         raise HTTPException(
+#             status_code=status.HTTP_409_CONFLICT, detail="Error updating user"
+#         )
+
+#     log(log.INFO, "User [%s] updated successfully", current_user.username)
+#     return status.HTTP_200_OK
 
 
 @user_router.post("/check-password", status_code=status.HTTP_200_OK)

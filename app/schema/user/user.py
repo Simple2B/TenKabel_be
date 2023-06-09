@@ -62,9 +62,9 @@ class User(BaseUser):
 
 
 class UserUpdate(BaseUser):
-    email: EmailStr | None
     professions: list[int]
     picture: str | None
+    phone: str | None
 
 
 class ForgotPassword(BaseModel):

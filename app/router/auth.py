@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import select
+from sqlalchemy.sql import exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -72,6 +73,14 @@ def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
 ):
+    exist_user = exists().where(m.User.phone == data.phone)
+    if db.scalar(select(m.User).filter(exist_user)):
+        log(log.ERROR, "User [%s] already exist", data.phone)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exist",
+        )
+
     user: m.User = m.User(
         first_name=data.first_name,
         last_name=data.last_name,
