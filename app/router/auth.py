@@ -73,8 +73,8 @@ def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
 ):
-    exist_user = exists().where(m.User.phone == data.phone)
-    if db.scalar(select(m.User).filter(exist_user)):
+    exist_user = db.scalar(select(m.User).where(m.User.phone == data.phone)()
+    if exist_user:
         log(log.ERROR, "User [%s] already exist", data.phone)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
