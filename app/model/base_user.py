@@ -25,6 +25,10 @@ class BaseUser:
     is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=True)
 
     @property
+    def is_auth_by_google(self):
+        return bool(self.google_openid_key)
+
+    @property
     def password(self):
         return self.password_hash
 

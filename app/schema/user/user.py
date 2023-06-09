@@ -52,6 +52,7 @@ class User(BaseUser):
     professions: list[Profession]
     picture: str | None
     locations: list[Location]
+    is_auth_by_google: bool
 
     # @validator("picture")
     # def encode_picture_to_base64(cls, value) -> bytes:
