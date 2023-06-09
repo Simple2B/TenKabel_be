@@ -19,6 +19,7 @@ from tests.utility import (
     create_locations,
     create_applications,
     create_jobs_for_user,
+    create_applications_for_user,
 )
 
 
@@ -216,6 +217,7 @@ def test_get_user_profile(
     )
     create_jobs_for_user(db, user.id)
     create_applications(db)
+    create_applications_for_user(db, user.id)
 
     # get current jobs where user is worker
     response = client.get(

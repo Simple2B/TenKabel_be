@@ -102,7 +102,9 @@ def create_application(
     application: m.Application = m.Application(
         job_id=application_data.job_id,
         owner_id=owner.id,
+        owner_uuid=owner.uuid,
         worker_id=current_user.id,
+        worker_uuid=current_user.uuid,
     )
     db.add(application)
 

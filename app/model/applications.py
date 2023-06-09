@@ -23,6 +23,13 @@ class Application(db.Model):
         sa.ForeignKey("users.id"), nullable=True
     )
 
+    owner_uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.ForeignKey("users.uuid"), nullable=False
+    )
+    worker_uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.ForeignKey("users.uuid"), nullable=True
+    )
+
     status: orm.Mapped[s.BaseApplication.ApplicationStatus] = orm.mapped_column(
         sa.Enum(s.BaseApplication.ApplicationStatus),
         default=s.BaseApplication.ApplicationStatus.PENDING,

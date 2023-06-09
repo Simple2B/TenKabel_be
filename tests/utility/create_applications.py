@@ -12,20 +12,22 @@ fake: Faker = Faker()
 
 
 def create_applications(db: Session):
-    worker_ids = db.scalars(select(m.User.id)).all()
-    job_ids = db.scalars(select(m.Job.id)).all()
+    workers = db.scalars(select(m.User)).all()
+    jobs = db.scalars(select(m.Job)).all()
 
-    for job_id in job_ids:
+    for job in jobs:
         for i in range(1, random.randint(1, 5)):
-            worker_id = random.choice(worker_ids)
-            owner_id = db.scalar(select(m.Job.owner_id).where(m.Job.id == job_id))
+            worker = random.choice(workers)
+            owner = db.scalar(select(m.Job).where(m.Job.id == job.id))
 
-            while owner_id == worker_id:
-                worker_id = random.choice(worker_ids)
+            while owner.id == worker.id:
+                worker = random.choice(workers)
             application = m.Application(
-                job_id=job_id,
-                owner_id=owner_id,
-                worker_id=worker_id,
+                job_id=job.id,
+                owner_id=owner.id,
+                owner_uuid=owner.uuid,
+                worker_id=worker.id,
+                worker_uuid=worker.uuid,
                 created_at=fake.date_time_between(start_date="-30d", end_date="now"),
                 status=random.choice(
                     [
@@ -41,25 +43,28 @@ def create_applications(db: Session):
 
 
 def create_applications_for_user(db: Session, user_id: int) -> None:
-    job_ids: list[int] = db.scalars(
-        select(m.Job.id).where(
+    jobs: list[int] = db.scalars(
+        select(m.Job).where(
             and_(m.Job.owner_id != user_id, m.Job.status == s.Job.Status.PENDING)
         )
     ).all()
-    worker_ids = db.scalars(select(m.User.id).where(m.User.id != user_id)).all()
+    workers = db.scalars(select(m.User).where(m.User.id != user_id)).all()
     user_jobs: list[m.Job] = db.scalars(
-        select(m.Job.id).where(
+        select(m.Job).where(
             and_(m.Job.owner_id == user_id, m.Job.status == s.Job.Status.PENDING)
         )
     ).all()
-
+    user_uuid = db.scalar(select(m.User.uuid).where(m.User.id == user_id))
     for job in user_jobs:
         applications_count = 0
         for _ in range(3):
+            worker = random.choice(workers)
             application: m.Application = m.Application(
                 job_id=job.id,
                 owner_id=job.owner_id,
-                worker_id=random.choice(worker_ids),
+                owner_uuid=user_uuid,
+                worker_id=worker.id,
+                worker_uuid=worker.uuid,
                 created_at=fake.date_time_between(start_date="-30d", end_date="now"),
                 status=s.BaseApplication.ApplicationStatus.PENDING,
             )
@@ -76,12 +81,14 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
 
     worker_jobs_count = 0
     for _ in range(3):
-        job_id = random.choice(job_ids)
-        owner_id = db.scalar(select(m.Job.owner_id).where(m.Job.id == job_id))
+        job = random.choice(jobs)
+        owner = db.scalar(select(m.Job).where(m.Job.id == job.id))
         application: m.Application = m.Application(
-            job_id=job_id,
-            owner_id=owner_id,
+            job_id=job.id,
+            owner_id=owner.id,
+            owner_uuid=owner.uuid,
             worker_id=user_id,
+            worker_uuid=user_uuid,
             created_at=fake.date_time_between(start_date="-30d", end_date="now"),
             status=s.BaseApplication.ApplicationStatus.PENDING,
         )

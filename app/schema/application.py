@@ -31,6 +31,8 @@ class ApplicationIn(BaseModel):
 class Application(BaseApplication):
     id: int
     uuid: str
+    worker_uuid: str
+    owner_uuid: str
     created_at: datetime | str
     status_changed_at: datetime | str
 
