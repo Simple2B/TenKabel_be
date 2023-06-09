@@ -2,7 +2,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy import select
-from sqlalchemy.sql import exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
