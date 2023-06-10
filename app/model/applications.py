@@ -5,6 +5,7 @@ from sqlalchemy import orm
 from app.database import db
 from app.utility import generate_uuid
 from app import schema as s
+from app import model as m
 
 
 class Application(db.Model):
@@ -23,13 +24,6 @@ class Application(db.Model):
         sa.ForeignKey("users.id"), nullable=True
     )
 
-    owner_uuid: orm.Mapped[str] = orm.mapped_column(
-        sa.ForeignKey("users.uuid"), nullable=False
-    )
-    worker_uuid: orm.Mapped[str] = orm.mapped_column(
-        sa.ForeignKey("users.uuid"), nullable=True
-    )
-
     status: orm.Mapped[s.BaseApplication.ApplicationStatus] = orm.mapped_column(
         sa.Enum(s.BaseApplication.ApplicationStatus),
         default=s.BaseApplication.ApplicationStatus.PENDING,
@@ -41,6 +35,13 @@ class Application(db.Model):
 
     status_changed_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
+    )
+
+    worker: orm.Mapped[m.User] = orm.relationship(
+        "User", foreign_keys=[worker_id], viewonly=True
+    )
+    owner: orm.Mapped[m.User] = orm.relationship(
+        "User", foreign_keys=[owner_id], viewonly=True
     )
 
     # job: orm.Mapped[m.Job] = orm.relationship("Job", foreign_keys=[job_id], viewonly=True)

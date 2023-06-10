@@ -67,7 +67,7 @@ class Job(db.Model):
 
     # relationships
     applications: orm.Mapped[list[Application]] = orm.relationship(
-        "Application", viewonly=False
+        "Application", viewonly=True
     )
     worker: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[worker_id], viewonly=True

@@ -98,6 +98,10 @@ def create_jobs_for_user(
     user_id: int,
     test_jobs_num: int = TEST_USER_JOBS_NUM,
 ):
+    user = db.scalar(select(m.User).where(m.User.id == user_id))
+    if not user:
+        log(log.INFO, "User with id [%s] doesn't exist", user_id)
+        raise ValueError
     worker_ids = [
         worker.id for worker in db.scalars(select(m.User)).all() if worker.id != user_id
     ] + [None]
