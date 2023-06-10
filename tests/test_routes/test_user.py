@@ -18,7 +18,7 @@ from tests.utility import (
     create_professions,
     create_locations,
     create_applications,
-    create_jobs_for_user,
+    create_applications_for_user,
 )
 
 
@@ -214,10 +214,9 @@ def test_get_user_profile(
     user: m.User = db.scalar(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
-    create_jobs_for_user(db, user.id)
     create_applications(db)
+    create_applications_for_user(db, user.id)
 
-    # get current jobs where user is worker
     response = client.get(
         "api/user/jobs",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},

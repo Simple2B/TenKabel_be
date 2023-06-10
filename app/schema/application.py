@@ -2,6 +2,7 @@ import enum
 from datetime import datetime
 
 from pydantic import BaseModel
+from .user import User
 
 
 class BaseApplication(BaseModel):
@@ -31,6 +32,8 @@ class ApplicationIn(BaseModel):
 class Application(BaseApplication):
     id: int
     uuid: str
+    owner: User
+    worker: User
     created_at: datetime | str
     status_changed_at: datetime | str
 
