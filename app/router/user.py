@@ -23,7 +23,7 @@ def get_current_user_profile(
     return current_user
 
 
-@user_router.patch("", status_code=status.HTTP_200_OK)
+@user_router.patch("", status_code=status.HTTP_200_OK, response_model=s.User)
 def patch_user(
     data: s.UserUpdate,
     db: Session = Depends(get_db),
@@ -34,7 +34,7 @@ def patch_user(
     current_user.first_name = data.first_name
     current_user.last_name = data.last_name
     current_user.phone = data.phone
-    current_user.picture = bytes(data.picture, "UTF-8")
+    current_user.picture = data.picture
 
     for profession in current_user.professions:
         db.delete(profession)
@@ -64,7 +64,7 @@ def patch_user(
         )
 
     log(log.INFO, "User [%s] updated successfully", current_user.id)
-    return status.HTTP_200_OK
+    return current_user
 
 
 @user_router.put("", status_code=status.HTTP_200_OK)
