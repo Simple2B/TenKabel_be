@@ -375,7 +375,7 @@ def test_update_user(
     create_jobs(db)
 
     with open("./test_image.png", "rb") as f:
-        PICTURE = base64.b64encode(f.read())
+        PICTURE = base64.b64encode(f.read()).decode("utf-8")
 
     user: m.User = db.scalar(
         select(m.User).where(
