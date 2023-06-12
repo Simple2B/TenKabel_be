@@ -53,29 +53,21 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Set Docker tag
-        run: |
-          if [[ $GITHUB_REF == 'refs/heads/main' ]]; then
-              echo "TAG=prod" >> "$GITHUB_ENV"
-          else
-              echo "TAG=latest" >> "$GITHUB_ENV"
-          fi
-
       - name: Build and Push Docker image
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: simple2b/tenkabel:${{ env.TAG }}
-  # deploy:
-  #   needs: build
-  #   runs-on: "Linux "
-  #   steps:
-  #     - name: Deploy to runner
-  #       uses: appleboy/ssh-action@v0.1.10
-  #       with:
-  #         host: ${{ secrets.HOST }}
-  #         username: ${{ secrets.USERNAME }}
-  #         key: ${{ secrets.KEY }}
-  #         script: |
-  #           cd ten_kabel
-  #           ./deploy_script.sh
+          tags: simple2b/tenkabel:latest
+
+  deploy:
+    runs-on: Linux
+    needs: build
+    steps:
+      - name: Deploy projects.simple2b.net
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SSH_HOST_IP_DEV }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd tenkabel; ./up
