@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 717dd32ae0b5
+Revision ID: 9dfb2c46291d
 Revises: 
-Create Date: 2023-06-08 12:23:19.121184
+Create Date: 2023-06-12 19:42:07.612837
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '717dd32ae0b5'
+revision = '9dfb2c46291d'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -38,9 +38,10 @@ def upgrade():
     sa.Column('email', sa.String(length=128), nullable=True),
     sa.Column('username', sa.String(length=128), nullable=False),
     sa.Column('google_openid_key', sa.String(length=64), nullable=True),
-    sa.Column('avatar_encoded', sa.Text(), nullable=False),
+    sa.Column('picture', sa.Text(), nullable=False),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('country_code', sa.String(length=32), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_superusers')),
     sa.UniqueConstraint('email', name=op.f('uq_superusers_email'))
@@ -54,9 +55,10 @@ def upgrade():
     sa.Column('email', sa.String(length=128), nullable=True),
     sa.Column('username', sa.String(length=128), nullable=False),
     sa.Column('google_openid_key', sa.String(length=64), nullable=True),
-    sa.Column('avatar_encoded', sa.Text(), nullable=False),
+    sa.Column('picture', sa.Text(), nullable=False),
     sa.Column('password_hash', sa.String(length=128), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=False),
+    sa.Column('country_code', sa.String(length=32), nullable=False),
     sa.Column('is_verified', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id', name=op.f('pk_users')),
     sa.UniqueConstraint('email', name=op.f('uq_users_email')),
