@@ -2,9 +2,9 @@ name: Ten Kabel CI/CD
 
 on:
   push:
-    branches: [main, develop, auto-build]
+    branches: [main, develop]
   pull_request:
-    branches: [develop, auto-build]
+    branches: [develop]
 
 jobs:
   tests:
@@ -38,7 +38,7 @@ jobs:
           poetry run pytest
   build:
     needs: tests
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/auto-build'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     runs-on: "Linux"
     steps:
       - name: Set up QEMU
