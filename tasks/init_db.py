@@ -98,6 +98,7 @@ def init_db(_, test_data=False):
             email=settings.ADMIN_EMAIL,
             phone="+972 54 000 00000",
             is_verified=True,
+            country_code="IL",
         )
         db.add(admin)
 
