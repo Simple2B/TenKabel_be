@@ -376,6 +376,8 @@ def test_update_user(
     create_professions(db)
     create_jobs(db)
 
+    PROFESSION_IDS = [1, 3]
+
     with open("./test_image.png", "rb") as f:
         PICTURE = base64.b64encode(f.read()).decode("utf-8")
 
@@ -392,7 +394,7 @@ def test_update_user(
         email=user.email,
         phone=user.phone,
         picture=PICTURE,
-        professions=[1, 3],
+        professions=PROFESSION_IDS,
     )
 
     response = client.patch(
@@ -407,13 +409,13 @@ def test_update_user(
         .filter_by(email=test_data.test_authorized_users[0].email)
         .first()
     )
-    # db.refresh(user)
 
-    # for profession in user.professions:
-    #     assert profession.id in request_data.professions
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
     assert user.picture == PICTURE
+    assert len(user.professions) == len(PROFESSION_IDS)
+    for profession in user.professions:
+        assert profession.id in PROFESSION_IDS
 
 
 def test_passwords(
