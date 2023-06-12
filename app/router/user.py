@@ -29,31 +29,64 @@ def patch_user(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    current_user.email = data.email
-    current_user.username = data.username
-    current_user.first_name = data.first_name
-    current_user.last_name = data.last_name
-    current_user.phone = data.phone
-    current_user.picture = data.picture
+    if data.first_name:
+        current_user.username = data.username
+        log(
+            log.INFO,
+            "User [%s] username updated - [%s]",
+            current_user.id,
+            data.username,
+        )
 
-    for profession in current_user.professions:
-        db.delete(profession)
-        db.flush()
-    for profession_id in data.professions:
-        profession = db.scalar(
-            select(m.Profession).where(m.Profession.id == profession_id)
+    if data.first_name:
+        current_user.first_name = data.first_name
+        log(
+            log.INFO,
+            "User [%s] first_name updated - [%s]",
+            current_user.id,
+            data.first_name,
         )
-        user_profession = db.scalar(
-            select(m.UserProfession).where(
-                m.UserProfession.user_id == current_user.id,
-                m.UserProfession.profession_id == profession_id,
-            )
+
+    if data.last_name:
+        current_user.last_name = data.last_name
+        log(
+            log.INFO,
+            "User [%s] last_name updated - [%s]",
+            current_user.id,
+            data.last_name,
         )
-        if not user_profession:
-            db.add(
-                m.UserProfession(user_id=current_user.id, profession_id=profession_id)
-            )
+
+    if data.email:
+        current_user.email = data.email
+        log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
+    if data.picture:
+        current_user.picture = data.picture
+        log(log.INFO, "User [%s] picture updated - [%s]", current_user.id, data.picture)
+    if data.phone:
+        current_user.phone = data.phone
+        log(log.INFO, "User [%s] phone updated - [%s]", current_user.id, data.phone)
+
+    if data.professions:
+        for profession in current_user.professions:
+            db.delete(profession)
             db.flush()
+        for profession_id in data.professions:
+            profession = db.scalar(
+                select(m.Profession).where(m.Profession.id == profession_id)
+            )
+            user_profession = db.scalar(
+                select(m.UserProfession).where(
+                    m.UserProfession.user_id == current_user.id,
+                    m.UserProfession.profession_id == profession_id,
+                )
+            )
+            if not user_profession:
+                db.add(
+                    m.UserProfession(
+                        user_id=current_user.id, profession_id=profession_id
+                    )
+                )
+                db.flush()
 
     try:
         db.commit()
