@@ -20,7 +20,7 @@ def get_current_user(
     user = db.query(m.User).filter_by(id=token.user_id).first()
     if not user:
         log(log.INFO, "User wasn`t authtorized")
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User wasn`t authtorized",
         )
