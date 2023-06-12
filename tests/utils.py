@@ -11,6 +11,7 @@ def create_test_superuser(db, test_data):
             email=test_data.test_superuser.email,
             username=test_data.test_superuser.email,
             password=test_data.test_superuser.password,
+            country_code=test_data.test_superuser.country_code,
         )
     )
     db.commit()
@@ -29,6 +30,7 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 password=u.password,
                 is_verified=u.is_verified,
                 phone=u.phone,
+                country_code=u.country_code,
             )
         )
         db.commit()
@@ -42,6 +44,7 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 password=u.password,
                 is_verified=u.is_verified,
                 phone=u.phone,
+                country_code=u.country_code,
             )
         )
         db.commit()

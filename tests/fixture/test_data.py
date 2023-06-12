@@ -12,6 +12,7 @@ class TestUser(BaseModel):
     last_name: str | None
     email: str
     password: str
+    country_code: str = "IL"
     google_openid_key: str | None
     picture: str | None
     is_verified: bool | None = True

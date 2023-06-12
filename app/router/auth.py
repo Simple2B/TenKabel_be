@@ -85,6 +85,7 @@ def sign_up(
         last_name=data.last_name,
         password=data.password,
         phone=data.phone,
+        country_code=data.country_code,
     )
     db.add(user)
     try:
@@ -158,8 +159,9 @@ def google_auth(
     db: Session = Depends(get_db),
 ):
     user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
+    # TODO: alot hardcoding there
     password = "*"
-
+    country_code = "IL"
     if not user:
         if not data.display_name:
             first_name = ""
@@ -179,6 +181,7 @@ def google_auth(
             google_openid_key=data.uid,
             password=password,
             is_verified=True,
+            country_code=country_code,
         )
         db.add(user)
         try:
@@ -195,9 +198,10 @@ def google_auth(
             user.email,
         )
 
-    if data.photo_url:
-        user.picture = data.photo_url
-        db.commit()
+    # TODO: get user picture from google
+    # if data.photo_url:
+    #     user.picture = data.photo_url
+    #     db.commit()
 
     user: m.User = m.User.authenticate(
         db,
