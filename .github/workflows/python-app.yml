@@ -71,3 +71,12 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ten_kabel; ./up
+      - name: send telegram message on push
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ${{ github.actor }} updated api.tenkabel.simple2b.net
+            Commit message: ${{ github.event.commits[0].message }}
+            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
