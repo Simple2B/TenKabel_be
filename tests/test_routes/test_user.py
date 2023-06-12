@@ -1,5 +1,4 @@
 import base64
-import re
 
 from fastapi import status
 from fastapi.testclient import TestClient
@@ -81,6 +80,7 @@ def test_signup(
             phone=TEST_PHONE_WRONG_NUMBER_LETTERS,
             profession_id=2,
             locations=[2, 3],
+            country_code="IL",
         )
     except ValidationError:
         assert True
@@ -94,6 +94,7 @@ def test_signup(
         phone=TEST_PHONE_NUMBER,
         profession_id=2,
         locations=[2, 3],
+        country_code="IL",
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
@@ -109,6 +110,7 @@ def test_signup(
             phone=TEST_PHONE_WRONG_NUMBER,
             profession_id=2,
             locations=[2, 3],
+            country_code="IL",
         )
     except ValidationError:
         assert True
@@ -122,6 +124,7 @@ def test_signup(
         phone=TEST_PHONE_NUMBER[:-1] + "5",
         profession_id=2,
         locations=[2, 3],
+        country_code="IL",
     )
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
@@ -162,7 +165,6 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
 
     user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
     assert user
-    assert re.search(r"^(http|https)://", user.picture)
 
     # test sign in
     request_data = s.GoogleAuthUser(

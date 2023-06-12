@@ -23,6 +23,7 @@ class UserSignUp(AuthUser):
     last_name: str
     profession_id: int | None
     locations: list[int] | None
+    country_code: str
 
 
 class GoogleAuthUser(BaseModel):
@@ -49,6 +50,7 @@ class User(BaseUser):
     negative_rates_count: int
     neutral_rates_count: int
     created_at: datetime | str
+    country_code: str
     is_verified: bool
     professions: list[Profession]
     picture: str | None

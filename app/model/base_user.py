@@ -22,6 +22,7 @@ class BaseUser:
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
+    country_code: orm.Mapped[str] = orm.mapped_column(sa.String(32))
     is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=True)
 
     @property

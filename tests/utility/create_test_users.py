@@ -11,6 +11,7 @@ MAX_RATES_NUM = 5
 TEST_IMAGES = []
 
 
+# TODO: change there logic for default pictures
 TEST_AVATAR_URLS = [
     "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_1.png",
     "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_2.png",
@@ -32,6 +33,7 @@ def fill_test_data(db: Session):
             password_hash=f"{uid_user}",
             email=f"user{uid_user}@test.com",
             phone=f"972 54 000 {uid_user+1:04}",
+            country_code="IL",
             is_verified=True,
             picture=random.choice(TEST_AVATAR_URLS),
         )
