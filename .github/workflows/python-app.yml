@@ -63,11 +63,11 @@ jobs:
     runs-on: Linux
     needs: build
     steps:
-      - name: Deploy projects.simple2b.net
+      - name: Deploy api.tenkabel.simple2b.net
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST_IP_DEV }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd tenkabel; ./up
+            cd ten_kabel; ./up
