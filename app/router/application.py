@@ -142,3 +142,4 @@ def create_application(
         )
 
     log(log.INFO, "Rate created successfully - [%s]", application.id)
+    return application
