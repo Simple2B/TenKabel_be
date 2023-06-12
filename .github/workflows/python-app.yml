@@ -78,4 +78,4 @@ jobs:
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
             ${{ github.actor }} updated api.tenkabel.simple2b.net
-            See changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+            Changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
