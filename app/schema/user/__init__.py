@@ -8,4 +8,5 @@ from .user import (
     UserUpdate,
     ChangePassword,
     ForgotPassword,
+    PasswordStatus,
 )

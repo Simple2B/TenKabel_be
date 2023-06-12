@@ -16,7 +16,7 @@ from app.hash_utils import hash_verify
 user_router = APIRouter(prefix="/user", tags=["Users"])
 
 
-@user_router.get("", response_model=s.User)
+@user_router.get("", status_code=status.HTTP_200_OK, response_model=s.User)
 def get_current_user_profile(
     current_user: m.User = Depends(get_current_user),
 ):
@@ -100,7 +100,7 @@ def patch_user(
     return current_user
 
 
-@user_router.put("", status_code=status.HTTP_200_OK)
+@user_router.put("", status_code=status.HTTP_200_OK, response_model=s.User)
 def update_user(
     # TODO: this method is unused
     email: str = Form(None),
@@ -156,10 +156,12 @@ def update_user(
         )
 
     log(log.INFO, "User [%s] updated successfully", current_user.username)
-    return status.HTTP_200_OK
+    return current_user
 
 
-@user_router.post("/check-password", status_code=status.HTTP_200_OK)
+@user_router.post(
+    "/check-password", status_code=status.HTTP_200_OK, response_model=s.PasswordStatus
+)
 def check_password(
     password: str,
     current_user: m.User = Depends(get_current_user),
@@ -168,10 +170,12 @@ def check_password(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Password does not match"
         )
-    return status.HTTP_200_OK
+    return s.PasswordStatus(status=s.PasswordStatus.PasswordStatusEnum.PASSWORD_MATCH)
 
 
-@user_router.post("/forgot-password", status_code=status.HTTP_201_CREATED)
+@user_router.post(
+    "/forgot-password", status_code=status.HTTP_201_CREATED, response_model=s.User
+)
 def forgot_password(
     data: s.ForgotPassword,
     db: Session = Depends(get_db),
@@ -187,10 +191,14 @@ def forgot_password(
         )
 
     log(log.INFO, "User [%s] password updated successfully", user.username)
-    return status.HTTP_201_CREATED
+    return user
 
 
-@user_router.post("/change-password", status_code=status.HTTP_201_CREATED)
+@user_router.post(
+    "/change-password",
+    status_code=status.HTTP_201_CREATED,
+    response_model=s.PasswordStatus,
+)
 def change_password(
     data: s.ChangePassword,
     db: Session = Depends(get_db),
@@ -214,7 +222,7 @@ def change_password(
         )
 
     log(log.INFO, "User [%s] password updated successfully", current_user.username)
-    return status.HTTP_201_CREATED
+    return s.PasswordStatus(status=s.PasswordStatus.PasswordStatusEnum.PASSWORD_UPDATED)
 
 
 @user_router.get(

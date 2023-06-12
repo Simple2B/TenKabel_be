@@ -8,6 +8,7 @@ from .user import (
     UserUpdate,
     ForgotPassword,
     ChangePassword,
+    PasswordStatus,
 )
 from .token import Token, TokenData
 from .profession import BaseProfession, Profession, ProfessionList

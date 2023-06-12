@@ -146,7 +146,7 @@ def get_job(
     return job
 
 
-@job_router.post("", status_code=status.HTTP_201_CREATED)
+@job_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Job)
 def create_job(
     data: s.JobIn,
     db: Session = Depends(get_db),
@@ -176,10 +176,10 @@ def create_job(
         )
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
-    return status.HTTP_201_CREATED
+    return new_job
 
 
-@job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK)
+@job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def update_job(
     job_data: s.JobUpdate,
     job_uuid: str,
@@ -216,4 +216,4 @@ def update_job(
         )
 
     log(log.INFO, "Job [%s] updated successfully", job.name)
-    return status.HTTP_200_OK
+    return job

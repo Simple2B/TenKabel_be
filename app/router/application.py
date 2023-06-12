@@ -13,7 +13,9 @@ from app.dependency import get_current_user
 application_router = APIRouter(prefix="/application", tags=["Application"])
 
 
-@application_router.put("/{uuid}", status_code=status.HTTP_201_CREATED)
+@application_router.put(
+    "/{uuid}", status_code=status.HTTP_201_CREATED, response_model=s.Application
+)
 def update_application(
     uuid: str,
     application_data: s.BaseApplication,
@@ -86,10 +88,12 @@ def update_application(
         )
 
     log(log.INFO, "Application updated successfully - [%s]", application.id)
-    return status.HTTP_201_CREATED
+    return application
 
 
-@application_router.post("", status_code=status.HTTP_201_CREATED)
+@application_router.post(
+    "", status_code=status.HTTP_201_CREATED, response_model=s.Application
+)
 def create_application(
     application_data: s.ApplicationIn,
     db: Session = Depends(get_db),
@@ -138,4 +142,3 @@ def create_application(
         )
 
     log(log.INFO, "Rate created successfully - [%s]", application.id)
-    return status.HTTP_201_CREATED

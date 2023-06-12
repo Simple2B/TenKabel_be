@@ -29,7 +29,7 @@ def get_rate(
     return rate
 
 
-@rate_router.put("/{uuid}", status_code=status.HTTP_201_CREATED)
+@rate_router.put("/{uuid}", status_code=status.HTTP_201_CREATED, response_model=s.Rate)
 def update_rate(
     uuid: str,
     rate_data: s.BaseRate,
@@ -56,10 +56,10 @@ def update_rate(
         )
 
     log(log.INFO, "Rate [%s] updated successfully", rate.id)
-    return status.HTTP_200_OK
+    return rate
 
 
-@rate_router.post("", status_code=status.HTTP_201_CREATED)
+@rate_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Rate)
 def create_rate(
     rate_data: s.BaseRate,
     db: Session = Depends(get_db),
@@ -80,4 +80,4 @@ def create_rate(
         )
 
     log(log.INFO, "Rate [%s] created successfully", new_rate.id)
-    return status.HTTP_201_CREATED
+    return new_rate
