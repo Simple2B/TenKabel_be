@@ -407,13 +407,11 @@ def test_update_user(
         .filter_by(email=test_data.test_authorized_users[0].email)
         .first()
     )
-    # db.refresh(user)
 
-    # for profession in user.professions:
-    #     assert profession.id in request_data.professions
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
     assert user.picture == PICTURE
+    assert len(user.professions) == len(PROFESSION_IDS)
     for profession in user.professions:
         assert profession.id in PROFESSION_IDS
 
