@@ -132,7 +132,7 @@ def sign_up(
     return user
 
 
-@auth_router.put("/verify", status_code=status.HTTP_200_OK)
+@auth_router.put("/verify", status_code=status.HTTP_200_OK, response_model=s.User)
 def verify(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
@@ -149,7 +149,7 @@ def verify(
 
     log(log.INFO, "User [%s] is verified", current_user.phone)
 
-    return status.HTTP_200_OK
+    return current_user
 
 
 @auth_router.post("/google", status_code=status.HTTP_200_OK, response_model=s.Token)
@@ -194,9 +194,10 @@ def google_auth(
             "User [%s] has been created (via Google account))",
             user.email,
         )
+
     if data.photo_url:
         user.picture = data.photo_url
-    db.commit()
+        db.commit()
 
     user: m.User = m.User.authenticate(
         db,

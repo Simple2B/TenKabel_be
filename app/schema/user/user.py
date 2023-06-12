@@ -1,4 +1,5 @@
 from datetime import datetime
+import enum
 
 from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 
@@ -76,3 +77,12 @@ class ForgotPassword(BaseModel):
 class ChangePassword(BaseModel):
     current_password: str
     new_password: str
+
+
+class PasswordStatus(BaseModel):
+    class PasswordStatusEnum(enum.Enum):
+        OK = "OK"
+        PASSWORD_MATCH = "Password match"
+        PASSWORD_UPDATED = "Password updated"
+
+    status: PasswordStatusEnum

@@ -100,10 +100,11 @@ def init_db(_, test_data=False):
             is_verified=True,
         )
         db.add(admin)
+
     if test_data:
         fill_test_data(db)
-    cj(db)
-    ca(db)
+        cj(db)
+        ca(db)
 
     db.commit()
 
