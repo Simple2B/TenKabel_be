@@ -1,4 +1,6 @@
 import random
+import base64
+
 from sqlalchemy import select
 
 from sqlalchemy.orm import Session
@@ -11,14 +13,11 @@ MAX_RATES_NUM = 5
 TEST_IMAGES = []
 
 
-# TODO: change there logic for default pictures
-TEST_AVATAR_URLS = [
-    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_1.png",
-    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_2.png",
-    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_3.png",
-    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_5.png",
-    "https://storage.googleapis.com/tenkabel/images/avatars/test_images/test_avatar_6.png",
-]
+for num in range(1, 6):
+    with open(f"tests/utility/images/test_avatar_{num}.png", "rb") as f:
+        byte_data = f.read()
+        picture = base64.b64encode(byte_data).decode("utf-8")
+        TEST_IMAGES.append(picture)
 
 
 def fill_test_data(db: Session):
@@ -35,7 +34,7 @@ def fill_test_data(db: Session):
             phone=f"972 54 000 {uid_user+1:04}",
             country_code="IL",
             is_verified=True,
-            picture=random.choice(TEST_AVATAR_URLS),
+            picture=random.choice(TEST_IMAGES),
         )
         db.add(user)
 
