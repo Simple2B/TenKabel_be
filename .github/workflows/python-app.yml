@@ -1,10 +1,10 @@
-name: CI
+name: Ten Kabel CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, develop, auto-build]
   pull_request:
-    branches: [develop]
+    branches: [develop, auto-build]
 
 jobs:
   tests:
@@ -38,7 +38,7 @@ jobs:
           poetry run pytest
   build:
     needs: tests
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/auto-build'
     runs-on: "Linux"
     steps:
       - name: Set up QEMU
@@ -65,7 +65,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ${{ format('{0}:{1}', 'simple2b/tenkabel-be', env.TAG) }}
+          tags: simple2b/tenkabel:${{ env.TAG }}
   # deploy:
   #   needs: build
   #   runs-on: "Linux "
