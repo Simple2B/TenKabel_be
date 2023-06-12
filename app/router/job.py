@@ -10,6 +10,7 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
+from app.utility import time_measurement
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
 
@@ -22,6 +23,7 @@ def get_status_list():
 
 
 @job_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
+@time_measurement
 def get_jobs(
     profession_id: int = None,
     city: str = None,
