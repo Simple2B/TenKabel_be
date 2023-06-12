@@ -68,13 +68,16 @@ def patch_user(
 
     if data.professions:
         for profession in current_user.professions:
-            db.delete(profession)
+            profession_obj: m.UserProfession = db.scalar(
+                select(m.UserProfession).where(
+                    m.UserProfession.user_id == current_user.id,
+                    m.UserProfession.profession_id == profession.id,
+                )
+            )
+            db.delete(profession_obj)
             db.flush()
         for profession_id in data.professions:
-            profession = db.scalar(
-                select(m.Profession).where(m.Profession.id == profession_id)
-            )
-            user_profession = db.scalar(
+            user_profession: m.UserProfession = db.scalar(
                 select(m.UserProfession).where(
                     m.UserProfession.user_id == current_user.id,
                     m.UserProfession.profession_id == profession_id,
