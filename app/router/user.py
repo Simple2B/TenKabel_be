@@ -29,9 +29,32 @@ def patch_user(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    current_user.username = data.username
-    current_user.first_name = data.first_name
-    current_user.last_name = data.last_name
+    if data.first_name:
+        current_user.username = data.username
+        log(
+            log.INFO,
+            "User [%s] username updated - [%s]",
+            current_user.id,
+            data.username,
+        )
+
+    if data.first_name:
+        current_user.first_name = data.first_name
+        log(
+            log.INFO,
+            "User [%s] first_name updated - [%s]",
+            current_user.id,
+            data.first_name,
+        )
+
+    if data.last_name:
+        current_user.last_name = data.last_name
+        log(
+            log.INFO,
+            "User [%s] last_name updated - [%s]",
+            current_user.id,
+            data.last_name,
+        )
 
     if data.email:
         current_user.email = data.email
