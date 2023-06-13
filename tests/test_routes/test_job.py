@@ -168,13 +168,11 @@ def test_create_job(
     )
 
     assert response.status_code == status.HTTP_201_CREATED
-    assert db.query(m.Job).filter_by(city=request_data.city).first()
-    assert (
-        db.query(m.Job)
-        .filter_by(customer_last_name=request_data.customer_last_name)
-        .first()
+    assert db.scalar(select(m.Job).filter_by(city=request_data.city))
+    assert db.scalar(
+        select(m.Job).filter_by(customer_last_name=request_data.customer_last_name)
     )
-    assert db.query(m.Job).filter_by(time=request_data.time).first()
+    assert db.scalar(select(m.Job).filter_by(name=request_data.name))
 
 
 def test_search_job(
