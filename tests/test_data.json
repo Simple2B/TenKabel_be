@@ -7,7 +7,7 @@
       "last_name": "test_last_name",
       "password": "1234",
       "is_verified": false,
-      "phone": "+919367788755",
+      "phone": "367788755",
       "google_openid_key": "1234567890abcdef",
       "picture": "http://test.com"
     },
@@ -18,7 +18,7 @@
       "email": "testemail2@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "+919367788751",
+      "phone": "367788751",
       "google_openid_key": "abcdef123321"
     },
     {
@@ -28,7 +28,7 @@
       "email": "testemail3@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "+919367788733"
+      "phone": "367788733"
     }
   ],
   "test_authorized_users": [
@@ -39,7 +39,7 @@
       "email": "test_authorized_email1@gmail.com",
       "password": "1234",
       "is_verified": false,
-      "phone": "+919367788722"
+      "phone": "367788722"
     },
     {
       "username": "test_authorized_user2",
@@ -50,7 +50,7 @@
       "is_verified": true,
       "phone": "877632",
       "google_openid_key": "abcdef123321",
-      "picture": "+919367788333"
+      "picture": "367788333"
     },
     {
       "username": "test_authorized_user3",
@@ -59,7 +59,7 @@
       "email": "test_authorized_email3@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "+919367788255"
+      "phone": "367788255"
     }
   ],
   "test_user": {
@@ -69,7 +69,7 @@
     "last_name": "test_user_last_name",
     "password": "test_password",
     "is_verified": true,
-    "phone": "+919367788111",
+    "phone": "267788111",
     "google_openid_key": "1234567890abc",
     "picture": "http://test",
     "rates": [{

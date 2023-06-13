@@ -9,12 +9,12 @@ from app.schema.location import Location
 phone_field = constr(
     max_length=128,
     strip_whitespace=True,
-    regex=r"^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$",
+    regex=r"[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{5,7}$",
 )
 
 
 class AuthUser(BaseModel):
-    phone: str
+    phone: phone_field
     password: constr(max_length=128, strip_whitespace=True)
 
 
@@ -68,12 +68,12 @@ class User(BaseUser):
 class UserUpdate(BaseUser):
     professions: list[int]
     picture: str | None
-    phone: str | None
+    phone: phone_field | None
 
 
 class ForgotPassword(BaseModel):
     new_password: str
-    phone: str
+    phone: phone_field
 
 
 class ChangePassword(BaseModel):
