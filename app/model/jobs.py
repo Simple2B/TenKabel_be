@@ -48,7 +48,7 @@ class Job(db.Model):
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
-    formated_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+    formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 
     payment_status: orm.Mapped[s.Job.PaymentStatus] = orm.mapped_column(
         sa.Enum(s.Job.PaymentStatus), default=s.Job.PaymentStatus.UNPAID
@@ -80,16 +80,16 @@ class Job(db.Model):
 
     @property
     def time(self):
-        return self.formated_time
+        return self.formatted_time
 
     @time.setter
     def time(self, value: str):
         try:
-            self.formated_time = datetime.strptime(
+            self.formatted_time = datetime.strptime(
                 str(value), "%Y-%m-%d %H:%M"
             ).strftime("%Y-%m-%d %H:%M")
         except ValueError:
-            self.formated_time = value
+            self.formatted_time = value
 
     @property
     def __repr__(self):
