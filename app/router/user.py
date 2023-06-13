@@ -64,6 +64,7 @@ def patch_user(
         log(log.INFO, "User [%s] picture updated - [%s]", current_user.id, data.picture)
     if data.phone:
         current_user.phone = data.phone
+        current_user.country_code = data.country_code
         log(log.INFO, "User [%s] phone updated - [%s]", current_user.id, data.phone)
 
     if data.professions:
@@ -75,7 +76,7 @@ def patch_user(
                 )
             )
             db.delete(profession_obj)
-            db.flush()
+        db.flush()
         for profession_id in data.professions:
             user_profession: m.UserProfession = db.scalar(
                 select(m.UserProfession).where(
