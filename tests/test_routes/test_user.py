@@ -395,6 +395,7 @@ def test_update_user(
         phone=user.phone,
         picture=PICTURE,
         professions=PROFESSION_IDS,
+        country_code="IL",
     )
 
     response = client.patch(
