@@ -50,7 +50,7 @@ class ApplicationOut(Application):
 
 
 class ApplicationList(BaseModel):
-    applications: list[Application]
+    applications: list[ApplicationOut]
 
     class Config:
         orm_mode = True
