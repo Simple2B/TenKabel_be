@@ -44,6 +44,18 @@ class Application(db.Model):
         "User", foreign_keys=[owner_id], viewonly=True
     )
 
+    @property
+    def job_uuid(self):
+        return self.job.uuid
+
+    @property
+    def job_name(self):
+        return self.job.name
+
+    @property
+    def job_status(self):
+        return self.job.status
+
     @orm.validates("status")
     def update_status_changed_at(self, key, value):
         if self.status != value:
