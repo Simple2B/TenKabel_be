@@ -56,7 +56,7 @@ class User(db.Model, BaseUser):
             return session.scalar(
                 select(func.count()).where(
                     (m.Job.worker_id == self.id)
-                    & (m.Job.status == s.Job.Status.JOB_IS_FINISHED)
+                    & (m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED)
                 )
             )
 

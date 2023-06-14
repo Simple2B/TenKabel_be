@@ -44,13 +44,13 @@ def create_applications(db: Session):
 def create_applications_for_user(db: Session, user_id: int) -> None:
     jobs: list[int] = db.scalars(
         select(m.Job).where(
-            and_(m.Job.owner_id != user_id, m.Job.status == s.Job.Status.PENDING)
+            and_(m.Job.owner_id != user_id, m.Job.status == s.enums.JobStatus.PENDING)
         )
     ).all()
     workers = db.scalars(select(m.User).where(m.User.id != user_id)).all()
     user_jobs: list[m.Job] = db.scalars(
         select(m.Job).where(
-            and_(m.Job.owner_id == user_id, m.Job.status == s.Job.Status.PENDING)
+            and_(m.Job.owner_id == user_id, m.Job.status == s.enums.JobStatus.PENDING)
         )
     ).all()
 
