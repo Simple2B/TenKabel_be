@@ -4,6 +4,7 @@ from pydantic import BaseModel
 from .user import User
 from .profession import Profession
 from .application import Application
+from .enums import JobStatus
 
 
 class BaseJob(BaseModel):
@@ -21,12 +22,6 @@ class BaseJob(BaseModel):
 
 
 class Job(BaseJob):
-    class Status(enum.Enum):
-        PENDING = "pending"
-        APPROVED = "approved"
-        IN_PROGRESS = "in_progress"
-        JOB_IS_FINISHED = "job_is_finished"
-
     class PaymentStatus(enum.Enum):
         PAID = "paid"
         UNPAID = "unpaid"
@@ -45,7 +40,7 @@ class Job(BaseJob):
         ARCHIVE = "archive"
 
     id: int | None
-    status: Status | str
+    status: JobStatus | str
     payment_status: PaymentStatus | str
     commission_status: CommissionStatus | str
     who_pays: WhoPays | str
@@ -90,4 +85,4 @@ class JobIn(BaseModel):
 
 
 class JobUpdate(JobIn):
-    status: Job.Status
+    status: JobStatus

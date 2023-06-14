@@ -19,7 +19,7 @@ job_router = APIRouter(prefix="/job", tags=["Jobs"])
     "/status_list", status_code=status.HTTP_200_OK, response_model=list[str]
 )
 def get_status_list():
-    return [e.value for e in s.Job.Status]
+    return [e.value for e in s.enums.JobStatus]
 
 
 @job_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
@@ -32,7 +32,7 @@ def get_jobs(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
-    query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
+    query = select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
     if (
         user is None
         or user.google_openid_key
@@ -86,7 +86,7 @@ def search_job(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
-    query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
+    query = select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
 
     if q:
         query = query.where(
@@ -205,7 +205,7 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
 
-    job.status = s.Job.Status(job_data.status)
+    job.status = s.enums.JobStatus(job_data.status)
 
     try:
         db.commit()

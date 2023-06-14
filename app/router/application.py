@@ -76,7 +76,7 @@ def update_application(
 
         job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
-        job.status = s.Job.Status.APPROVED
+        job.status = s.enums.JobStatus.APPROVED
         log(log.INFO, "Jop [%s] status updated", job.id)
 
     try:
@@ -102,7 +102,7 @@ def create_application(
     job: m.Job = db.scalar(
         select(m.Job).where(
             (m.Job.id == application_data.job_id)
-            and (m.Job.status == s.Job.Status.PENDING)
+            and (m.Job.status == s.enums.JobStatus.PENDING)
         )
     )
     if not job:
