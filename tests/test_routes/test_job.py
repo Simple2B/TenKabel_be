@@ -13,6 +13,7 @@ from tests.utility import (
     fill_test_data,
     create_locations,
     create_professions,
+    create_jobs_for_user,
 )
 
 NUM_TEST_JOBS = 200
@@ -60,6 +61,8 @@ def test_auth_user_jobs(
         select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
     )
     assert user
+    create_jobs_for_user(db, user.id)
+
     # check jobs are created
     response = client.get(
         "api/job/jobs",
@@ -72,6 +75,7 @@ def test_auth_user_jobs(
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
         assert job.city in [location.name_en for location in user.locations]
+        assert job.owner_id != user.id
 
 
 def test_unauth_user_jobs(client: TestClient, db: Session):
