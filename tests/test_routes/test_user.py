@@ -247,7 +247,7 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
-            m.Job.status == s.enums.Status.PENDING,
+            m.Job.status == s.enums.JobStatus.PENDING,
         )
     )
     jobs = db.scalars(query).all()
@@ -255,7 +255,7 @@ def test_get_user_profile(
     assert len(jobs) == len(resp_obj.jobs)
     for job in resp_obj.jobs:
         assert job.id in [j.id for j in jobs]
-        assert job.status == s.enums.Status.PENDING.value
+        assert job.status == s.enums.JobStatus.PENDING.value
         if job.owner_id != user.id:
             assert user.id in [
                 application.worker_id for application in job.applications
@@ -273,8 +273,8 @@ def test_get_user_profile(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
             or_(
-                m.Job.status == s.enums.Status.IN_PROGRESS,
-                m.Job.status == s.enums.Status.APPROVED,
+                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                m.Job.status == s.enums.JobStatus.APPROVED,
             ),
         )
     )
@@ -285,8 +285,8 @@ def test_get_user_profile(
     for job in resp_obj.jobs:
         assert job.id in [j.id for j in jobs]
         assert job.status in (
-            s.enums.Status.IN_PROGRESS.value,
-            s.enums.Status.APPROVED.value,
+            s.enums.JobStatus.IN_PROGRESS.value,
+            s.enums.JobStatus.APPROVED.value,
         )
         assert user.id in (job.owner_id, job.worker_id)
 
@@ -301,14 +301,14 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.status == s.enums.Status.JOB_IS_FINISHED,
+            m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
         )
     )
     jobs = db.scalars(query).all()
 
     for job in resp_obj.jobs:
         assert int(job.id) in [j.id for j in jobs]
-        assert job.status == s.enums.Status.JOB_IS_FINISHED.value
+        assert job.status == s.enums.JobStatus.JOB_IS_FINISHED.value
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(

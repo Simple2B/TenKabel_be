@@ -62,7 +62,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.Status]),
+            status=random.choice([e for e in s.enums.JobStatus]),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
@@ -82,7 +82,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     for job in created_jobs:
         # job status can't be pending with existing worker
 
-        if job.status == s.enums.Status.PENDING:
+        if job.status == s.enums.JobStatus.PENDING:
             job.worker_id = None
         # owner can't work on his own job
         while job.owner_id == job.worker_id:
@@ -117,7 +117,7 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.Status]),
+            status=random.choice([e for e in s.enums.JobStatus]),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
@@ -138,7 +138,7 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.Status]),
+            status=random.choice([e for e in s.enums.JobStatus]),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
@@ -158,11 +158,11 @@ def create_jobs_for_user(
 
     for job in created_jobs:
         # job status can't be pending with existing worker
-        if job.worker_id and job.status == s.enums.Status.PENDING:
+        if job.worker_id and job.status == s.enums.JobStatus.PENDING:
             # TODO: jobs with pending status not creating
             job.worker_id = None
         # job progress cant exist with no worker
-        elif not job.worker_id and job.status != s.enums.Status.PENDING:
+        elif not job.worker_id and job.status != s.enums.JobStatus.PENDING:
             job.worker_id = random.choice(worker_ids[:-1])
         # owner can't work on his own job
         while job.owner_id == job.worker_id:

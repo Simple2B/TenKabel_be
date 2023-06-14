@@ -1,7 +1,7 @@
 import enum
 
 
-class Status(enum.Enum):
+class JobStatus(enum.Enum):
     PENDING = "pending"
     APPROVED = "approved"
     IN_PROGRESS = "in_progress"

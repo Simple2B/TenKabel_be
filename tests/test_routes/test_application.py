@@ -27,7 +27,7 @@ def test_application_methods(
     create_applications(db)
 
     job_id: int | None = db.scalar(
-        select(m.Job.id).where((m.Job.status == s.enums.Status.PENDING))
+        select(m.Job.id).where((m.Job.status == s.enums.JobStatus.PENDING))
     )
     auth_user_id = db.scalar(
         select(m.User.id).where(
@@ -89,7 +89,8 @@ def test_application_methods(
 
     job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
     assert (
-        job.status == s.enums.Status.APPROVED and job.worker_id == application.worker_id
+        job.status == s.enums.JobStatus.APPROVED
+        and job.worker_id == application.worker_id
     )
     applications = db.scalars(
         select(m.Application).where((m.Application.job_id == application.job_id))

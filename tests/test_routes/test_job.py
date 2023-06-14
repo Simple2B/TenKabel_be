@@ -188,7 +188,9 @@ def test_search_job(
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    job: m.Job = db.scalar(select(m.Job).where(m.Job.status == s.enums.Status.PENDING))
+    job: m.Job = db.scalar(
+        select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
+    )
     assert job
 
     response = client.get("api/job/search", params={"q": f"{job.city}"})
@@ -236,13 +238,13 @@ def test_update_job(
         customer_last_name=job.customer_last_name,
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
-        status=s.enums.Status.JOB_IS_FINISHED,
+        status=s.enums.JobStatus.JOB_IS_FINISHED,
     )
     response = client.put(f"api/job/{job.uuid}", json=request_data.dict())
 
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
-    assert job.status == s.enums.Status.JOB_IS_FINISHED
+    assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
 
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
@@ -256,7 +258,7 @@ def test_update_job(
         customer_last_name=job.customer_last_name,
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
-        status=s.enums.Status.JOB_IS_FINISHED,
+        status=s.enums.JobStatus.JOB_IS_FINISHED,
     )
     response = client.put(
         f"api/job/{job.uuid}",
@@ -265,4 +267,4 @@ def test_update_job(
 
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
-    assert job.status == s.enums.Status.JOB_IS_FINISHED
+    assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
