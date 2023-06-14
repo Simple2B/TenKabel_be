@@ -44,8 +44,6 @@ class Application(db.Model):
         "User", foreign_keys=[owner_id], viewonly=True
     )
 
-    # job: orm.Mapped[m.Job] = orm.relationship("Job", foreign_keys=[job_id], viewonly=True)
-
     @orm.validates("status")
     def update_status_changed_at(self, key, value):
         if self.status != value:

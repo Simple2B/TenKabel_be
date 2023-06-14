@@ -3,6 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 from .user import User
+from .enums import JobStatus
 
 
 class BaseApplication(BaseModel):
@@ -42,5 +43,14 @@ class Application(BaseApplication):
         orm_mode = True
 
 
+class ApplicationOut(Application):
+    job_uuid: str
+    job_name: str
+    job_status: JobStatus
+
+
 class ApplicationList(BaseModel):
     applications: list[Application]
+
+    class Config:
+        orm_mode = True
