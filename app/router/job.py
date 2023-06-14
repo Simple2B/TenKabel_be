@@ -10,7 +10,9 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
-from app.utility import time_measurement, get_pending_jobs_query_for_user
+from app.utility import time_measurement
+from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
+
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
 
