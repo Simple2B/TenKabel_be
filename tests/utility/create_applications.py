@@ -27,6 +27,8 @@ def create_applications(db: Session):
                 job_id=job.id,
                 owner_id=owner.id,
                 worker_id=worker.id,
+                job_name=job.name,
+                job_uuid=job.uuid,
                 created_at=fake.date_time_between(start_date="-30d", end_date="now"),
                 status=random.choice(
                     [
@@ -62,6 +64,8 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
                 job_id=job.id,
                 owner_id=job.owner_id,
                 worker_id=worker.id,
+                job_uuid=job.uuid,
+                job_name=job.name,
                 created_at=fake.date_time_between(start_date="-30d", end_date="now"),
                 status=s.BaseApplication.ApplicationStatus.PENDING,
             )
@@ -84,6 +88,8 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
             job_id=job.id,
             owner_id=owner.id,
             worker_id=user_id,
+            job_uuid=job.uuid,
+            job_name=job.name,
             created_at=fake.date_time_between(start_date="-30d", end_date="now"),
             status=s.BaseApplication.ApplicationStatus.PENDING,
         )

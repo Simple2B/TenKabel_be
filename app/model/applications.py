@@ -29,6 +29,9 @@ class Application(db.Model):
         default=s.BaseApplication.ApplicationStatus.PENDING,
     )
 
+    job_uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36))
+    job_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
+
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
@@ -43,8 +46,6 @@ class Application(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True
     )
-
-    # job: orm.Mapped[m.Job] = orm.relationship("Job", foreign_keys=[job_id], viewonly=True)
 
     @orm.validates("status")
     def update_status_changed_at(self, key, value):

@@ -34,6 +34,8 @@ class Application(BaseApplication):
     uuid: str
     owner: User
     worker: User
+    job_uuid: str
+    job_name: str
     created_at: datetime | str
     status_changed_at: datetime | str
 
@@ -44,3 +46,6 @@ class Application(BaseApplication):
 
 class ApplicationList(BaseModel):
     applications: list[Application]
+
+    class Config:
+        orm_mode = True

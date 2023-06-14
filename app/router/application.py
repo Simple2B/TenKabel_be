@@ -129,6 +129,8 @@ def create_application(
         job_id=application_data.job_id,
         owner_id=job.owner_id,
         worker_id=current_user.id,
+        job_uuid=job.uuid,
+        job_name=job.name,
     )
     db.add(application)
 
