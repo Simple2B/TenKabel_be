@@ -1,10 +1,11 @@
 from sqlalchemy import select, and_
+from sqlalchemy.orm import Session
 
 from app import schema as s
 from app import model as m
 
 
-def get_pending_jobs_query_for_user(db, user):
+def get_pending_jobs_query_for_user(db: Session, user: m.User):
     query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
     if user:
         applications_ids = db.scalars(
