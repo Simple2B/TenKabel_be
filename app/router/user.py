@@ -262,21 +262,7 @@ def get_user_applications(
     log(log.INFO, "[%s] type applications for User [%s]", type, current_user.username)
     applications = db.scalars(query).all()
     applications_schema_list = [
-        s.ApplicationOut(
-            job_name=application.job.name,
-            job_uuid=application.job.uuid,
-            job_status=application.job.status,
-            id=application.id,
-            uuid=application.uuid,
-            owner=application.owner,
-            worker=application.worker,
-            created_at=application.created_at,
-            status_changed_at=application.status_changed_at,
-            owner_id=application.owner_id,
-            worker_id=application.worker_id,
-            job_id=application.job_id,
-        )
-        for application in applications
+        s.ApplicationOut.from_orm(application) for application in applications
     ]
 
     return s.ApplicationList(applications=applications_schema_list)

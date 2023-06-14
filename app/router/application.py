@@ -88,20 +88,7 @@ def update_application(
         )
 
     log(log.INFO, "Application updated successfully - [%s]", application.id)
-    return s.ApplicationOut(
-        job_name=job.name,
-        job_uuid=job.uuid,
-        job_status=job.status,
-        id=application.id,
-        uuid=application.uuid,
-        owner=application.owner,
-        worker=application.worker,
-        created_at=application.created_at,
-        status_changed_at=application.status_changed_at,
-        owner_id=application.owner_id,
-        worker_id=application.worker_id,
-        job_id=application.job_id,
-    )
+    return s.ApplicationOut.from_orm(application)
 
 
 @application_router.post(
@@ -154,17 +141,20 @@ def create_application(
             detail="Error creating new application",
         )
     log(log.INFO, "Application created successfully - [%s]", application.id)
-    return s.ApplicationOut(
-        job_name=job.name,
-        job_uuid=job.uuid,
-        job_status=job.status,
-        id=application.id,
-        uuid=application.uuid,
-        owner=application.owner,
-        worker=application.worker,
-        created_at=application.created_at,
-        status_changed_at=application.status_changed_at,
-        owner_id=application.owner_id,
-        worker_id=application.worker_id,
-        job_id=application.job_id,
-    )
+
+    return s.ApplicationOut.from_orm(application)
+
+    # return s.ApplicationOut(
+    #     job_name=job.name,
+    #     job_uuid=job.uuid,
+    #     job_status=job.status,
+    #     id=application.id,
+    #     uuid=application.uuid,
+    #     owner=application.owner,
+    #     worker=application.worker,
+    #     created_at=application.created_at,
+    #     status_changed_at=application.status_changed_at,
+    #     owner_id=application.owner_id,
+    #     worker_id=application.worker_id,
+    #     job_id=application.job_id,
+    # )
