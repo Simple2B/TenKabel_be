@@ -10,7 +10,7 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
-from app.utility import time_measurement
+from app.utility import time_measurement, get_pending_jobs_query_for_user
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
 
@@ -32,14 +32,7 @@ def get_jobs(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
-    query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
-    if user:
-        applications_ids = db.scalars(
-            select(m.Application.id).where(m.Application.worker_id == user.id)
-        ).all()
-        query = query.where(
-            and_(m.Job.owner_id != user.id, m.Job.id.notin_(applications_ids))
-        )
+    query = get_pending_jobs_query_for_user(db, user)
 
     if (
         user is None
@@ -94,15 +87,7 @@ def search_job(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
-    query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
-
-    if user:
-        applications_ids = db.scalars(
-            select(m.Application.id).where(m.Application.worker_id == user.id)
-        ).all()
-        query = query.where(
-            and_(m.Job.owner_id != user.id, m.Job.id.notin_(applications_ids))
-        )
+    query = get_pending_jobs_query_for_user(db, user)
 
     if q:
         query = query.where(
