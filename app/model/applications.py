@@ -29,9 +29,6 @@ class Application(db.Model):
         default=s.BaseApplication.ApplicationStatus.PENDING,
     )
 
-    job_uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36))
-    job_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
-
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )

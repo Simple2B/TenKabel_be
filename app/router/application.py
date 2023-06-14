@@ -14,7 +14,7 @@ application_router = APIRouter(prefix="/application", tags=["Application"])
 
 
 @application_router.put(
-    "/{uuid}", status_code=status.HTTP_201_CREATED, response_model=s.Application
+    "/{uuid}", status_code=status.HTTP_201_CREATED, response_model=s.ApplicationOut
 )
 def update_application(
     uuid: str,
@@ -77,7 +77,7 @@ def update_application(
         job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.APPROVED
-        log(log.INFO, "Jop [%s] status updated", job.id)
+        log(log.INFO, "Job [%s] status updated", job.id)
 
     try:
         db.commit()
@@ -88,11 +88,24 @@ def update_application(
         )
 
     log(log.INFO, "Application updated successfully - [%s]", application.id)
-    return application
+    return s.ApplicationOut(
+        job_name=job.name,
+        job_uuid=job.uuid,
+        job_status=job.status,
+        id=application.id,
+        uuid=application.uuid,
+        owner=application.owner,
+        worker=application.worker,
+        created_at=application.created_at,
+        status_changed_at=application.status_changed_at,
+        owner_id=application.owner_id,
+        worker_id=application.worker_id,
+        job_id=application.job_id,
+    )
 
 
 @application_router.post(
-    "", status_code=status.HTTP_201_CREATED, response_model=s.Application
+    "", status_code=status.HTTP_201_CREATED, response_model=s.ApplicationOut
 )
 def create_application(
     application_data: s.ApplicationIn,
@@ -129,8 +142,6 @@ def create_application(
         job_id=application_data.job_id,
         owner_id=job.owner_id,
         worker_id=current_user.id,
-        job_uuid=job.uuid,
-        job_name=job.name,
     )
     db.add(application)
 
@@ -142,6 +153,18 @@ def create_application(
             status_code=status.HTTP_409_CONFLICT,
             detail="Error creating new application",
         )
-
     log(log.INFO, "Application created successfully - [%s]", application.id)
-    return application
+    return s.ApplicationOut(
+        job_name=job.name,
+        job_uuid=job.uuid,
+        job_status=job.status,
+        id=application.id,
+        uuid=application.uuid,
+        owner=application.owner,
+        worker=application.worker,
+        created_at=application.created_at,
+        status_changed_at=application.status_changed_at,
+        owner_id=application.owner_id,
+        worker_id=application.worker_id,
+        job_id=application.job_id,
+    )

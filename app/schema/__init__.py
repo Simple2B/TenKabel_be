@@ -16,6 +16,12 @@ from .location import BaseLocation, Location, LocationList
 from .job import BaseJob, Job, ListJob, JobIn, JobUpdate
 from .pagination import Pagination
 from .rate import BaseRate, Rate, RateList
-from .application import BaseApplication, Application, ApplicationList, ApplicationIn
+from .application import (
+    BaseApplication,
+    Application,
+    ApplicationList,
+    ApplicationIn,
+    ApplicationOut,
+)
 from .who_am_i import WhoAmIOut
 from .enums import JobStatus
