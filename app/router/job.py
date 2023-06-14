@@ -1,7 +1,7 @@
 import re
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -33,6 +33,14 @@ def get_jobs(
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
     query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
+    if user:
+        applications_ids = db.scalars(
+            select(m.Application.id).where(m.Application.worker_id == user.id)
+        ).all()
+        query = query.where(
+            and_(m.Job.owner_id != user.id, m.Job.id.notin_(applications_ids))
+        )
+
     if (
         user is None
         or user.google_openid_key
@@ -87,6 +95,14 @@ def search_job(
     user: m.User | None = Depends(get_user),
 ) -> s.ListJob:
     query = select(m.Job).where(m.Job.status == s.Job.Status.PENDING)
+
+    if user:
+        applications_ids = db.scalars(
+            select(m.Application.id).where(m.Application.worker_id == user.id)
+        ).all()
+        query = query.where(
+            and_(m.Job.owner_id != user.id, m.Job.id.notin_(applications_ids))
+        )
 
     if q:
         query = query.where(
