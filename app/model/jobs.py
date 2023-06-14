@@ -29,8 +29,8 @@ class Job(db.Model):
     name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     description: orm.Mapped[str] = orm.mapped_column(sa.String(512), default="")
     is_deleted: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
-    status: orm.Mapped[s.Job.Status] = orm.mapped_column(
-        sa.Enum(s.Job.Status), default=s.Job.Status.PENDING
+    status: orm.Mapped[s.enums.Status] = orm.mapped_column(
+        sa.Enum(s.enums.Status), default=s.enums.Status.PENDING
     )
 
     customer_first_name: orm.Mapped[str] = orm.mapped_column(

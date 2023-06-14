@@ -18,3 +18,4 @@ from .pagination import Pagination
 from .rate import BaseRate, Rate, RateList
 from .application import BaseApplication, Application, ApplicationList, ApplicationIn
 from .who_am_i import WhoAmIOut
+from .enums import Status
