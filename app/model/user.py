@@ -34,7 +34,7 @@ class User(db.Model, BaseUser):
         db: orm.Session,
         user_id: str,
         password: str,
-        country_code: str | None = None,
+        country_code: str,
     ) -> Self:
         if country_code:
             filters = sa.and_(

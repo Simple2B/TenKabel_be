@@ -25,14 +25,15 @@ def authorized_users_tokens(
     tokens = []
     for user in test_data.test_authorized_users:
         response = client.post(
-            "api/auth/login",
-            data={
-                "username": user.email,
+            "api/auth/login-by-phone",
+            json={
+                "phone": user.phone,
                 "password": user.password,
+                "country_code": user.country_code,
             },
         )
 
-        assert response and response.status_code == 200
+        assert response.status_code == 200
         token = s.Token.parse_obj(response.json())
         tokens += [token]
     yield tokens
