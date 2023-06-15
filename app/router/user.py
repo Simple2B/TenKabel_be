@@ -1,7 +1,7 @@
 import datetime
 
 from fastapi import HTTPException, Depends, APIRouter, status, Form
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_, and_, desc
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -266,7 +266,7 @@ def get_user_applications(
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Wrong filter")
 
     log(log.INFO, "[%s] type applications for User [%s]", type, current_user.username)
-    applications = db.scalars(query).all()
+    applications = db.scalars(query.order_by(desc(m.Application.created_at))).all()
     applications_schema_list = [
         s.ApplicationOut.from_orm(application) for application in applications
     ]
