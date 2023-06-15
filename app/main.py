@@ -14,6 +14,7 @@ from app.router import router
 from app import admin
 from app.database import engine
 from app.admin import authentication_backend
+from app.logger import log
 
 engine = get_engine()
 
@@ -29,6 +30,16 @@ admin = Admin(
 sql_admin = Admin(app, engine)
 
 app.include_router(router)
+
+
+# @app.middleware("http")
+# async def add_process_time_header(request: Request, call_next):
+#     start_time = time.time()
+#     response = await call_next(request)
+#     process_time = time.time() - start_time
+#     response.headers["X-Process-Time"] = str(process_time)
+#     log(log.INFO, "Time estimated - [%s]", process_time)
+#     return response
 
 
 @app.get("/")

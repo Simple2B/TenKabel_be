@@ -16,12 +16,13 @@ class Rate(db.Model):
     worker_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
     )
+
     rate: orm.Mapped[s.BaseRate.RateStatus] = orm.mapped_column(
         sa.Enum(s.BaseRate.RateStatus), default=s.BaseRate.RateStatus.NEUTRAL
     )
 
     worker: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[worker_id], viewonly=True
+        "User", foreign_keys=[worker_id], viewonly=True, backref="rates"
     )
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True

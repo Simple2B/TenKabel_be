@@ -12,7 +12,6 @@ from app.logger import log
 from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
-from app.controller import create_pagination
 
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
@@ -34,7 +33,6 @@ def get_jobs(
     max_price: int = None,
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
-    page: int = 0,
 ) -> s.ListJob:
     query = get_pending_jobs_query_for_user(db, user)
 
@@ -80,11 +78,9 @@ def get_jobs(
         if not cities_names and not profession_ids:
             log(log.INFO, "Job returned with no filters")
 
-    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.id)).all()
-    # pagination: s.Pagination = create_pagination(total=len(jobs), query=jobs)
-
-    log(log.INFO, "Job [%s] at all got", len(jobs))
-    return s.ListJob(jobs=jobs)
+    jobs: s.ListJob = s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
+    log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
+    return jobs
 
 
 @job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)

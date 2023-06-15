@@ -1,6 +1,6 @@
 from typing import Self
 import sqlalchemy as sa
-from sqlalchemy import orm, select, func
+from sqlalchemy import orm
 from app.hash_utils import hash_verify
 
 from app.database import db
@@ -10,7 +10,6 @@ from .base_user import BaseUser
 from .profession import Profession
 from .location import Location
 from app import schema as s
-from app import model as m
 
 
 class User(db.Model, BaseUser):
@@ -47,48 +46,25 @@ class User(db.Model, BaseUser):
 
     @property
     def jobs_posted_count(self) -> int:
-        with db.begin() as session:
-            return session.scalar(select(func.count()).where(m.Job.owner_id == self.id))
+        return len(self.jobs_owned)
 
     @property
     def jobs_completed_count(self) -> int:
-        with db.begin() as session:
-            return session.scalar(
-                select(func.count()).where(
-                    (m.Job.worker_id == self.id)
-                    & (m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED)
-                )
-            )
+        return sum(
+            [job.status == s.enums.JobStatus.JOB_IS_FINISHED for job in self.jobs_to_do]
+        )
 
     @property
     def positive_rates_count(self) -> int:
-        with db.begin() as session:
-            return session.scalar(
-                select(func.count()).where(
-                    (m.Rate.worker_id == self.id)
-                    & (m.Rate.rate == s.BaseRate.RateStatus.POSITIVE)
-                )
-            )
+        return sum([rate.rate == s.BaseRate.RateStatus.POSITIVE for rate in self.rates])
 
     @property
     def negative_rates_count(self) -> int:
-        with db.begin() as session:
-            return session.scalar(
-                select(func.count()).where(
-                    (m.Rate.worker_id == self.id)
-                    & (m.Rate.rate == s.BaseRate.RateStatus.NEGATIVE)
-                )
-            )
+        return sum([rate.rate == s.BaseRate.RateStatus.NEGATIVE for rate in self.rates])
 
     @property
     def neutral_rates_count(self) -> int:
-        with db.begin() as session:
-            return session.scalar(
-                select(func.count()).where(
-                    (m.Rate.worker_id == self.id)
-                    & (m.Rate.rate == s.BaseRate.RateStatus.NEUTRAL)
-                )
-            )
+        return sum([rate.rate == s.BaseRate.RateStatus.NEUTRAL for rate in self.rates])
 
     def __repr__(self):
         return f"<{self.id}: {self.first_name} {self.last_name}>"
