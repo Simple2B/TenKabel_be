@@ -184,9 +184,13 @@ def forgot_password(
     data: s.ForgotPassword,
     db: Session = Depends(get_db),
 ):
-    user = db.scalar(select(m.User).where(m.User.phone == data.phone))
+    user = db.scalar(
+        select(m.User).where(
+            and_(m.User.phone == data.phone, m.User.country_code == data.country_code)
+        )
+    )
     if not user:
-        log(log.INFO, "User doesn't exist - %s", data.phone)
+        log(log.INFO, "User doesn't exist - %s %s", data.country_code, data.phone)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User does not exist"
         )

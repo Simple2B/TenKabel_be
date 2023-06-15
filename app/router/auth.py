@@ -24,6 +24,7 @@ def login_by_phone(
         db,
         user_credentials.phone,
         user_credentials.password,
+        user_credentials.country_code,
     )
 
     if not user:
@@ -40,6 +41,7 @@ def login_by_phone(
     )
 
 
+# TODO: not in usage, i guess
 @auth_router.post("/login", response_model=s.Token)
 def login(
     user_credentials: OAuth2PasswordRequestForm = Depends(),

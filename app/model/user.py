@@ -30,13 +30,26 @@ class User(db.Model, BaseUser):
 
     @classmethod
     def authenticate_with_phone(
-        cls, db: orm.Session, user_id: str, password: str
+        cls,
+        db: orm.Session,
+        user_id: str,
+        password: str,
+        country_code: str | None = None,
     ) -> Self:
+        if country_code:
+            filters = sa.and_(
+                sa.func.lower(cls.phone) == sa.func.lower(user_id),
+                sa.func.lower(cls.country_code) == sa.func.lower(country_code),
+            )
+        else:
+            filters = sa.and_(
+                sa.func.lower(cls.phone) == sa.func.lower(user_id),
+            )
         user = (
             db.query(cls)
             .filter(
                 sa.or_(
-                    sa.func.lower(cls.phone) == sa.func.lower(user_id),
+                    filters,
                     sa.func.lower(cls.email) == sa.func.lower(user_id),
                 )
             )

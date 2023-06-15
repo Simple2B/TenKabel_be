@@ -31,6 +31,7 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
             + " "
             + test_data.test_users[0].phone[-1],
             "password": test_data.test_users[0].password,
+            "country_code": "IL",
         },
     )
     assert response.status_code == status.HTTP_403_FORBIDDEN
@@ -40,6 +41,7 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
         data={
             "username": test_data.test_users[0].phone,
             "password": test_data.test_users[0].password,
+            "country_code": "IL",
         },
     )
     assert response.status_code == status.HTTP_200_OK
@@ -55,6 +57,7 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
         json={
             "phone": test_data.test_users[0].phone,
             "password": test_data.test_users[0].password,
+            "country_code": "IL",
         },
     )
     assert response.status_code == status.HTTP_200_OK
@@ -438,7 +441,9 @@ def test_passwords(
     assert user
     TEST_NEW_PASSWORD = "TEST_NEW_PASSWORD"
     # ForgotPassword
-    request_data = s.ForgotPassword(new_password=TEST_NEW_PASSWORD, phone=user.phone)
+    request_data = s.ForgotPassword(
+        new_password=TEST_NEW_PASSWORD, phone=user.phone, country_code="IL"
+    )
     response = client.post(
         "api/user/forgot-password",
         json=request_data.dict(),
