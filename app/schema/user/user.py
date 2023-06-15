@@ -14,6 +14,7 @@ phone_field = constr(
 
 
 class AuthUser(BaseModel):
+    country_code: str
     phone: phone_field
     password: constr(max_length=128, strip_whitespace=True)
 
@@ -75,6 +76,7 @@ class UserUpdate(BaseUser):
 class ForgotPassword(BaseModel):
     new_password: str
     phone: phone_field
+    country_code: str
 
 
 class ChangePassword(BaseModel):

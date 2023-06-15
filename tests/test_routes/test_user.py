@@ -23,41 +23,29 @@ from tests.utility import (
 
 def test_auth(client: TestClient, db: Session, test_data: TestData):
     # login by username and password
-    response = client.post(
-        "api/auth/login",
-        data={
-            # testing wrong phone number (via whitespace)
-            "username": test_data.test_users[0].phone[:-1]
-            + " "
-            + test_data.test_users[0].phone[-1],
-            "password": test_data.test_users[0].password,
-        },
-    )
-    assert response.status_code == status.HTTP_403_FORBIDDEN
-
-    response = client.post(
-        "api/auth/login",
-        data={
-            "username": test_data.test_users[0].phone,
-            "password": test_data.test_users[0].password,
-        },
-    )
-    assert response.status_code == status.HTTP_200_OK
-
-    user = db.scalar(
-        select(m.User).where(m.User.phone == test_data.test_users[0].phone)
-    )
-    user.is_verified = True
-    db.commit()
 
     response = client.post(
         "api/auth/login-by-phone",
         json={
             "phone": test_data.test_users[0].phone,
             "password": test_data.test_users[0].password,
+            "country_code": "IL",
         },
     )
     assert response.status_code == status.HTTP_200_OK
+
+    response = client.post(
+        "api/auth/login-by-phone",
+        json={
+            # testing wrong phone number (via whitespace)
+            "username": test_data.test_users[0].phone[:-1]
+            + " "
+            + test_data.test_users[0].phone[-1],
+            "password": test_data.test_users[0].password,
+            "country_code": "IL",
+        },
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 def test_signup(
@@ -439,7 +427,9 @@ def test_passwords(
     assert user
     TEST_NEW_PASSWORD = "TEST_NEW_PASSWORD"
     # ForgotPassword
-    request_data = s.ForgotPassword(new_password=TEST_NEW_PASSWORD, phone=user.phone)
+    request_data = s.ForgotPassword(
+        new_password=TEST_NEW_PASSWORD, phone=user.phone, country_code="IL"
+    )
     response = client.post(
         "api/user/forgot-password",
         json=request_data.dict(),

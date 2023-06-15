@@ -48,7 +48,7 @@
       "email": "test_authorized_email2@gmail.com",
       "password": "1233",
       "is_verified": true,
-      "phone": "877632",
+      "phone": "367788700",
       "google_openid_key": "abcdef123321",
       "picture": "367788333"
     },
@@ -83,6 +83,7 @@
   "test_superuser": {
     "username": "test_superuser",
     "email": "test_superuser@gmail.com",
+    "phone": "267788100",
     "password": "1234"
   },
   "test_rates":[{
