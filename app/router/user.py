@@ -185,6 +185,12 @@ def forgot_password(
     db: Session = Depends(get_db),
 ):
     user = db.scalar(select(m.User).where(m.User.phone == data.phone))
+    if not user:
+        log(log.INFO, "User doesn't exist - %s", data.phone)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="User does not exist"
+        )
+
     user.password = data.new_password
     try:
         db.commit()
