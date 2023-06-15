@@ -221,6 +221,7 @@ def test_get_user_profile(
     )
     create_applications(db)
     create_applications_for_user(db, user.id)
+    create_applications_for_user(db, user.id)
 
     response = client.get(
         "api/user/jobs",
