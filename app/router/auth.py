@@ -206,7 +206,7 @@ def google_auth(
     user: m.User = m.User.authenticate(
         db,
         user.email,
-        password,
+        user.password,
     )
 
     if not user:
