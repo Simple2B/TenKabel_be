@@ -70,10 +70,10 @@ class Job(db.Model):
         "Application", viewonly=True, backref="job"
     )
     worker: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[worker_id], viewonly=True
+        "User", foreign_keys=[worker_id], viewonly=True, backref="jobs_to_do"
     )
     owner: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[owner_id], viewonly=True
+        "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)

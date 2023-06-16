@@ -6,7 +6,7 @@ class Pagination(BaseModel):
 
     page: int  # current page number
     total: int  # total items
-    query: str | None  # query string
+    query: BaseModel | None  # query string
     per_page: int  # number items on the page
     skip: int  # number items on all previous pages
     pages: int  # total pages

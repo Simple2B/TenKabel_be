@@ -47,20 +47,16 @@ class User(BaseUser):
     phone: str | None
     jobs_posted_count: int
     jobs_completed_count: int
-    positive_rates_count: int
-    negative_rates_count: int
-    neutral_rates_count: int
+    positive_rates_count: int = 0
+    negative_rates_count: int = 0
+    neutral_rates_count: int = 0
     created_at: datetime | str
     country_code: str
     is_verified: bool
     professions: list[Profession]
-    picture: str | None
+    picture: str
     locations: list[Location]
     is_auth_by_google: bool
-
-    # @validator("picture")
-    # def encode_picture_to_base64(cls, value) -> bytes:
-    #     return value.decode("utf-8")
 
     class Config:
         orm_mode = True

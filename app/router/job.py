@@ -78,9 +78,9 @@ def get_jobs(
         if not cities_names and not profession_ids:
             log(log.INFO, "Job returned with no filters")
 
-    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.id)).all()
-    log(log.INFO, "Job [%s] at all got", len(jobs))
-    return s.ListJob(jobs=jobs)
+    jobs: s.ListJob = s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
+    log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
+    return jobs
 
 
 @job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
