@@ -3,7 +3,7 @@ from pydantic import BaseModel
 
 from .user import User
 from .profession import Profession
-from .application import Application
+from .application import ApplicationOut
 from .enums import JobStatus
 
 
@@ -55,7 +55,7 @@ class Job(BaseJob):
     customer_street_address: str
     city: str
     time: str
-    applications: list[Application]
+    applications: list[ApplicationOut]
 
     class Config:
         use_enum_values = True
