@@ -152,7 +152,7 @@ def create_application(
     db.refresh(application)
 
     notification: m.Notification = m.Notification(
-        user_id=current_user.id,
+        user_id=job.owner_id,
         entity_id=application.id,
         type=s.NotificationType.APPLICATION_CREATED,
     )

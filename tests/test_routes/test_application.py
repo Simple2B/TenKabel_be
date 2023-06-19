@@ -1,7 +1,7 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 import app.schema as s
 import app.model as m
@@ -24,7 +24,7 @@ def test_application_methods(
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
-    create_applications(db)
+    # create_applications(db)
 
     job_id: int | None = db.scalar(
         select(m.Job.id).where((m.Job.status == s.enums.JobStatus.PENDING))
@@ -42,7 +42,23 @@ def test_application_methods(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
-    assert response.status_code in (status.HTTP_201_CREATED, status.HTTP_409_CONFLICT)
+    assert response.status_code == status.HTTP_201_CREATED
+
+    application: m.Application = db.scalar(
+        select(m.Application).where(
+            (m.Application.job_id == job_id)
+            and (m.Application.worker_id == auth_user_id)
+        )
+    )
+
+    assert db.scalar(
+        select(m.Notification).where(
+            and_(
+                m.Notification.entity_id == application.id,
+                m.Notification.type == s.NotificationType.APPLICATION_CREATED,
+            )
+        )
+    )
 
     response = client.post(
         "api/application",
@@ -60,15 +76,6 @@ def test_application_methods(
     #     json=request_data.dict(),
     # )
     # assert response.status_code == status.HTTP_404_NOT_FOUND
-
-    application: m.Application = db.scalar(
-        select(m.Application).where(
-            (m.Application.job_id == job_id)
-            and (m.Application.worker_id == auth_user_id)
-        )
-    )
-
-    assert application
 
     request_data = s.BaseApplication(
         owner_id=application.owner_id,
@@ -92,6 +99,15 @@ def test_application_methods(
     applications = db.scalars(
         select(m.Application).where((m.Application.job_id == application.job_id))
     ).all()
+
+    assert db.scalar(
+        select(m.Notification).where(
+            and_(
+                m.Notification.entity_id == application.id,
+                m.Notification.type == s.NotificationType.APPLICATION_ACCEPTED,
+            )
+        )
+    )
 
     for exist_application in applications:
         if exist_application.id != application.id:
