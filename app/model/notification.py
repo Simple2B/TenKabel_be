@@ -30,11 +30,15 @@ class Notification(db.Model):
         if self.type < s.NotificationType.MAX_JOB_TYPE:
             return s.NotificationJob(
                 id=self.id,
+                uuid=self.uuid,
+                user_id=self.user_id,
                 type=self.type,
                 payload=session.scalar(select(Job).filter(Job.id == self.entity_id)),
             )
         return s.NotificationApplication(
             id=self.id,
+            uuid=self.uuid,
+            user_id=self.user_id,
             type=self.type,
             payload=session.scalar(
                 select(Application).filter(Application.id == self.entity_id),
