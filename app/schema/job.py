@@ -49,10 +49,10 @@ class Job(BaseJob):
     worker: User | None
     payment: int | None
     commission: int | None
-    customer_first_name: str | None
-    customer_last_name: str | None
-    customer_phone: str | None
-    customer_street_address: str | None
+    customer_first_name: str
+    customer_last_name: str
+    customer_phone: str
+    customer_street_address: str
     city: str
     time: str
     applications: list[Application]
