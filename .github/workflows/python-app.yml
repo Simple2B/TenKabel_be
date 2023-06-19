@@ -65,7 +65,7 @@ jobs:
     steps:
       - name: Create credentials json
         run: |
-          echo ${{ secrets.FIREBASE_CREDENTIALS }} > firebase_credentials.json
+          echo "${{ secrets.FIREBASE_CREDENTIALS }}" > firebase_credentials.json
       - name: update compose file
         uses: appleboy/scp-action@v0.1.4
         with:
