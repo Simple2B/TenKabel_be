@@ -16,11 +16,7 @@ from app import admin
 from app.database import engine
 from app.admin import authentication_backend
 from app.logger import log
-import firebase_admin
-from firebase_admin import credentials
 
-cred = credentials.Certificate("firebase_credentials.json")
-firebase_admin.initialize_app(cred)
 
 engine = get_engine()
 

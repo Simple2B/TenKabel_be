@@ -3,8 +3,13 @@ from firebase_admin import messaging
 from firebase_admin.exceptions import FirebaseError
 
 from app.logger import log
+import firebase_admin
+from firebase_admin import credentials
 
 notification_test_router = APIRouter(prefix="/notify", tags=["Notification"])
+
+cred = credentials.Certificate("firebase_credentials.json")
+firebase_admin.initialize_app(cred)
 
 
 @notification_test_router.post("", status_code=status.HTTP_201_CREATED)

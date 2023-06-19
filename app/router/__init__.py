@@ -24,7 +24,7 @@ router.include_router(whoami_router)
 router.include_router(rate_router)
 router.include_router(application_router)
 router.include_router(notification_router)
-router.include_router(notification_test_router)
+# router.include_router(notification_test_router)
 
 
 @router.get("/list-endpoints/")
