@@ -33,7 +33,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
         },
         headers={"Authorization": f"Bearer {token}"},
     )
-    assert device_response.status_code == 200
+    assert device_response.status_code == status.HTTP_200_OK
 
     device_query = select(m.Device).where(
         and_(
@@ -58,7 +58,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
         headers={"Authorization": f"Bearer {token}"},
     )
 
-    assert new_device_response.status_code == 200
+    assert new_device_response.status_code == status.HTTP_200_OK
 
     new_device_query = select(m.Device).where(
         and_(

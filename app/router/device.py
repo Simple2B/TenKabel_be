@@ -27,7 +27,7 @@ def add_device_to_user(
         )
     )
 
-    if not current_device:
+    if current_device:
         log(log.INFO, f"Device already exists for user: {user.id}")
         current_device.push_token = device.push_token
         db.commit()
