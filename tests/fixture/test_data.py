@@ -35,6 +35,18 @@ class TestApplication(BaseModel):
     job_id: int
 
 
+class TestNotificationJob(BaseModel):
+    user_id: int
+    entity_id: int
+    type: int
+
+
+class TestNotificationApplication(BaseModel):
+    user_id: int
+    entity_id: int
+    type: int
+
+
 class TestData(BaseModel):
     __test__ = False
 
@@ -44,6 +56,8 @@ class TestData(BaseModel):
     test_rates: list[TestRate]
     test_application: TestApplication
     test_applications: list[TestApplication]
+    test_notifications_jobs: list[TestNotificationJob]
+    test_notifications_applications: list[TestNotificationApplication]
 
     # authorized
     test_authorized_users: list[TestUser]

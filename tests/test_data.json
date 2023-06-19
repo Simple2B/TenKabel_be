@@ -105,5 +105,39 @@
   },{
     "job_id": 1
   }
+],
+"test_notifications_jobs":[
+  {
+    "user_id": 4,
+    "entity_id": 3,
+    "type": 4
+  },
+  {
+    "user_id": 4,
+    "entity_id": 3,
+    "type": 3
+  },
+  {
+    "user_id": 4,
+    "entity_id": 2,
+    "type": 2
+  }
+],
+"test_notifications_applications":[
+  {
+    "user_id": 4,
+    "entity_id": 3,
+    "type": 12
+  },
+  {
+    "user_id": 4,
+    "entity_id": 4,
+    "type": 12
+  },
+  {
+    "user_id": 4,
+    "entity_id": 2,
+    "type": 13
+  }
 ]
 }
