@@ -75,7 +75,7 @@ def update_application(
 
         job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
-        job.status = s.enums.JobStatus.APPROVED
+        job.status = s.enums.JobStatus.IN_PROGRESS
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
     else:
