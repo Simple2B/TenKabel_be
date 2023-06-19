@@ -1,17 +1,12 @@
-import re
-
-from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select, or_
+from fastapi import Depends, APIRouter, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
 
-from app.dependency import get_current_user, get_user
+from app.dependency import get_current_user
 import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
-from app.utility import time_measurement
-from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
 
 
 notification_router = APIRouter(prefix="/notification", tags=["Notifications"])

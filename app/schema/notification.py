@@ -14,9 +14,9 @@ class NotificationType(enum.IntEnum):
 
     MAX_JOB_TYPE = 10
 
-    APPLICATION_CREATED = 12
-    APPLICATION_ACCEPTED = 13
-    APPLICATION_REJECTED = 14
+    APPLICATION_CREATED = 11
+    APPLICATION_ACCEPTED = 12
+    APPLICATION_REJECTED = 13
 
     MAX_APPLICATION_TYPE = 20
 
@@ -39,5 +39,5 @@ class NotificationApplication(NotificationBase):
         orm_mode = True
 
 
-class NotificationList(NotificationBase):
+class NotificationList(BaseModel):
     items: list[NotificationJob | NotificationApplication]

@@ -1,5 +1,5 @@
 import sqlalchemy as sa
-from sqlalchemy import orm
+from sqlalchemy import orm, select
 
 import app.schema as s
 
@@ -20,7 +20,7 @@ class Notification(db.Model):
         sa.ForeignKey("users.id"), nullable=True
     )
 
-    user = orm.relationship("User", back_populates="notifications")
+    user = orm.relationship("User", backref="notifications")
 
     def create_schema(
         self, session: orm.Session
@@ -31,12 +31,12 @@ class Notification(db.Model):
             return s.NotificationJob(
                 id=self.id,
                 type=self.type,
-                payload=session.scalar(Job).filter(Job.id == self.entity_id),
+                payload=session.scalar(select(Job).filter(Job.id == self.entity_id)),
             )
         return s.NotificationApplication(
             id=self.id,
             type=self.type,
-            payload=session.scalar(Application).filter(
-                Application.id == self.entity_id
+            payload=session.scalar(
+                select(Application).filter(Application.id == self.entity_id),
             ),
         )
