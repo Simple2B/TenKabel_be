@@ -27,3 +27,10 @@ from .who_am_i import WhoAmIOut
 from .enums import JobStatus
 from .device import DeviceIn, DeviceOut
 from .auth import LogoutIn
+
+from .notification import (
+    NotificationType,
+    NotificationJob,
+    NotificationApplication,
+    NotificationList,
+)

@@ -322,10 +322,7 @@ def get_user_jobs(
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
-                or_(
-                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                    m.Job.status == s.enums.JobStatus.APPROVED,
-                )
+                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
             )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:

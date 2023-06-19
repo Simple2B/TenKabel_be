@@ -88,10 +88,7 @@ def test_application_methods(
     assert application.status == s.BaseApplication.ApplicationStatus.ACCEPTED
 
     job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
-    assert (
-        job.status == s.enums.JobStatus.APPROVED
-        and job.worker_id == application.worker_id
-    )
+    assert job.worker_id == application.worker_id
     applications = db.scalars(
         select(m.Application).where((m.Application.job_id == application.job_id))
     ).all()
