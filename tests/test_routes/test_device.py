@@ -1,4 +1,5 @@
 from sqlalchemy import and_, select
+from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
@@ -20,7 +21,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
             "country_code": "IL",
         },
     )
-    assert login_response.status_code == 200
+    assert login_response.status_code == status.HTTP_200_OK
     token = login_response.json()["access_token"]
     assert token is not None
 
@@ -43,7 +44,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
 
     device_in_db = db.scalar(device_query)
 
-    assert device_in_db is not None
+    assert device_in_db
     assert device_in_db.user.username == test_data.test_users[0].username
 
     new_push_token = "new_push_token"
@@ -68,7 +69,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
 
     device_in_db = db.scalar(new_device_query)
 
-    assert device_in_db is not None
+    assert device_in_db
     assert device_in_db.push_token == new_push_token
     assert device_in_db.user.username == test_data.test_users[0].username
 
@@ -79,7 +80,7 @@ def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData
             "device_uuid": test_uuid,
         },
     )
-    assert logout_response.status_code == 200
+    assert logout_response.status_code == status.HTTP_200_OK
     device_in_db = db.scalar(device_query)
 
     assert device_in_db is None
