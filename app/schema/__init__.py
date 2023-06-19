@@ -25,3 +25,10 @@ from .application import (
 )
 from .who_am_i import WhoAmIOut
 from .enums import JobStatus
+
+from .notification import (
+    NotificationType,
+    NotificationJob,
+    NotificationApplication,
+    NotificationList,
+)
