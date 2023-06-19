@@ -140,15 +140,6 @@ def create_application(
         worker_id=current_user.id,
     )
     db.add(application)
-    db.refresh(application)
-
-    notification: m.Notification = m.Notification(
-        user_id=current_user.id,
-        entity_id=application.id,
-        type=s.NotificationType.APPLICATION_CREATED,
-    )
-    db.add(notification)
-
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -158,5 +149,13 @@ def create_application(
             detail="Error creating new application",
         )
     log(log.INFO, "Application created successfully - [%s]", application.id)
+    db.refresh(application)
+
+    notification: m.Notification = m.Notification(
+        user_id=current_user.id,
+        entity_id=application.id,
+        type=s.NotificationType.APPLICATION_CREATED,
+    )
+    db.add(notification)
 
     return s.ApplicationOut.from_orm(application)
