@@ -196,19 +196,30 @@ def update_job(
             detail="Job not found",
         )
 
-    job.profession_id = job_data.profession_id
-    job.city = job_data.city
-    job.payment = job_data.payment
-    job.commission = job_data.commission
-    job.name = job_data.name
-    job.description = job_data.description
-    job.time = job_data.time
-    job.customer_first_name = job_data.customer_first_name
-    job.customer_last_name = job_data.customer_last_name
-    job.customer_phone = job_data.customer_phone
-    job.customer_street_address = job_data.customer_street_address
-
-    job.status = s.enums.JobStatus(job_data.status)
+    if job_data.profession_id:
+        job.profession_id = job_data.profession_id
+    if job_data.city:
+        job.city = job_data.city
+    if job_data.payment:
+        job.payment = job_data.payment
+    if job_data.commission:
+        job.commission = job_data.commission
+    if job_data.name:
+        job.name = job_data.name
+    if job_data.description:
+        job.description = job_data.description
+    if job_data.time:
+        job.time = job_data.time
+    if job_data.customer_first_name:
+        job.customer_first_name = job_data.customer_first_name
+    if job_data.customer_last_name:
+        job.customer_last_name = job_data.customer_last_name
+    if job_data.customer_phone:
+        job.customer_phone = job_data.customer_phone
+    if job_data.customer_street_address:
+        job.customer_street_address = job_data.customer_street_address
+    if job_data.status:
+        job.status = s.enums.JobStatus(job_data.status)
 
     try:
         db.commit()
