@@ -17,6 +17,7 @@ from app.database import engine
 from app.admin import authentication_backend
 from app.logger import log
 
+
 engine = get_engine()
 
 app = FastAPI()

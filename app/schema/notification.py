@@ -8,7 +8,7 @@ from .job import Job
 class NotificationType(enum.IntEnum):
     JOB_CREATED = 1
     JOB_STARTED = 2
-    JOB_COMPLETED = 3
+    JOB_DONE = 3
     JOB_CANCELED = 4
     JOB_PAID = 5
     COMMISSION_PAID = 6

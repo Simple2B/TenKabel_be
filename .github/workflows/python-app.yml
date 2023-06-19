@@ -63,6 +63,17 @@ jobs:
     runs-on: Linux
     needs: build
     steps:
+      - name: Create credentials json
+        run: |
+          echo ${{ secrets.FIREBASE_CREDENTIALS }} > firebase_credentials.json
+      - name: update compose file
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.SSH_HOST_IP_DEV }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          source: firebase_credentials.json
+          target: ~/ten_kabel
       - name: Deploy api.tenkabel.simple2b.net
         uses: appleboy/ssh-action@master
         with:

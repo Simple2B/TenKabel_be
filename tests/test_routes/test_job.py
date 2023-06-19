@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 import app.model as m
 import app.schema as s
@@ -152,9 +152,35 @@ def test_create_job(
     db: Session,
     authorized_users_tokens: list[s.Token],
 ):
+    create_professions(db)
+    create_locations(db)
+    fill_test_data(db)
+
+    profession_id = db.scalar(select(m.Profession.id))
+    city = db.scalar(select(m.Location))
+    user = m.User(
+        username="UserTestJobsCreate",
+        first_name="Jack",
+        last_name="JobTest",
+        password_hash="123",
+        email="usertest@test.com",
+        phone="0663579795",
+        country_code="IL",
+        is_verified=True,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    user_profession = m.UserProfession(user_id=user.id, profession_id=profession_id)
+    user_location = m.UserLocation(user_id=user.id, location_id=city.id)
+    db.add(user_location)
+    db.add(user_profession)
+    db.commit()
+
     request_data: s.JobIn = s.JobIn(
-        profession_id=1,
-        city="Test City",
+        profession_id=profession_id,
+        city=city.name_en,
         payment=10000,
         commission=10000,
         name="Test Task",
@@ -177,6 +203,14 @@ def test_create_job(
         select(m.Job).filter_by(customer_last_name=request_data.customer_last_name)
     )
     assert db.scalar(select(m.Job).filter_by(name=request_data.name))
+    assert db.scalar(
+        select(m.Notification).where(
+            and_(
+                m.Notification.user_id == user.id,
+                m.Notification.type == s.NotificationType.JOB_CREATED,
+            )
+        )
+    )
 
 
 def test_search_job(

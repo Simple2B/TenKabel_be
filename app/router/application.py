@@ -62,7 +62,6 @@ def update_application(
     application.job_id = application_data.job_id
 
     application.status = s.Application.ApplicationStatus(application_data.status)
-
     if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED:
         pending_applications: list[m.Application] = db.scalars(
             select(m.Application).where(m.Application.job_id == application.job_id)
@@ -78,6 +77,16 @@ def update_application(
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
         log(log.INFO, "Job [%s] status updated", job.id)
+        notification_type = s.NotificationType.APPLICATION_ACCEPTED
+    else:
+        notification_type = s.NotificationType.APPLICATION_REJECTED
+
+    notification: m.Notification = m.Notification(
+        user_id=current_user.id,
+        entity_id=application.id,
+        type=notification_type,
+    )
+    db.add(notification)
 
     try:
         db.commit()
@@ -131,7 +140,6 @@ def create_application(
         worker_id=current_user.id,
     )
     db.add(application)
-
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -141,20 +149,13 @@ def create_application(
             detail="Error creating new application",
         )
     log(log.INFO, "Application created successfully - [%s]", application.id)
+    db.refresh(application)
+
+    notification: m.Notification = m.Notification(
+        user_id=job.owner_id,
+        entity_id=application.id,
+        type=s.NotificationType.APPLICATION_CREATED,
+    )
+    db.add(notification)
 
     return s.ApplicationOut.from_orm(application)
-
-    # return s.ApplicationOut(
-    #     job_name=job.name,
-    #     job_uuid=job.uuid,
-    #     job_status=job.status,
-    #     id=application.id,
-    #     uuid=application.uuid,
-    #     owner=application.owner,
-    #     worker=application.worker,
-    #     created_at=application.created_at,
-    #     status_changed_at=application.status_changed_at,
-    #     owner_id=application.owner_id,
-    #     worker_id=application.worker_id,
-    #     job_id=application.job_id,
-    # )

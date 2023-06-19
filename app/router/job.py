@@ -1,7 +1,7 @@
 import re
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -170,6 +170,7 @@ def create_job(
         customer_street_address=data.customer_street_address,
     )
     db.add(new_job)
+
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -177,8 +178,47 @@ def create_job(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating new job"
         )
+    db.refresh(new_job)
+    city: m.Location = db.scalar(
+        select(m.Location).where(m.Location.name_en == new_job.city)
+    )
+    profession: m.Profession = db.scalar(
+        select(m.Profession).where(m.Profession.id == new_job.profession_id)
+    )
+    user_ids: list[int] = db.scalars(
+        select(m.User.id).where(
+            and_(
+                m.User.locations.contains(city),
+                m.User.professions.contains(profession),
+            )
+        )
+    ).all()
+    user_ids += db.scalars(
+        select(m.User.id).where(
+            and_(
+                m.User.locations.contains(city),
+                ~m.User.professions.any(),
+            )
+        )
+    ).all()
+    user_ids += db.scalars(
+        select(m.User.id).where(
+            and_(
+                ~m.User.locations.any(),
+                m.User.professions.contains(profession),
+            )
+        )
+    ).all()
+    for user_id in user_ids:
+        notification: m.Notification = m.Notification(
+            user_id=user_id,
+            entity_id=new_job.id,
+            type=s.NotificationType.JOB_CREATED,
+        )
+        db.add(notification)
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
+    log(log.INFO, "[%d] notifications created", len(user_ids))
     return new_job
 
 
@@ -220,6 +260,19 @@ def update_job(
         job.customer_street_address = job_data.customer_street_address
     if job_data.status:
         job.status = s.enums.JobStatus(job_data.status)
+
+        if job.status == s.enums.JobStatus.APPROVED:
+            notification_type = s.NotificationType.JOB_STARTED
+
+        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+            notification_type = s.NotificationType.JOB_DONE
+
+        notification: m.Notification = m.Notification(
+            user_id=job.owner_id,
+            entity_id=job.id,
+            type=notification_type,
+        )
+        db.add(notification)
 
     try:
         db.commit()
