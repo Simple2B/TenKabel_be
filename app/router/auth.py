@@ -196,3 +196,24 @@ def google_auth(
         access_token=access_token,
         token_type="Bearer",
     )
+
+
+@auth_router.post(
+    "/logout", status_code=status.HTTP_200_OK, dependencies=[Depends(get_current_user)]
+)
+def logout(
+    device: s.LogoutIn,
+    db: Session = Depends(get_db),
+):
+    device_from_db: m.Device | None = db.scalar(
+        select(m.Device).where(m.Device.uuid == device.device_uuid)
+    )
+
+    if not device_from_db:
+        log(log.ERROR, "Device [%s] was not found", device.device_uuid)
+        return
+
+    db.delete(device_from_db)
+    db.commit()
+
+    log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)
