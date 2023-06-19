@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 9a39aaf3c7d6
+Revision ID: c8b628e628eb
 Revises: 
-Create Date: 2023-06-13 19:09:58.259162
+Create Date: 2023-06-19 11:10:29.978155
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "9a39aaf3c7d6"
+revision = "c8b628e628eb"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -81,7 +81,11 @@ def upgrade():
         sa.Column(
             "status",
             sa.Enum(
-                "PENDING", "APPROVED", "IN_PROGRESS", "JOB_IS_FINISHED", name="status"
+                "PENDING",
+                "APPROVED",
+                "IN_PROGRESS",
+                "JOB_IS_FINISHED",
+                name="jobstatus",
             ),
             nullable=False,
         ),
