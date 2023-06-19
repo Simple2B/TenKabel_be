@@ -38,3 +38,5 @@ def test_notification_get_list(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.NotificationList.parse_obj(response.json())
     assert len(resp_obj.items) > 0
+    for item in resp_obj.items:
+        assert item.user_id == user.id

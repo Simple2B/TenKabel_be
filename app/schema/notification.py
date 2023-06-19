@@ -1,6 +1,7 @@
 import enum
 from pydantic import BaseModel
-from .application import Application
+from .application import ApplicationOut
+
 from .job import Job
 
 
@@ -23,6 +24,9 @@ class NotificationType(enum.IntEnum):
 
 class NotificationBase(BaseModel):
     type: NotificationType
+    id: int
+    user_id: int
+    uuid: str
 
 
 class NotificationJob(NotificationBase):
@@ -33,7 +37,7 @@ class NotificationJob(NotificationBase):
 
 
 class NotificationApplication(NotificationBase):
-    payload: Application
+    payload: ApplicationOut
 
     class Config:
         orm_mode = True
