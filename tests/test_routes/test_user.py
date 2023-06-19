@@ -261,11 +261,8 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            or_(
-                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                m.Job.status == s.enums.JobStatus.APPROVED,
-            ),
-        )
+            m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+        ),
     )
     jobs = db.scalars(query).all()
 
@@ -273,10 +270,7 @@ def test_get_user_profile(
 
     for job in resp_obj.jobs:
         assert job.id in [j.id for j in jobs]
-        assert job.status in (
-            s.enums.JobStatus.IN_PROGRESS.value,
-            s.enums.JobStatus.APPROVED.value,
-        )
+        assert job.status == s.enums.JobStatus.IN_PROGRESS.value
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
