@@ -19,9 +19,7 @@ from app.logger import log
 import firebase_admin
 from firebase_admin import credentials
 
-cred = credentials.Certificate(
-    "app/utility/tenkabel-fe489-firebase-adminsdk-qd7r1-7101d95b2b.json"
-)
+cred = credentials.Certificate("firebase_credentials.json")
 firebase_admin.initialize_app(cred)
 
 engine = get_engine()

@@ -4,10 +4,10 @@ from firebase_admin.exceptions import FirebaseError
 
 from app.logger import log
 
-notification_router = APIRouter(prefix="/notify", tags=["Notification"])
+notification_test_router = APIRouter(prefix="/notify", tags=["Notification"])
 
 
-@notification_router.post("", status_code=status.HTTP_201_CREATED)
+@notification_test_router.post("", status_code=status.HTTP_201_CREATED)
 def create_notification(
     device_token: str,
 ):
