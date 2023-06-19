@@ -11,7 +11,6 @@ from tests.utility import (
     create_professions,
     create_jobs,
     create_applications,
-    create_notifications,
 )
 
 
@@ -41,3 +40,4 @@ def test_notification_get_list(
     )
     for item in resp_obj.items:
         assert item.user_id == user.id
+        assert item.type
