@@ -25,7 +25,6 @@ def test_notification_get_list(
     fill_test_data(db)
     create_jobs(db)
     create_applications(db)
-    create_notifications(db)
 
     user: m.User = db.scalar(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
@@ -37,6 +36,8 @@ def test_notification_get_list(
 
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.NotificationList.parse_obj(response.json())
-    assert len(resp_obj.items) > 0
+    assert len(resp_obj.items) == len(test_data.test_notifications_applications) + len(
+        test_data.test_notifications_jobs
+    )
     for item in resp_obj.items:
         assert item.user_id == user.id
