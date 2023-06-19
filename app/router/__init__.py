@@ -9,7 +9,7 @@ from .location import location_router
 from .whoami import whoami_router
 from .rate import rate_router
 from .application import application_router
-from .notify import notification_router
+from .notification import notification_router
 
 
 router = APIRouter(prefix="/api", tags=["API"])

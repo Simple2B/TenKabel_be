@@ -11,4 +11,6 @@ from .location import Location
 from .user_profession import UserProfession
 from .user_location import UserLocation
 
+from .notification import Notification
+
 from app.database import db
