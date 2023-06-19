@@ -220,6 +220,19 @@ def update_job(
         job.customer_street_address = job_data.customer_street_address
     if job_data.status:
         job.status = s.enums.JobStatus(job_data.status)
+        if job.status == s.enums.JobStatus.APPROVED:
+            notification_type = s.NotificationType.JOB_STARTED
+
+        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+            notification_type = s.NotificationType.JOB_DONE
+        if job.status == s.enums.JobStatus.APPROVED:
+            notification_type = s.NotificationType.JOB_STARTED
+        notification: m.Notification = m.Notification(
+            user_id=job.owner_id,
+            entity_id=job.id,
+            type=s.NotificationType.APPLICATION_CREATED,
+        )
+        db.add(notification)
 
     try:
         db.commit()
