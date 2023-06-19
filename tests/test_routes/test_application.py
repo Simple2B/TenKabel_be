@@ -11,7 +11,6 @@ from tests.utility import (
     fill_test_data,
     create_professions,
     create_jobs,
-    create_applications,
 )
 
 
