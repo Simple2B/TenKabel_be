@@ -10,5 +10,6 @@ from .rate import Rate
 from .location import Location
 from .user_profession import UserProfession
 from .user_location import UserLocation
+from .device import Device
 
 from app.database import db
