@@ -19,10 +19,14 @@ def create_notifications(db: Session):
     for user in users:
         for _ in range(1, random.randint(1, 5)):
             type = random.choice([e for e in s.NotificationType])
-            if type < s.NotificationType.MAX_JOB_TYPE:
+            if s.NotificationType.get_index(type) < s.NotificationType.get_index(
+                s.NotificationType.MAX_JOB_TYPE
+            ):
                 entity_id = random.choice(jobs_ids)
 
-            elif type < s.NotificationType.MAX_APPLICATION_TYPE:
+            elif s.NotificationType.get_index(type) < s.NotificationType.get_index(
+                s.NotificationType.MAX_APPLICATION_TYPE
+            ):
                 entity_id = random.choice(applications_ids)
 
             notification = m.Notification(

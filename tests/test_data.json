@@ -110,34 +110,34 @@
   {
     "user_id": 4,
     "entity_id": 3,
-    "type": 4
+    "type": "JOB_CANCELED"
   },
   {
     "user_id": 4,
     "entity_id": 3,
-    "type": 3
+    "type": "JOB_DONE"
   },
   {
     "user_id": 4,
     "entity_id": 2,
-    "type": 2
+    "type": "JOB_STARTED"
   }
 ],
 "test_notifications_applications":[
   {
     "user_id": 4,
     "entity_id": 3,
-    "type": 12
+    "type": "APPLICATION_ACCEPTED"
   },
   {
     "user_id": 4,
     "entity_id": 4,
-    "type": 12
+    "type": "APPLICATION_ACCEPTED"
   },
   {
     "user_id": 4,
     "entity_id": 2,
-    "type": 13
+    "type": "APPLICATION_REJECTED"
   }
 ]
 }
