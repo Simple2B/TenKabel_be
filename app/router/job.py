@@ -273,6 +273,7 @@ def update_job(
         #     type=notification_type,
         # )
         # db.add(notification)
+        # log(log.INFO, "Notification about jobs status created")
 
     try:
         db.commit()
