@@ -1,4 +1,6 @@
 import sqlalchemy as sa
+
+from datetime import datetime
 from sqlalchemy import orm, select
 
 import app.schema as s
@@ -14,6 +16,9 @@ class Notification(db.Model):
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
     type: orm.Mapped[s.NotificationType] = orm.mapped_column(
         sa.Enum(s.NotificationType), nullable=False
+    )
+    created_at: orm.Mapped[sa.DateTime] = orm.mapped_column(
+        sa.DateTime, default=datetime.utcnow
     )
     entity_id: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
     user_id: orm.Mapped[int] = orm.mapped_column(
@@ -34,6 +39,7 @@ class Notification(db.Model):
                 user_id=self.user_id,
                 type=self.type,
                 payload=session.scalar(select(Job).filter(Job.id == self.entity_id)),
+                created_at=self.created_at,
             )
         return s.NotificationApplication(
             id=self.id,
@@ -43,4 +49,5 @@ class Notification(db.Model):
             payload=session.scalar(
                 select(Application).filter(Application.id == self.entity_id),
             ),
+            created_at=self.created_at,
         )
