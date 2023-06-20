@@ -24,7 +24,7 @@ from .application import (
     ApplicationOut,
 )
 from .who_am_i import WhoAmIOut
-from .enums import JobStatus
+from .enums import JobStatus, NotificationType
 from .device import DeviceIn, DeviceOut
 from .auth import LogoutIn
 

@@ -1,8 +1,25 @@
-import enum
+from app.utility import IterableEnumMixin
 
 
-class JobStatus(enum.Enum):
+class JobStatus(IterableEnumMixin):
     PENDING = 1
     APPROVED = 2
     IN_PROGRESS = 3
     JOB_IS_FINISHED = 4
+
+
+class NotificationType(IterableEnumMixin):
+    JOB_CREATED = "JOB_CREATED"
+    JOB_STARTED = "JOB_STARTED"
+    JOB_DONE = "JOB_DONE"
+    JOB_CANCELED = "JOB_CANCELED"
+    JOB_PAID = "JOB_PAID"
+    COMMISSION_PAID = "COMMISSION_PAID"
+
+    MAX_JOB_TYPE = "MAX_JOB_TYPE"
+
+    APPLICATION_CREATED = "APPLICATION_CREATED"
+    APPLICATION_ACCEPTED = "APPLICATION_ACCEPTED"
+    APPLICATION_REJECTED = "APPLICATION_REJECTED"
+
+    MAX_APPLICATION_TYPE = "MAX_APPLICATION_TYPE"

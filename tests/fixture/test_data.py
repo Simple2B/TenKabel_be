@@ -38,13 +38,13 @@ class TestApplication(BaseModel):
 class TestNotificationJob(BaseModel):
     user_id: int
     entity_id: int
-    type: int
+    type: str
 
 
 class TestNotificationApplication(BaseModel):
     user_id: int
     entity_id: int
-    type: int
+    type: str
 
 
 class TestData(BaseModel):

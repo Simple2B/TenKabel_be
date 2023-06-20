@@ -32,7 +32,9 @@ class Notification(db.Model):
     ) -> s.NotificationJob | s.NotificationApplication:
         from app.model import Job, Application
 
-        if self.type < s.NotificationType.MAX_JOB_TYPE:
+        if s.NotificationType.get_index(self.type) < s.NotificationType.get_index(
+            s.NotificationType.MAX_JOB_TYPE
+        ):
             return s.NotificationJob(
                 id=self.id,
                 uuid=self.uuid,
