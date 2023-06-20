@@ -222,9 +222,9 @@ def create_job(
     return new_job
 
 
-@job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
-def update_job(
-    job_data: s.JobUpdate,
+@job_router.patch("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
+def patch_job(
+    job_data: s.JobPatch,
     job_uuid: str,
     db: Session = Depends(get_db),
 ):
@@ -273,6 +273,58 @@ def update_job(
         #     type=notification_type,
         # )
         # db.add(notification)
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while patching job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error pathcing job"
+        )
+
+    log(log.INFO, "Job [%s] patched successfully", job.name)
+    return job
+
+
+@job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
+def update_job(
+    job_data: s.JobUpdate,
+    job_uuid: str,
+    db: Session = Depends(get_db),
+):
+    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
+    if not job:
+        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+
+    job.profession_id = job_data.profession_id
+    job.city = job_data.city
+    job.payment = job_data.payment
+    job.commission = job_data.commission
+    job.name = job_data.name
+    job.description = job_data.description
+    job.time = job_data.time
+    job.customer_first_name = job_data.customer_first_name
+    job.customer_last_name = job_data.customer_last_name
+    job.customer_phone = job_data.customer_phone
+    job.customer_street_address = job_data.customer_street_address
+    job.status = s.enums.JobStatus(job_data.status)
+    # TODO: this must be check , because it is not working on front end
+    # if job.status == s.enums.JobStatus.APPROVED:
+    #     notification_type = s.NotificationType.JOB_STARTED
+
+    # if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+    #     notification_type = s.NotificationType.JOB_DONE
+
+    # notification: m.Notification = m.Notification(
+    #     user_id=job.owner_id,
+    #     entity_id=job.id,
+    #     type=notification_type,
+    # )
+    # db.add(notification)
 
     try:
         db.commit()

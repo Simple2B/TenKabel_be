@@ -66,7 +66,6 @@ def test_application_methods(
     )
     assert response.status_code == status.HTTP_409_CONFLICT
 
-    # TODO: check this test for 404 error
     # non_exist_job_id = 321312
     # request_data: s.ApplicationIn = s.ApplicationIn(job_id=non_exist_job_id)
     # response = client.post(
@@ -75,6 +74,20 @@ def test_application_methods(
     #     json=request_data.dict(),
     # )
     # assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    request_data = s.ApplicationPatch(
+        status=s.BaseApplication.ApplicationStatus.DECLINED,
+    )
+
+    response = client.patch(
+        f"api/application/{application.uuid}",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        json=request_data.dict(),
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    db.refresh(application)
+    assert application.status == s.BaseApplication.ApplicationStatus.DECLINED
 
     request_data = s.BaseApplication(
         owner_id=application.owner_id,

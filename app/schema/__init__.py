@@ -13,15 +13,16 @@ from .user import (
 from .token import Token, TokenData
 from .profession import BaseProfession, Profession, ProfessionList
 from .location import BaseLocation, Location, LocationList
-from .job import BaseJob, Job, ListJob, JobIn, JobUpdate
+from .job import BaseJob, Job, ListJob, JobIn, JobUpdate, JobPatch
 from .pagination import Pagination
-from .rate import BaseRate, Rate, RateList
+from .rate import BaseRate, Rate, RateList, RatePatch
 from .application import (
     BaseApplication,
     Application,
     ApplicationList,
     ApplicationIn,
     ApplicationOut,
+    ApplicationPatch,
 )
 from .who_am_i import WhoAmIOut
 from .enums import JobStatus

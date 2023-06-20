@@ -22,6 +22,17 @@ class BaseApplication(BaseModel):
         orm_mode = True
 
 
+class ApplicationPatch(BaseModel):
+    owner_id: int | None
+    worker_id: int | None
+    job_id: int | None
+    status: BaseApplication.ApplicationStatus | str | None
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
+
+
 class ApplicationIn(BaseModel):
     job_id: int
 

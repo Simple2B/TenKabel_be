@@ -36,12 +36,16 @@ class TestApplication(BaseModel):
 
 
 class TestNotificationJob(BaseModel):
+    __test__ = False
+
     user_id: int
     entity_id: int
     type: int
 
 
 class TestNotificationApplication(BaseModel):
+    __test__ = False
+
     user_id: int
     entity_id: int
     type: int

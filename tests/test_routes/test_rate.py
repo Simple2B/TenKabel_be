@@ -52,6 +52,15 @@ def test_rate_methods(client: TestClient, db: Session, test_data: TestData):
     db.refresh(rate)
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
 
+    request_data = s.RatePatch(
+        rate=s.BaseRate.RateStatus.POSITIVE,
+    )
+
+    response = client.patch(f"api/rate/{rate.uuid}", json=request_data.dict())
+    assert response.status_code == status.HTTP_201_CREATED
+    db.refresh(rate)
+    assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
+
     fill_test_data(db)
 
     rate: m.Rate = db.scalar(select(m.Rate))
