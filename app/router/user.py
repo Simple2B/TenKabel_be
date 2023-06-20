@@ -257,13 +257,18 @@ def get_user_applications(
         )
     elif type == "owner":
         query = query.where(
-            m.Application.owner_id == current_user.id
-            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
+            and_(
+                m.Application.owner_id == current_user.id,
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
         )
     elif type == "worker":
         query = query.where(m.Application.worker_id == current_user.id).filter(
-            m.Application.created_at
-            > datetime.datetime.utcnow() - datetime.timedelta(weeks=1)
+            and_(
+                m.Application.created_at
+                > datetime.datetime.utcnow() - datetime.timedelta(weeks=1),
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
         )
     else:
         log(log.INFO, "Wrong filter %s", type)
