@@ -25,6 +25,7 @@ from .application import (
 )
 from .who_am_i import WhoAmIOut
 from .enums import JobStatus, NotificationType
+from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
 from .auth import LogoutIn
 

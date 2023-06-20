@@ -8,6 +8,7 @@ import app.schema as s
 from app.logger import log
 from app.database import get_db
 from app.dependency import get_current_user
+from app.controller import PushHandler
 
 
 application_router = APIRouter(prefix="/application", tags=["Application"])
@@ -96,6 +97,17 @@ def update_application(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating application"
         )
 
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=[device.push_token for device in current_user.devices],
+            payload=s.PushNotificationPayload(
+                notification_type=notification.type,
+                job_uuid=job.uuid,
+            ),
+        )
+    )
+
     log(log.INFO, "Application updated successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
 
@@ -157,5 +169,16 @@ def create_application(
         type=s.NotificationType.APPLICATION_CREATED,
     )
     db.add(notification)
+
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=[device.push_token for device in current_user.devices],
+            payload=s.PushNotificationPayload(
+                notification_type=notification.type,
+                job_uuid=job.uuid,
+            ),
+        )
+    )
 
     return s.ApplicationOut.from_orm(application)
