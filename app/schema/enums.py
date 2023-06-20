@@ -1,14 +1,14 @@
-from app.utility import IterableEnumMixin
+from app.utility import IndexableStringEnum
 
 
-class JobStatus(IterableEnumMixin):
+class JobStatus(IndexableStringEnum):
     PENDING = 1
     APPROVED = 2
     IN_PROGRESS = 3
     JOB_IS_FINISHED = 4
 
 
-class NotificationType(IterableEnumMixin):
+class NotificationType(IndexableStringEnum):
     JOB_CREATED = "JOB_CREATED"
     JOB_STARTED = "JOB_STARTED"
     JOB_DONE = "JOB_DONE"

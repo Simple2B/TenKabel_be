@@ -1,7 +1,7 @@
 import enum
 
 
-class IterableEnumMixin(
+class IndexableStringEnum(
     str,
     enum.Enum,
 ):
