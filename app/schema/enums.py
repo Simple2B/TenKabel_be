@@ -2,10 +2,10 @@ from app.utility import IndexableStringEnum
 
 
 class JobStatus(IndexableStringEnum):
-    PENDING = 1
-    APPROVED = 2
-    IN_PROGRESS = 3
-    JOB_IS_FINISHED = 4
+    PENDING = "PENDING"
+    APPROVED = "APPROVED"
+    IN_PROGRESS = "IN_PROGRESS"
+    JOB_IS_FINISHED = "JOB_IS_FINISHED"
 
 
 class NotificationType(IndexableStringEnum):
