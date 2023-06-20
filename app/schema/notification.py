@@ -1,7 +1,8 @@
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from .application import ApplicationOut
-
 from .job import Job
 from .enums import NotificationType
 
@@ -11,6 +12,7 @@ class NotificationBase(BaseModel):
     id: int
     user_id: int
     uuid: str
+    created_at: datetime | str
 
 
 class NotificationJob(NotificationBase):
