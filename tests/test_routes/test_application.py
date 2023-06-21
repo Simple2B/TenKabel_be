@@ -96,6 +96,14 @@ def test_application_methods(
         status=s.BaseApplication.ApplicationStatus.ACCEPTED,
     )
 
+    application.status = s.BaseApplication.ApplicationStatus.PENDING
+    db.commit()
+
+    # application = db.scalar(
+    #     select(m.Application).where(
+    #         m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
+    #     )
+    # )
     response = client.put(
         f"api/application/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
