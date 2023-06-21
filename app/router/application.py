@@ -250,5 +250,6 @@ def create_application(
         type=s.NotificationType.APPLICATION_CREATED,
     )
     db.add(notification)
+    db.commit()
 
     return s.ApplicationOut.from_orm(application)

@@ -216,6 +216,7 @@ def create_job(
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
+        db.commit()
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
     log(log.INFO, "[%d] notifications created", len(user_ids))
