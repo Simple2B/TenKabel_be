@@ -26,7 +26,7 @@ class ApplicationPatch(BaseModel):
     owner_id: int | None
     worker_id: int | None
     job_id: int | None
-    status: BaseApplication.ApplicationStatus | str | None
+    status: BaseApplication.ApplicationStatus | None
 
     class Config:
         use_enum_values = True

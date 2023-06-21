@@ -21,7 +21,7 @@ class BaseRate(BaseModel):
 class RatePatch(BaseModel):
     owner_id: int | None
     worker_id: int | None
-    rate: BaseRate.RateStatus | str | None
+    rate: BaseRate.RateStatus | None
 
     class Config:
         use_enum_values = True

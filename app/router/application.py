@@ -209,7 +209,7 @@ def create_application(
     )
     if not job:
         log(log.INFO, "Job wasn`t found [%s]", application_data.job_id)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )

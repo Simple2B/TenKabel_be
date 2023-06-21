@@ -260,19 +260,18 @@ def patch_job(
         job.customer_street_address = job_data.customer_street_address
     if job_data.status:
         job.status = s.enums.JobStatus(job_data.status)
-        # TODO: this must be check , because it is not working on front end
-        # if job.status == s.enums.JobStatus.APPROVED:
-        #     notification_type = s.NotificationType.JOB_STARTED
+        if job.status == s.enums.JobStatus.APPROVED:
+            notification_type = s.NotificationType.JOB_STARTED
 
-        # if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-        #     notification_type = s.NotificationType.JOB_DONE
+        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+            notification_type = s.NotificationType.JOB_DONE
 
-        # notification: m.Notification = m.Notification(
-        #     user_id=job.owner_id,
-        #     entity_id=job.id,
-        #     type=notification_type,
-        # )
-        # db.add(notification)
+        notification: m.Notification = m.Notification(
+            user_id=job.owner_id,
+            entity_id=job.id,
+            type=notification_type,
+        )
+        db.add(notification)
 
     try:
         db.commit()
@@ -312,19 +311,18 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
     job.status = s.enums.JobStatus(job_data.status)
-    # TODO: this must be check , because it is not working on front end
-    # if job.status == s.enums.JobStatus.APPROVED:
-    #     notification_type = s.NotificationType.JOB_STARTED
+    if job.status == s.enums.JobStatus.APPROVED:
+        notification_type = s.NotificationType.JOB_STARTED
 
-    # if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-    #     notification_type = s.NotificationType.JOB_DONE
+    if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+        notification_type = s.NotificationType.JOB_DONE
 
-    # notification: m.Notification = m.Notification(
-    #     user_id=job.owner_id,
-    #     entity_id=job.id,
-    #     type=notification_type,
-    # )
-    # db.add(notification)
+    notification: m.Notification = m.Notification(
+        user_id=job.owner_id,
+        entity_id=job.id,
+        type=notification_type,
+    )
+    db.add(notification)
 
     try:
         db.commit()
