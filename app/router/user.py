@@ -265,7 +265,7 @@ def get_user_jobs(
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
-                and_(
+                or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                     m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
                 )
