@@ -321,13 +321,30 @@ def get_user_jobs(
             log(log.INFO, "Jobs filtered by ids: (%s)", ",".join(map(str, jobs_ids)))
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
-            query = query.where(
-                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+            query = query.filter(
+                or_(
+                    m.Job.status == s.enums.JobStatus.APPROVED,
+                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                ),
             )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:
             # TODO: add cancel field search in jobs
-            query = query.filter(m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED)
+            # query = query.filter(m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED)
+            # query = db.scalar(
+            #     select(m.Job).where(
+            #         and_(
+            #             m.Job.payment_status == s.Job.PaymentStatus.PAID,
+            #             m.Job.commission_status == s.Job.CommissionStatus.PAID,
+            #         )
+            #     )
+            # )
+            query = db.query(m.Job).filter(
+                and_(
+                    m.Job.payment_status == s.Job.PaymentStatus.PAID,
+                    m.Job.commission_status == s.Job.CommissionStatus.PAID,
+                )
+            )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
