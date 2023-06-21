@@ -283,6 +283,7 @@ def create_application(
         type=s.NotificationType.APPLICATION_CREATED,
     )
     db.add(notification)
+    db.commit()
 
     push_handler = PushHandler()
     push_handler.send_notification(
