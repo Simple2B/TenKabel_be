@@ -230,7 +230,7 @@ def create_job(
         s.PushNotificationMessage(
             device_tokens=devices,
             payload=s.PushNotificationPayload(
-                notification_type=notification.type,
+                notification_type=s.NotificationType.JOB_CREATED,
                 job_uuid=new_job.uuid,
             ),
         )
@@ -297,7 +297,7 @@ def patch_job(
             s.PushNotificationMessage(
                 device_tokens=[device.push_token for device in job.owner.devices],
                 payload=s.PushNotificationPayload(
-                    notification_type=notification.type,
+                    notification_type=notification_type,
                     job_uuid=job.uuid,
                 ),
             )
