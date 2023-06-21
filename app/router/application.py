@@ -27,7 +27,6 @@ def update_application(
         select(m.Application).where(
             and_(
                 m.Application.uuid == uuid,
-                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
             )
         )
     )
@@ -132,7 +131,6 @@ def patch_application(
         select(m.Application).where(
             and_(
                 m.Application.uuid == uuid,
-                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
             )
         )
     )
