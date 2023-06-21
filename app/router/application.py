@@ -103,11 +103,16 @@ def update_application(
             device_tokens=[device.push_token for device in current_user.devices],
             payload=s.PushNotificationPayload(
                 notification_type=notification.type,
-                job_uuid=job.uuid,
+                job_uuid=application.job_uuid,
             ),
         )
     )
 
+    log(
+        log.INFO,
+        "Notification sended successfully to (worker) user [%s]",
+        worker.first_name,
+    )
     log(log.INFO, "Application updated successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
 
@@ -201,6 +206,22 @@ def patch_application(
             status_code=status.HTTP_409_CONFLICT, detail="Error patching application"
         )
 
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=[device.push_token for device in current_user.devices],
+            payload=s.PushNotificationPayload(
+                notification_type=notification.type,
+                job_uuid=application.job_uuid,
+            ),
+        )
+    )
+
+    log(
+        log.INFO,
+        "Notification sended successfully to (worker) user [%s]",
+        worker.first_name,
+    )
     log(log.INFO, "Application patched successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
 
@@ -272,6 +293,12 @@ def create_application(
                 job_uuid=job.uuid,
             ),
         )
+    )
+
+    log(
+        log.INFO,
+        "Notification sended successfully to (owner) user [%s]",
+        job.owner_id,
     )
 
     return s.ApplicationOut.from_orm(application)
