@@ -1,8 +1,8 @@
 """init
 
-Revision ID: c8b628e628eb
+Revision ID: 3ccfd575a4da
 Revises: 
-Create Date: 2023-06-19 11:10:29.978155
+Create Date: 2023-06-21 13:32:31.760743
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "c8b628e628eb"
+revision = "3ccfd575a4da"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -69,6 +69,18 @@ def upgrade():
         sa.UniqueConstraint("phone", name=op.f("uq_users_phone")),
     )
     op.create_table(
+        "devices",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
+        sa.Column("push_token", sa.String(length=256), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["user_id"], ["users.id"], name=op.f("fk_devices_user_id_users")
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_devices")),
+        sa.UniqueConstraint("uuid", name=op.f("uq_devices_uuid")),
+    )
+    op.create_table(
         "jobs",
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("uuid", sa.String(length=36), nullable=False),
@@ -121,6 +133,36 @@ def upgrade():
             ["worker_id"], ["users.id"], name=op.f("fk_jobs_worker_id_users")
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_jobs")),
+    )
+    op.create_table(
+        "notifications",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
+        sa.Column(
+            "type",
+            sa.Enum(
+                "JOB_CREATED",
+                "JOB_STARTED",
+                "JOB_DONE",
+                "JOB_CANCELED",
+                "JOB_PAID",
+                "COMMISSION_PAID",
+                "MAX_JOB_TYPE",
+                "APPLICATION_CREATED",
+                "APPLICATION_ACCEPTED",
+                "APPLICATION_REJECTED",
+                "MAX_APPLICATION_TYPE",
+                name="notificationtype",
+            ),
+            nullable=False,
+        ),
+        sa.Column("created_at", sa.DateTime(), nullable=False),
+        sa.Column("entity_id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["user_id"], ["users.id"], name=op.f("fk_notifications_user_id_users")
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_notifications")),
     )
     op.create_table(
         "rate",
@@ -207,7 +249,9 @@ def downgrade():
     op.drop_table("users_professions")
     op.drop_table("users_locations")
     op.drop_table("rate")
+    op.drop_table("notifications")
     op.drop_table("jobs")
+    op.drop_table("devices")
     op.drop_table("users")
     op.drop_table("superusers")
     op.drop_table("professions")
