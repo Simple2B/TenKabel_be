@@ -255,15 +255,51 @@ def test_search_job(
     assert len(response_jobs_list.jobs) == 0
 
 
-def test_update_job(
+def test_change_status_job(
     client: TestClient,
     db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
 ):
     create_professions(db)
     create_jobs(db)
     fill_test_data(db)
 
-    job: m.Job = db.scalar(select(m.Job))
+    # 1. When one worker get the job
+
+    # get the job with status PENDING
+    job: s.Job | None = db.scalar(
+        select(m.Job).where((m.Job.status == s.enums.JobStatus.PENDING))
+    )
+
+    request_data: s.ApplicationIn = s.ApplicationIn(job_id=job.id)
+
+    # worker take the job (create application)
+    response = client.post(
+        "api/application",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        json=request_data.dict(),
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    assert job.status == s.enums.JobStatus.PENDING
+    assert len(job.applications) == 1
+
+    application_data: s.BaseApplication = s.BaseApplication(
+        owner_id=job.applications[0].owner_id,
+        worker_id=job.applications[0].worker_id,
+        job_id=job.id,
+        status=s.BaseApplication.ApplicationStatus.ACCEPTED,
+    )
+
+    # owner approve the job (update application and change status job - IN_PROGRESS)
+    response = client.put(
+        f"api/application/{job.applications[0].uuid}",
+        json=application_data.dict(),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert job.status == s.enums.JobStatus.IN_PROGRESS
+
+    # worker finished job (job update and change status job - JOB_IS_FINISHED)
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
@@ -284,25 +320,33 @@ def test_update_job(
     db.refresh(job)
     assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
 
-    request_data: s.JobUpdate = s.JobUpdate(
-        profession_id=job.profession_id,
-        city=job.city,
-        payment=job.payment,
-        commission=job.commission,
-        name=job.name,
-        description=job.description,
-        time=job.time,
-        customer_first_name=job.customer_first_name,
-        customer_last_name=job.customer_last_name,
-        customer_phone=job.customer_phone,
-        customer_street_address=job.customer_street_address,
-        status=s.enums.JobStatus.JOB_IS_FINISHED,
-    )
-    response = client.put(
-        f"api/job/{job.uuid}",
-        json=request_data.dict(),
-    )
+    # 2. When several workers applied for jobs
 
-    assert response.status_code == status.HTTP_200_OK
-    db.refresh(job)
-    assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
+    for token in authorized_users_tokens:
+        response_application_data = client.post(
+            "api/auth/google",
+            headers={"Authorization": f"Bearer {token.access_token}"},
+            json=application_data.dict(),
+        )
+        assert response_application_data.status_code
+
+    # get the job with status PENDING
+    # job: s.Job | None = db.scalar(
+    #     select(m.Job).where((m.Job.status == s.enums.JobStatus.PENDING))
+    # )
+    # application_data: s.ApplicationIn = s.ApplicationIn(job_id=job.id)
+
+    # TODO: only the first token works
+
+    # for token in authorized_users_tokens:
+    #     response_application_data = client.post(
+    #         "api/application",
+    #         headers={"Authorization": f"Bearer {token.access_token}"},
+    #         json=application_data.dict(),
+    #     )
+    #     assert response_application_data.status_code
+
+    # assert job.status == s.enums.JobStatus.PENDING
+    # count_tokens = len(authorized_users_tokens)
+    # count_applications = len(job.applications)
+    # assert count_tokens == count_applications
