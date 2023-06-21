@@ -265,12 +265,15 @@ def get_user_jobs(
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
-                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                and_(
+                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                )
             )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:
             # TODO: add cancel field search in jobs
-            query = query.filter(m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED)
+            query = query.filter(m.Job.is_deleted == True)  # noqa E712
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()

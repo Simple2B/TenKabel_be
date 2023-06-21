@@ -261,7 +261,10 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+            or_(
+                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+            ),
         ),
     )
     jobs = db.scalars(query).all()
@@ -270,7 +273,10 @@ def test_get_user_profile(
 
     for job in resp_obj.jobs:
         assert job.id in [j.id for j in jobs]
-        assert job.status == s.enums.JobStatus.IN_PROGRESS.value
+        assert job.status in (
+            s.enums.JobStatus.IN_PROGRESS.value,
+            s.enums.JobStatus.JOB_IS_FINISHED,
+        )
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
@@ -284,14 +290,14 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+            m.Job.is_deleted == True,  # noqa E712
         )
     )
     jobs = db.scalars(query).all()
 
     for job in resp_obj.jobs:
         assert int(job.id) in [j.id for j in jobs]
-        assert job.status == s.enums.JobStatus.JOB_IS_FINISHED.value
+        assert job.is_deleted
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
