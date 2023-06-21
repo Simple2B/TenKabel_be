@@ -2,6 +2,7 @@ from app.logger import log
 
 from functools import wraps
 import time
+import sys
 
 
 def time_measurement(func):
@@ -10,13 +11,15 @@ def time_measurement(func):
         start_time = time.perf_counter()
         result = func(*args, **kwargs)
         end_time = time.perf_counter()
+        response_size = sys.getsizeof(result.json())
         total_time = end_time - start_time
         log(
             log.INFO,
-            "Function [%s] %s took {%s} seconds",
+            "Function [%s] %s took {%s} seconds and the json file is {%s} kb long",
             func.__name__,
             kwargs,
             str(total_time)[:5],
+            response_size / 8000,
         )
         return result
 
