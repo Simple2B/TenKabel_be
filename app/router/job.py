@@ -12,6 +12,7 @@ from app.logger import log
 from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
+from app.controller import PushHandler
 
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
@@ -185,41 +186,58 @@ def create_job(
     profession: m.Profession = db.scalar(
         select(m.Profession).where(m.Profession.id == new_job.profession_id)
     )
-    user_ids: list[int] = db.scalars(
-        select(m.User.id).where(
+    users: list[m.User] = db.scalars(
+        select(m.User).where(
             and_(
                 m.User.locations.contains(city),
                 m.User.professions.contains(profession),
             )
         )
     ).all()
-    user_ids += db.scalars(
-        select(m.User.id).where(
+    users += db.scalars(
+        select(m.User).where(
             and_(
                 m.User.locations.contains(city),
                 ~m.User.professions.any(),
             )
         )
     ).all()
-    user_ids += db.scalars(
-        select(m.User.id).where(
+    users += db.scalars(
+        select(m.User).where(
             and_(
                 ~m.User.locations.any(),
                 m.User.professions.contains(profession),
             )
         )
     ).all()
-    for user_id in user_ids:
+
+    devices: list[str] = list()
+    for user in users:
         notification: m.Notification = m.Notification(
-            user_id=user_id,
+            user_id=user.id,
             entity_id=new_job.id,
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
-        db.commit()
+
+        for device in user.devices:
+            devices.append(device.push_token)
+
+    db.commit()
+
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=devices,
+            payload=s.PushNotificationPayload(
+                notification_type=notification.type,
+                job_uuid=new_job.uuid,
+            ),
+        )
+    )
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
-    log(log.INFO, "[%d] notifications created", len(user_ids))
+    log(log.INFO, "[%d] notifications created", len(users))
     return new_job
 
 
@@ -274,6 +292,21 @@ def patch_job(
         )
         db.add(notification)
 
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in job.owner.devices],
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=job.uuid,
+                ),
+            )
+        )
+        log(
+            log.INFO,
+            "Notification sended successfully to (owner) user [%s]",
+            job.owner.first_name,
+        )
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -324,6 +357,22 @@ def update_job(
         type=notification_type,
     )
     db.add(notification)
+
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=[device.push_token for device in job.owner.devices],
+            payload=s.PushNotificationPayload(
+                notification_type=notification.type,
+                job_uuid=job.uuid,
+            ),
+        )
+    )
+    log(
+        log.INFO,
+        "Notification sended successfully to (owner) user [%s]",
+        job.owner.first_name,
+    )
 
     try:
         db.commit()

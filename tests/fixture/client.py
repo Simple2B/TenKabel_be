@@ -5,14 +5,28 @@ from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
 import app.schema as s
+from app.controller.push_notification import PushHandler
 from .test_data import TestData
 
 
 @pytest.fixture
-def client() -> Generator:
+def client(monkeypatch) -> Generator:
     from app.main import app
 
+    class PushNotificationMock:
+        _is_initialized = False
+
+        def __init__(self) -> None:
+            pass
+
+        def send_notification(*args, **kwargs):
+            return
+
     with TestClient(app) as c:
+        monkeypatch.setattr(PushHandler, "__init__", PushNotificationMock.__init__)
+        monkeypatch.setattr(
+            PushHandler, "send_notification", PushNotificationMock.send_notification
+        )
         yield c
 
 
