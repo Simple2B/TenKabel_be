@@ -49,7 +49,7 @@ TEST_CITIES = [
 
 def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
-
+    stasuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
@@ -62,7 +62,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.JobStatus]),
+            status=random.choice(stasuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
@@ -98,6 +98,7 @@ def create_jobs_for_user(
     user_id: int,
     test_jobs_num: int = TEST_USER_JOBS_NUM,
 ):
+    stasuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     user = db.scalar(select(m.User).where(m.User.id == user_id))
     if not user:
         log(log.INFO, "User with id [%s] doesn't exist", user_id)
@@ -117,7 +118,7 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.JobStatus]),
+            status=random.choice(stasuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
@@ -138,7 +139,7 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice([e for e in s.enums.JobStatus]),
+            status=random.choice(stasuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_CITIES),
