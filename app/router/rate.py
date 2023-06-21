@@ -59,6 +59,41 @@ def update_rate(
     return rate
 
 
+@rate_router.patch(
+    "/{uuid}", status_code=status.HTTP_201_CREATED, response_model=s.Rate
+)
+def patch_rate(
+    uuid: str,
+    rate_data: s.RatePatch,
+    db: Session = Depends(get_db),
+):
+    rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == uuid))
+    if not rate:
+        log(log.INFO, "Rate [%s] wasn`t found ", uuid)
+        return HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Rate not found",
+        )
+
+    if rate_data.owner_id:
+        rate.owner_id = rate_data.owner_id
+    if rate_data.worker_id:
+        rate.worker_id = rate_data.worker_id
+    if rate_data.rate:
+        rate.rate = s.BaseRate.RateStatus(rate_data.rate)
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while patching rate [%s] - %s", uuid, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error patching rate"
+        )
+
+    log(log.INFO, "Rate [%s] patched successfully", rate.id)
+    return rate
+
+
 @rate_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Rate)
 def create_rate(
     rate_data: s.BaseRate,

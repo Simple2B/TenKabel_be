@@ -18,6 +18,16 @@ class BaseRate(BaseModel):
         orm_mode = True
 
 
+class RatePatch(BaseModel):
+    owner_id: int | None
+    worker_id: int | None
+    rate: BaseRate.RateStatus | None
+
+    class Config:
+        use_enum_values = True
+        orm_mode = True
+
+
 class Rate(BaseRate):
     id: int
     uuid: str
