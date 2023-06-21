@@ -226,6 +226,9 @@ def test_search_job(
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
+    for job in response_jobs_list.jobs:
+        assert not job.is_deleted
+
     job: m.Job = db.scalar(
         select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
     )
@@ -335,3 +338,19 @@ def test_patch_job(
     assert response.status_code == status.HTTP_200_OK
     assert job.customer_last_name == NEW_NAME
     assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
+
+
+def test_delete_job(
+    client: TestClient,
+    db: Session,
+):
+    create_professions(db)
+    create_jobs(db)
+    fill_test_data(db)
+
+    job: m.Job = db.scalar(select(m.Job))
+
+    response = client.delete(f"api/job/{job.uuid}")
+    db.refresh(job)
+    assert response.status_code == status.HTTP_200_OK
+    assert job.is_deleted

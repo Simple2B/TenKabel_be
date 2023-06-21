@@ -231,7 +231,7 @@ def patch_job(
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
         log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )
@@ -294,7 +294,7 @@ def update_job(
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
         log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )
@@ -333,4 +333,30 @@ def update_job(
         )
 
     log(log.INFO, "Job [%s] updated successfully", job.name)
+    return job
+
+
+@job_router.delete("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
+def delete_job(
+    job_uuid: str,
+    db: Session = Depends(get_db),
+):
+    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
+    if not job:
+        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+
+    job.is_deleted = True
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while deleting job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error deleting job"
+        )
+
+    log(log.INFO, "Job [%s] deleted successfully", job.name)
     return job
