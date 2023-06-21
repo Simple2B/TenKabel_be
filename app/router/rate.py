@@ -70,7 +70,7 @@ def patch_rate(
     rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == uuid))
     if not rate:
         log(log.INFO, "Rate [%s] wasn`t found ", uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rate not found",
         )

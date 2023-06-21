@@ -198,8 +198,10 @@ def get_user_applications(
         )
     elif type == "owner":
         query = query.where(
-            m.Application.owner_id == current_user.id
-            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
+            and_(
+                m.Application.owner_id == current_user.id,
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
         )
     elif type == "worker":
         query = query.where(m.Application.worker_id == current_user.id).filter(

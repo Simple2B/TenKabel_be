@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -24,8 +24,10 @@ def update_application(
 ):
     application: m.Application | None = db.scalar(
         select(m.Application).where(
-            m.Application.uuid == uuid
-            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
+            and_(
+                m.Application.uuid == uuid,
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
         )
     )
     if not application:
@@ -111,8 +113,10 @@ def patch_application(
 ):
     application: m.Application | None = db.scalar(
         select(m.Application).where(
-            m.Application.uuid == uuid
-            and m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
+            and_(
+                m.Application.uuid == uuid,
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
         )
     )
     if not application:
@@ -203,8 +207,10 @@ def create_application(
 ):
     job: m.Job = db.scalar(
         select(m.Job).where(
-            (m.Job.id == application_data.job_id)
-            and (m.Job.status == s.enums.JobStatus.PENDING)
+            and_(
+                m.Job.id == application_data.job_id,
+                m.Job.status == s.enums.JobStatus.PENDING,
+            )
         )
     )
     if not job:
@@ -216,8 +222,10 @@ def create_application(
 
     already_exist_application: m.Application = db.scalar(
         select(m.Application).where(
-            (m.Application.job_id == application_data.job_id)
-            and (m.Application.worker_id == current_user.id)
+            and_(
+                m.Application.job_id == application_data.job_id,
+                m.Application.worker_id == current_user.id,
+            )
         )
     )
     if already_exist_application:
