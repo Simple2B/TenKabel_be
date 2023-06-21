@@ -86,3 +86,22 @@ class JobIn(BaseModel):
 
 class JobUpdate(JobIn):
     status: JobStatus
+
+
+class JobPatch(BaseModel):
+    profession_id: int | None
+    city: str | None
+    payment: int | None
+    commission: int | None
+    name: str | None
+    description: str | None
+    time: str | None
+    customer_first_name: str | None
+    customer_last_name: str | None
+    customer_phone: str | None
+    customer_street_address: str | None
+    status: JobStatus | None
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True

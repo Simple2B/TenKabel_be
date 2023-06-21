@@ -306,3 +306,32 @@ def test_update_job(
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
     assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
+
+
+def test_patch_job(
+    client: TestClient,
+    db: Session,
+):
+    create_professions(db)
+    create_jobs(db)
+    fill_test_data(db)
+
+    NEW_NAME = "TESTNAME JOBNAME"
+    job: m.Job = db.scalar(select(m.Job))
+    request_data: s.JobPatch = s.JobPatch(
+        name=NEW_NAME,
+    )
+    response = client.patch(f"api/job/{job.uuid}", json=request_data.dict())
+    db.refresh(job)
+    assert response.status_code == status.HTTP_200_OK
+    assert job.name == NEW_NAME
+
+    request_data: s.JobPatch = s.JobPatch(
+        customer_last_name=NEW_NAME,
+        status=s.enums.JobStatus.JOB_IS_FINISHED,
+    )
+    response = client.patch(f"api/job/{job.uuid}", json=request_data.dict())
+    db.refresh(job)
+    assert response.status_code == status.HTTP_200_OK
+    assert job.customer_last_name == NEW_NAME
+    assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
