@@ -7,7 +7,10 @@ from app import model as m
 
 def get_pending_jobs_query_for_user(db: Session, user: m.User):
     query = select(m.Job).where(
-        and_(m.Job.is_deleted == False, m.Job.status == s.enums.JobStatus.PENDING)
+        and_(
+            m.Job.is_deleted == False,  # noqa E712
+            m.Job.status == s.enums.JobStatus.PENDING,
+        )
     )
     if user:
         applications_ids = db.scalars(
