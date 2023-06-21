@@ -30,15 +30,16 @@ class PushHandler:
             # notification=messaging.Notification(title="321", body="321123321"),
             tokens=message_data.device_tokens,
             data={
-                "title": "test",
-                "body": "body",
-                "notification_type": message_data.payload.notification_type,
+                "notification_type": message_data.payload.notification_type.value,
                 "job_uuid": message_data.payload.job_uuid,
             },
             android=messaging.AndroidConfig(
                 ttl=3600,
                 priority="high",
-                data=message_data.payload.dict(),
+                # data={
+                #     "notification_type": message_data.payload.notification_type.value,
+                #     "job_uuid": message_data.payload.job_uuid,
+                # },
             ),
         )
 
