@@ -141,7 +141,7 @@ def get_job(
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
         log(log.INFO, "Job wasn`t found [%s]", job_uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
         )

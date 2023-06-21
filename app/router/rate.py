@@ -20,7 +20,7 @@ def get_rate(
     rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == rate_uuid))
     if not rate:
         log(log.INFO, "Rate [%s] wasn`t found", rate_uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rate not found",
         )
@@ -38,7 +38,7 @@ def update_rate(
     rate: m.Rate | None = db.scalar(select(m.Rate).where(m.Rate.uuid == uuid))
     if not rate:
         log(log.INFO, "Rate [%s] wasn`t found ", uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Rate not found",
         )

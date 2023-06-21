@@ -33,13 +33,13 @@ def update_application(
     )
     if not application:
         log(log.INFO, "Application (with status pending) wasn`t found [%s]", uuid)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Application (with status pending) not found",
         )
     if application.worker_id == application.owner_id:
         log(log.INFO, "User can't send application to his job")
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User can't send application to his job",
         )
@@ -47,7 +47,7 @@ def update_application(
     worker: m.User = db.scalar(select(m.User).where(m.User.id == application.worker_id))
     if not worker:
         log(log.INFO, "User with id [%s] wasn`t found", application.worker_id)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User wasn`t found",
         )
@@ -55,7 +55,7 @@ def update_application(
     owner: m.User = db.scalar(select(m.User).where(m.User.id == application.owner_id))
     if not owner:
         log(log.INFO, "User with id [%s] wasn`t found", application.owner_id)
-        return HTTPException(
+        raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User wasn`t found",
         )
