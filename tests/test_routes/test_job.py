@@ -7,6 +7,7 @@ from sqlalchemy import select, and_
 
 import app.model as m
 import app.schema as s
+from app.oauth2 import create_access_token
 from tests.fixture import TestData
 from tests.utility import (
     create_jobs,
@@ -15,6 +16,7 @@ from tests.utility import (
     create_professions,
     create_jobs_for_user,
 )
+
 
 NUM_TEST_JOBS = 200
 TEST_CITIES = [
@@ -267,6 +269,14 @@ def test_update_job(
     fill_test_data(db)
 
     job: m.Job = db.scalar(select(m.Job))
+    user = job.owner
+
+    access_token: str = create_access_token(data={"user_id": user.id})
+    token: s.Token = s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
+
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
@@ -281,7 +291,11 @@ def test_update_job(
         customer_street_address=job.customer_street_address,
         status=s.enums.JobStatus.JOB_IS_FINISHED,
     )
-    response = client.put(f"api/job/{job.uuid}", json=request_data.dict())
+    response = client.put(
+        f"api/job/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
 
     assert response.status_code == status.HTTP_200_OK
     db.refresh(job)
@@ -304,9 +318,11 @@ def test_update_job(
     response = client.put(
         f"api/job/{job.uuid}",
         json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
     )
 
     assert response.status_code == status.HTTP_200_OK
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.uuid == job.uuid))
     db.refresh(job)
     assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
 
@@ -324,20 +340,38 @@ def test_patch_job(
     request_data: s.JobPatch = s.JobPatch(
         name=NEW_NAME,
     )
-    response = client.patch(f"api/job/{job.uuid}", json=request_data.dict())
+    user = job.owner
+
+    access_token: str = create_access_token(data={"user_id": user.id})
+    token: s.Token = s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
+
+    response = client.patch(
+        f"api/job/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
     db.refresh(job)
     assert response.status_code == status.HTTP_200_OK
     assert job.name == NEW_NAME
 
     request_data: s.JobPatch = s.JobPatch(
-        customer_last_name=NEW_NAME,
+        customer_last_name=NEW_NAME + "1",
         status=s.enums.JobStatus.JOB_IS_FINISHED,
     )
-    response = client.patch(f"api/job/{job.uuid}", json=request_data.dict())
+    response = client.patch(
+        f"api/job/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.uuid == job.uuid))
     db.refresh(job)
+
     assert response.status_code == status.HTTP_200_OK
-    assert job.customer_last_name == NEW_NAME
-    assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
+    assert job.customer_last_name == NEW_NAME + "1"
+    assert job.status.value == request_data.status
 
 
 def test_delete_job(
@@ -350,7 +384,19 @@ def test_delete_job(
 
     job: m.Job = db.scalar(select(m.Job))
 
-    response = client.delete(f"api/job/{job.uuid}")
+    user = job.owner
+
+    access_token: str = create_access_token(data={"user_id": user.id})
+    token: s.Token = s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
+
+    response = client.delete(
+        f"api/job/{job.uuid}",
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.uuid == job.uuid))
     db.refresh(job)
     assert response.status_code == status.HTTP_200_OK
     assert job.is_deleted
