@@ -112,11 +112,6 @@ def update_application(
         )
     )
 
-    log(
-        log.INFO,
-        "Notification sended successfully to (owner) user [%s]",
-        worker.first_name,
-    )
     log(log.INFO, "Application updated successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
 
@@ -226,11 +221,6 @@ def patch_application(
         )
     )
 
-    log(
-        log.INFO,
-        "Notification sended successfully to user [%s]",
-        user.first_name,
-    )
     log(log.INFO, "Application patched successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
 
@@ -309,12 +299,6 @@ def create_application(
                 job_uuid=job.uuid,
             ),
         )
-    )
-
-    log(
-        log.INFO,
-        "Notification sended successfully to user [%s]",
-        user.first_name,
     )
 
     return s.ApplicationOut.from_orm(application)

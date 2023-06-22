@@ -312,11 +312,7 @@ def patch_job(
                 ),
             )
         )
-        log(
-            log.INFO,
-            "Notification sended successfully to user [%s]",
-            user.first_name,
-        )
+
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -391,11 +387,6 @@ def update_job(
                 ),
             )
         )
-        log(
-            log.INFO,
-            "Notification sended successfully to user [%s]",
-            user.first_name,
-        )
 
     try:
         db.commit()
@@ -453,11 +444,7 @@ def delete_job(
                 ),
             )
         )
-        log(
-            log.INFO,
-            "Notification sended successfully [%s] users ",
-            len(job.applications),
-        )
+
     try:
         db.commit()
     except SQLAlchemyError as e:
