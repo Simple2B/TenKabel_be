@@ -85,13 +85,24 @@ def update_application(
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
     user = job.worker if current_user == job.owner else job.owner
+    if user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=application.id,
+            type=notification_type,
+        )
+        db.add(notification)
 
-    notification: m.Notification = m.Notification(
-        user_id=user.id,
-        entity_id=application.id,
-        type=notification_type,
-    )
-    db.add(notification)
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in user.devices],
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=application.job_uuid,
+                ),
+            )
+        )
 
     try:
         db.commit()
@@ -100,17 +111,6 @@ def update_application(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating application"
         )
-
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in user.devices],
-            payload=s.PushNotificationPayload(
-                notification_type=notification.type,
-                job_uuid=application.job_uuid,
-            ),
-        )
-    )
 
     log(log.INFO, "Application updated successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
@@ -195,12 +195,24 @@ def patch_application(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    notification: m.Notification = m.Notification(
-        user_id=user.id,
-        entity_id=application.id,
-        type=notification_type,
-    )
-    db.add(notification)
+    if user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=application.id,
+            type=notification_type,
+        )
+        db.add(notification)
+
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in user.devices],
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=application.job_uuid,
+                ),
+            )
+        )
 
     try:
         db.commit()
@@ -209,17 +221,6 @@ def patch_application(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error patching application"
         )
-
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in user.devices],
-            payload=s.PushNotificationPayload(
-                notification_type=notification.type,
-                job_uuid=application.job_uuid,
-            ),
-        )
-    )
 
     log(log.INFO, "Application patched successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
@@ -282,23 +283,24 @@ def create_application(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    notification: m.Notification = m.Notification(
-        user_id=user.id,
-        entity_id=application.id,
-        type=s.NotificationType.APPLICATION_CREATED,
-    )
-    db.add(notification)
-    db.commit()
-
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in user.devices],
-            payload=s.PushNotificationPayload(
-                notification_type=notification.type,
-                job_uuid=job.uuid,
-            ),
+    if user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=application.id,
+            type=s.NotificationType.APPLICATION_CREATED,
         )
-    )
+        db.add(notification)
+        db.commit()
+
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in user.devices],
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=job.uuid,
+                ),
+            )
+        )
 
     return s.ApplicationOut.from_orm(application)
