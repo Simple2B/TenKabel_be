@@ -64,7 +64,7 @@ def update_application(
     application.job_id = application_data.job_id
 
     application.status = s.Application.ApplicationStatus(application_data.status)
-    job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
+    job = application.job
 
     if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED:
         pending_applications: list[m.Application] = db.scalars(
@@ -170,7 +170,7 @@ def patch_application(
     if application_data.status:
         application.status = s.Application.ApplicationStatus(application_data.status)
 
-    job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
+    job = application.job
 
     if (
         s.Application.ApplicationStatus(application_data.status)
