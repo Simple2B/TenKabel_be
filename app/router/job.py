@@ -246,6 +246,7 @@ def patch_job(
     job_data: s.JobPatch,
     job_uuid: str,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
 ):
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
@@ -253,6 +254,12 @@ def patch_job(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
+        )
+    if current_user not in (job.worker, job.owner):
+        log(log.INFO, "User [%s] is not related to job", job_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User not related",
         )
 
     if job_data.profession_id:
@@ -277,8 +284,11 @@ def patch_job(
         job.customer_phone = job_data.customer_phone
     if job_data.customer_street_address:
         job.customer_street_address = job_data.customer_street_address
-    if job_data.status:
-        job.status = s.enums.JobStatus(job_data.status)
+
+    user = job.worker if current_user == job.owner else job.owner
+    job.status = s.enums.JobStatus(job_data.status)
+
+    if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
 
@@ -286,7 +296,7 @@ def patch_job(
             notification_type = s.NotificationType.JOB_DONE
 
         notification: m.Notification = m.Notification(
-            user_id=job.owner_id,
+            user_id=user.id,
             entity_id=job.id,
             type=notification_type,
         )
@@ -295,7 +305,7 @@ def patch_job(
         push_handler = PushHandler()
         push_handler.send_notification(
             s.PushNotificationMessage(
-                device_tokens=[device.push_token for device in job.owner.devices],
+                device_tokens=[device.push_token for device in user.devices],
                 payload=s.PushNotificationPayload(
                     notification_type=notification_type,
                     job_uuid=job.uuid,
@@ -304,8 +314,8 @@ def patch_job(
         )
         log(
             log.INFO,
-            "Notification sended successfully to (owner) user [%s]",
-            job.owner.first_name,
+            "Notification sended successfully to user [%s]",
+            user.first_name,
         )
     try:
         db.commit()
@@ -324,6 +334,7 @@ def update_job(
     job_data: s.JobUpdate,
     job_uuid: str,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
 ):
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
     if not job:
@@ -331,6 +342,13 @@ def update_job(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Job not found",
+        )
+
+    if current_user not in (job.worker, job.owner):
+        log(log.INFO, "User [%s] is not related to job", job_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User not related",
         )
 
     job.profession_id = job_data.profession_id
@@ -345,34 +363,39 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
     job.status = s.enums.JobStatus(job_data.status)
+
+    notification_type = None
     if job.status == s.enums.JobStatus.APPROVED:
         notification_type = s.NotificationType.JOB_STARTED
 
     if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
         notification_type = s.NotificationType.JOB_DONE
 
-    notification: m.Notification = m.Notification(
-        user_id=job.owner_id,
-        entity_id=job.id,
-        type=notification_type,
-    )
-    db.add(notification)
+    user = job.worker if current_user == job.owner else job.owner
 
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in job.owner.devices],
-            payload=s.PushNotificationPayload(
-                notification_type=notification.type,
-                job_uuid=job.uuid,
-            ),
+    if notification_type and user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=job.id,
+            type=notification_type,
         )
-    )
-    log(
-        log.INFO,
-        "Notification sended successfully to (owner) user [%s]",
-        job.owner.first_name,
-    )
+        db.add(notification)
+
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in user.devices],
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=job.uuid,
+                ),
+            )
+        )
+        log(
+            log.INFO,
+            "Notification sended successfully to user [%s]",
+            user.first_name,
+        )
 
     try:
         db.commit()
@@ -390,8 +413,10 @@ def update_job(
 def delete_job(
     job_uuid: str,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
 ):
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
+
     if not job:
         log(log.INFO, "Job [%s] wasn`t found", job_uuid)
         raise HTTPException(
@@ -399,7 +424,40 @@ def delete_job(
             detail="Job not found",
         )
 
+    if current_user != job.owner:
+        log(log.INFO, "User [%s] is not related to job", job_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User not related",
+        )
+
     job.is_deleted = True
+    devices_tokens = []
+    for application in job.applications:
+        notification: m.Notification = m.Notification(
+            user_id=application.worker.id,
+            entity_id=job.id,
+            type=s.enums.NotificationType.JOB_CANCELED,
+        )
+        db.add(notification)
+        for device in application.worker.devices:
+            devices_tokens.append(device.push_token)
+    if devices_tokens:
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=devices_tokens,
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=job.uuid,
+                ),
+            )
+        )
+        log(
+            log.INFO,
+            "Notification sended successfully [%s] users ",
+            len(job.applications),
+        )
     try:
         db.commit()
     except SQLAlchemyError as e:

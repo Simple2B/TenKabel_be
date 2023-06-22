@@ -64,6 +64,8 @@ def update_application(
     application.job_id = application_data.job_id
 
     application.status = s.Application.ApplicationStatus(application_data.status)
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
+
     if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED:
         pending_applications: list[m.Application] = db.scalars(
             select(m.Application).where(m.Application.job_id == application.job_id)
@@ -75,7 +77,6 @@ def update_application(
                 )
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
-        job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
         log(log.INFO, "Job [%s] status updated", job.id)
@@ -83,8 +84,10 @@ def update_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
+    user = job.worker if current_user == job.owner else job.owner
+
     notification: m.Notification = m.Notification(
-        user_id=current_user.id,
+        user_id=user.id,
         entity_id=application.id,
         type=notification_type,
     )
@@ -101,7 +104,7 @@ def update_application(
     push_handler = PushHandler()
     push_handler.send_notification(
         s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in current_user.devices],
+            device_tokens=[device.push_token for device in user.devices],
             payload=s.PushNotificationPayload(
                 notification_type=notification.type,
                 job_uuid=application.job_uuid,
@@ -111,7 +114,7 @@ def update_application(
 
     log(
         log.INFO,
-        "Notification sended successfully to (worker) user [%s]",
+        "Notification sended successfully to (owner) user [%s]",
         worker.first_name,
     )
     log(log.INFO, "Application updated successfully - [%s]", application.id)
@@ -171,6 +174,9 @@ def patch_application(
         application.job_id = application_data.job_id
     if application_data.status:
         application.status = s.Application.ApplicationStatus(application_data.status)
+
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
+
     if (
         s.Application.ApplicationStatus(application_data.status)
         == s.BaseApplication.ApplicationStatus.ACCEPTED
@@ -185,7 +191,6 @@ def patch_application(
                 )
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
-        job: m.Job = db.scalar(select(m.Job).where(m.Job.id == application.job_id))
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
         log(log.INFO, "Job [%s] status updated", job.id)
@@ -193,8 +198,10 @@ def patch_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
+    user = job.worker if current_user == job.owner else job.owner
+
     notification: m.Notification = m.Notification(
-        user_id=current_user.id,
+        user_id=user.id,
         entity_id=application.id,
         type=notification_type,
     )
@@ -211,7 +218,7 @@ def patch_application(
     push_handler = PushHandler()
     push_handler.send_notification(
         s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in current_user.devices],
+            device_tokens=[device.push_token for device in user.devices],
             payload=s.PushNotificationPayload(
                 notification_type=notification.type,
                 job_uuid=application.job_uuid,
@@ -221,8 +228,8 @@ def patch_application(
 
     log(
         log.INFO,
-        "Notification sended successfully to (worker) user [%s]",
-        worker.first_name,
+        "Notification sended successfully to user [%s]",
+        user.first_name,
     )
     log(log.INFO, "Application patched successfully - [%s]", application.id)
     return s.ApplicationOut.from_orm(application)
@@ -283,8 +290,10 @@ def create_application(
     log(log.INFO, "Application created successfully - [%s]", application.id)
     db.refresh(application)
 
+    user = job.worker if current_user == job.owner else job.owner
+
     notification: m.Notification = m.Notification(
-        user_id=job.owner_id,
+        user_id=user.id,
         entity_id=application.id,
         type=s.NotificationType.APPLICATION_CREATED,
     )
@@ -294,7 +303,7 @@ def create_application(
     push_handler = PushHandler()
     push_handler.send_notification(
         s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in current_user.devices],
+            device_tokens=[device.push_token for device in user.devices],
             payload=s.PushNotificationPayload(
                 notification_type=notification.type,
                 job_uuid=job.uuid,
@@ -304,8 +313,8 @@ def create_application(
 
     log(
         log.INFO,
-        "Notification sended successfully to (owner) user [%s]",
-        job.owner_id,
+        "Notification sended successfully to user [%s]",
+        user.first_name,
     )
 
     return s.ApplicationOut.from_orm(application)
