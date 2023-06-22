@@ -286,9 +286,9 @@ def patch_job(
         job.customer_street_address = job_data.customer_street_address
 
     user = job.worker if current_user == job.owner else job.owner
+    job.status = s.enums.JobStatus(job_data.status)
 
     if job_data.status and user:
-        job.status = s.enums.JobStatus(job_data.status)
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
 

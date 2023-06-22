@@ -336,9 +336,11 @@ def test_patch_job(
     fill_test_data(db)
 
     NEW_NAME = "TESTNAME JOBNAME"
-    job: m.Job = db.scalar(select(m.Job))
+    job: m.Job = db.scalar(
+        select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
+    )
     request_data: s.JobPatch = s.JobPatch(
-        name=NEW_NAME,
+        name=NEW_NAME, status=s.enums.JobStatus.IN_PROGRESS
     )
     user = job.owner
 
@@ -356,6 +358,7 @@ def test_patch_job(
     db.refresh(job)
     assert response.status_code == status.HTTP_200_OK
     assert job.name == NEW_NAME
+    assert job.status == s.enums.JobStatus.IN_PROGRESS
 
     request_data: s.JobPatch = s.JobPatch(
         customer_last_name=NEW_NAME + "1",
