@@ -61,7 +61,7 @@ def patch_user(
         log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
     if data.picture:
         current_user.picture = data.picture
-        log(log.INFO, "User [%s] picture updated - [%s]", current_user.id, data.picture)
+        log(log.INFO, "User [%s] picture updated", current_user.id)
     if data.phone:
         current_user.phone = data.phone
         current_user.country_code = data.country_code
@@ -91,6 +91,33 @@ def patch_user(
                     )
                 )
                 db.flush()
+
+    if data.locations:
+        for location in current_user.locations:
+            location_obj: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        db.flush()
+        for location_id in data.locations:
+            user_location: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location_id,
+                )
+            )
+            if not user_location:
+                db.add(m.UserLocation(user_id=current_user.id, location_id=location_id))
+                db.flush()
+                log(
+                    log.INFO,
+                    "UserLocation [%s]-[%s] (user_id - location_id) created successfully",
+                    current_user.id,
+                    location_id,
+                )
 
     try:
         db.commit()

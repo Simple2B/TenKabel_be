@@ -64,6 +64,7 @@ class User(BaseUser):
 
 class UserUpdate(BaseUser):
     professions: list[int]
+    locations: list[int]
     picture: str | None
     phone: phone_field | None
     country_code: str | None

@@ -366,6 +366,7 @@ def test_update_user(
     create_jobs(db)
 
     PROFESSION_IDS = [1, 3]
+    LOCATIONS_IDS = [1, 4]
 
     with open("./test_image.png", "rb") as f:
         PICTURE = base64.b64encode(f.read()).decode("utf-8")
@@ -384,6 +385,7 @@ def test_update_user(
         phone=user.phone,
         picture=PICTURE,
         professions=PROFESSION_IDS,
+        locations=LOCATIONS_IDS,
         country_code="IL",
     )
 
