@@ -342,3 +342,78 @@ def get_user_profile(
 
     log(log.INFO, "User [%s] info", user.username)
     return user
+
+
+@user_router.patch(
+    "/notification-settings",
+    status_code=status.HTTP_200_OK,
+    response_model=s.User,
+)
+def patch_user_notification_settings(
+    notification_settings: s.UserNotificationSettingsIn,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    if notification_settings.notification_job_status is not None:
+        current_user.notification_job_status = (
+            notification_settings.notification_job_status
+        )
+
+    if notification_settings.notification_profession is not None:
+        for profession in current_user.notification_profession:
+            profession_obj: m.UserNotificationsProfessions = db.scalar(
+                select(m.UserNotificationsProfessions).where(
+                    m.UserNotificationsProfessions.user_id == current_user.id,
+                    m.UserNotificationsProfessions.profession_id == profession.id,
+                )
+            )
+            db.delete(profession_obj)
+        for profession_id in notification_settings.notification_profession:
+            db.add(
+                m.UserNotificationsProfessions(
+                    user_id=current_user.id, profession_id=profession_id
+                )
+            )
+
+    if notification_settings.notification_profession_flag is not None:
+        current_user.notification_profession_flag = (
+            notification_settings.notification_profession_flag
+        )
+
+    if notification_settings.notification_locations is not None:
+        for location in current_user.notification_locations:
+            location_obj: m.UserNotificationLocation = db.scalar(
+                select(m.UserNotificationLocation).where(
+                    m.UserNotificationLocation.user_id == current_user.id,
+                    m.UserNotificationLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        for location_id in notification_settings.notification_locations:
+            db.add(
+                m.UserNotificationLocation(
+                    user_id=current_user.id, location_id=location_id
+                )
+            )
+
+    if notification_settings.notification_locations_flag is not None:
+        current_user.notification_locations_flag = (
+            notification_settings.notification_locations_flag
+        )
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(
+            log.INFO,
+            "Error while updating notifications settings user [%s] - %s",
+            current_user.id,
+            e,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Error updating notifications settings",
+        )
+
+    log(log.INFO, "User [%s] notifications updated successfully", current_user.id)
+    return current_user

@@ -10,6 +10,8 @@ from .rate import Rate
 from .location import Location
 from .user_profession import UserProfession
 from .user_location import UserLocation
+from .user_notifications_professions import UserNotificationsProfessions
+from .user_notifications_location import UserNotificationLocation
 from .device import Device
 
 from .notification import Notification

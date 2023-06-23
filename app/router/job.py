@@ -191,6 +191,7 @@ def create_job(
             and_(
                 m.User.locations.contains(city),
                 m.User.professions.contains(profession),
+                m.User.notification_locations_flag == True,  # noqa E712
             )
         )
     ).all()
@@ -219,9 +220,21 @@ def create_job(
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
-
-        for device in user.devices:
-            devices.append(device.push_token)
+        if (
+            (user.notification_profession_flag and user.notification_locations_flag)
+            or (
+                user.notification_profession_flag
+                and not user.notification_locations_flag
+                and profession in user.professions
+            )
+            or (
+                user.notification_locations_flag
+                and not user.notification_profession_flag
+                and city in user.locations
+            )
+        ):
+            for device in user.devices:
+                devices.append(device.push_token)
 
     db.commit()
 
@@ -302,16 +315,17 @@ def patch_job(
         )
         db.add(notification)
 
-        push_handler = PushHandler()
-        push_handler.send_notification(
-            s.PushNotificationMessage(
-                device_tokens=[device.push_token for device in user.devices],
-                payload=s.PushNotificationPayload(
-                    notification_type=notification_type,
-                    job_uuid=job.uuid,
-                ),
+        if user.notification_job_status:
+            push_handler = PushHandler()
+            push_handler.send_notification(
+                s.PushNotificationMessage(
+                    device_tokens=[device.push_token for device in user.devices],
+                    payload=s.PushNotificationPayload(
+                        notification_type=notification_type,
+                        job_uuid=job.uuid,
+                    ),
+                )
             )
-        )
 
     try:
         db.commit()
@@ -377,16 +391,17 @@ def update_job(
         )
         db.add(notification)
 
-        push_handler = PushHandler()
-        push_handler.send_notification(
-            s.PushNotificationMessage(
-                device_tokens=[device.push_token for device in user.devices],
-                payload=s.PushNotificationPayload(
-                    notification_type=notification.type,
-                    job_uuid=job.uuid,
-                ),
+        if user.notification_job_status:
+            push_handler = PushHandler()
+            push_handler.send_notification(
+                s.PushNotificationMessage(
+                    device_tokens=[device.push_token for device in user.devices],
+                    payload=s.PushNotificationPayload(
+                        notification_type=notification.type,
+                        job_uuid=job.uuid,
+                    ),
+                )
             )
-        )
 
     try:
         db.commit()
@@ -431,8 +446,9 @@ def delete_job(
             type=s.enums.NotificationType.JOB_CANCELED,
         )
         db.add(notification)
-        for device in application.worker.devices:
-            devices_tokens.append(device.push_token)
+        if application.worker.notification_job_status:
+            for device in application.worker.devices:
+                devices_tokens.append(device.push_token)
     if devices_tokens:
         push_handler = PushHandler()
         push_handler.send_notification(
