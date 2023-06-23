@@ -237,6 +237,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
             m.Job.status == s.enums.JobStatus.PENDING,
+            m.Job.is_deleted == False,  # noqa E712
         )
     )
     jobs = db.scalars(query).all()
@@ -261,6 +262,7 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
+            m.Job.is_deleted == False,  # noqa E712
             or_(
                 m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                 m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
