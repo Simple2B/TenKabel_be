@@ -191,7 +191,6 @@ def create_job(
             and_(
                 m.User.locations.contains(city),
                 m.User.professions.contains(profession),
-                m.User.notification_locations_flag == True,  # noqa E712
             )
         )
     ).all()
@@ -221,17 +220,10 @@ def create_job(
         )
         db.add(notification)
         if (
-            (user.notification_profession_flag and user.notification_locations_flag)
-            or (
-                user.notification_profession_flag
-                and not user.notification_locations_flag
-                and profession in user.professions
-            )
-            or (
-                user.notification_locations_flag
-                and not user.notification_profession_flag
-                and city in user.locations
-            )
+            city in user.notification_locations and user.notification_locations_flag
+        ) or (
+            profession in user.notification_profession
+            and user.notification_profession_flag
         ):
             for device in user.devices:
                 devices.append(device.push_token)
