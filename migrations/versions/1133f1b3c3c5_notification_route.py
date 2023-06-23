@@ -64,6 +64,15 @@ def upgrade():
         "users", sa.Column("notification_job_status", sa.Boolean(), nullable=False)
     )
     # ### end Alembic commands ###
+    op.execute(
+        "UPDATE users SET notification_profession_flag = TRUE WHERE notification_profession_flag IS NULL"
+    )
+    op.execute(
+        "UPDATE users SET notification_locations_flag = TRUE WHERE notification_locations_flag IS NULL"
+    )
+    op.execute(
+        "UPDATE users SET notification_job_status = TRUE WHERE notification_job_status IS NULL"
+    )
 
 
 def downgrade():
