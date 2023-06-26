@@ -23,3 +23,9 @@ class NotificationType(IndexableStringEnum):
     APPLICATION_REJECTED = "APPLICATION_REJECTED"
 
     MAX_APPLICATION_TYPE = "MAX_APPLICATION_TYPE"
+
+
+class PlatformPaymentStatus(IndexableStringEnum):
+    IDLE = "IDLE"
+    PENDING = "PENDING"
+    PAID = "PAID"
