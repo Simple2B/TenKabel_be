@@ -55,13 +55,13 @@ def upgrade():
         ),
     )
     op.add_column(
-        "users", sa.Column("notification_profession_flag", sa.Boolean(), nullable=False)
+        "users", sa.Column("notification_profession_flag", sa.Boolean(), nullable=True)
     )
     op.add_column(
-        "users", sa.Column("notification_locations_flag", sa.Boolean(), nullable=False)
+        "users", sa.Column("notification_locations_flag", sa.Boolean(), nullable=True)
     )
     op.add_column(
-        "users", sa.Column("notification_job_status", sa.Boolean(), nullable=False)
+        "users", sa.Column("notification_job_status", sa.Boolean(), nullable=True)
     )
     # ### end Alembic commands ###
     op.execute(
@@ -73,6 +73,9 @@ def upgrade():
     op.execute(
         "UPDATE users SET notification_job_status = TRUE WHERE notification_job_status IS NULL"
     )
+    op.alter_column("users", "notification_profession_flag", nullable=False)
+    op.alter_column("users", "notification_locations_flag", nullable=False)
+    op.alter_column("users", "notification_job_status", nullable=False)
 
 
 def downgrade():
