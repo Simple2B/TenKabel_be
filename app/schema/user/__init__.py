@@ -6,6 +6,8 @@ from .user import (
     UserSignUp,
     AuthUser,
     UserUpdate,
+    UserNotificationSettingsIn,
+    UserNotificationSettingsOut,
     ChangePassword,
     ForgotPassword,
     PasswordStatus,

@@ -6,6 +6,8 @@ from app.hash_utils import hash_verify
 from app.database import db
 from .user_profession import users_professions
 from .user_location import users_locations
+from .user_notifications_professions import users_notifications_professions
+from .user_notifications_location import users_notifications_locations
 from .base_user import BaseUser
 from .profession import Profession
 from .location import Location
@@ -25,6 +27,24 @@ class User(db.Model, BaseUser):
     )
     locations: orm.Mapped[Location] = orm.relationship(
         "Location", secondary=users_locations, viewonly=True
+    )
+
+    notification_profession_flag: orm.Mapped[bool] = orm.mapped_column(
+        sa.Boolean, default=True
+    )
+    notification_profession: orm.Mapped[Profession] = orm.relationship(
+        "Profession", secondary=users_notifications_professions, viewonly=True
+    )
+
+    notification_locations_flag: orm.Mapped[bool] = orm.mapped_column(
+        sa.Boolean, default=True
+    )
+    notification_locations: orm.Mapped[Location] = orm.relationship(
+        "Location", secondary=users_notifications_locations, viewonly=True
+    )
+
+    notification_job_status: orm.Mapped[bool] = orm.mapped_column(
+        sa.Boolean, default=True
     )
 
     @classmethod

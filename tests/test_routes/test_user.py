@@ -237,6 +237,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
             m.Job.status == s.enums.JobStatus.PENDING,
+            m.Job.is_deleted == False,  # noqa E712
         )
     )
     jobs = db.scalars(query).all()
@@ -261,6 +262,7 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
+            m.Job.is_deleted == False,  # noqa E712
             or_(
                 m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                 m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
@@ -366,6 +368,7 @@ def test_update_user(
     create_jobs(db)
 
     PROFESSION_IDS = [1, 3]
+    LOCATIONS_IDS = [1, 4]
 
     with open("./test_image.png", "rb") as f:
         PICTURE = base64.b64encode(f.read()).decode("utf-8")
@@ -384,6 +387,7 @@ def test_update_user(
         phone=user.phone,
         picture=PICTURE,
         professions=PROFESSION_IDS,
+        locations=LOCATIONS_IDS,
         country_code="IL",
     )
 
@@ -394,11 +398,7 @@ def test_update_user(
     )
     assert response.status_code == status.HTTP_200_OK
 
-    user: m.User = (
-        db.query(m.User)
-        .filter_by(email=test_data.test_authorized_users[0].email)
-        .first()
-    )
+    db.refresh(user)
 
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
@@ -406,6 +406,45 @@ def test_update_user(
     assert len(user.professions) == len(PROFESSION_IDS)
     for profession in user.professions:
         assert profession.id in PROFESSION_IDS
+
+
+def test_notifications_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    fill_test_data(db)
+    create_locations(db)
+    create_professions(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    request_data: s.UserNotificationSettingsIn = s.UserNotificationSettingsIn(
+        notification_profession=[1],
+        notification_locations=[1, 3],
+        notification_job_status=False,
+    )
+    response = client.patch(
+        "api/user/notification-settings",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+
+    db.refresh(user)
+    assert user.notification_job_status == request_data.notification_job_status
+    assert [
+        profession.id for profession in user.notification_profession
+    ] == request_data.notification_profession
+    assert [
+        location.id for location in user.notification_locations
+    ] == request_data.notification_locations
 
 
 def test_passwords(

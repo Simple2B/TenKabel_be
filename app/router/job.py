@@ -5,7 +5,7 @@ from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.dependency import get_current_user, get_user
+from app.dependency import get_current_user, get_user, get_job_by_uuid
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -219,9 +219,14 @@ def create_job(
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
-
-        for device in user.devices:
-            devices.append(device.push_token)
+        if (
+            city in user.notification_locations and user.notification_locations_flag
+        ) or (
+            profession in user.notification_profession
+            and user.notification_profession_flag
+        ):
+            for device in user.devices:
+                devices.append(device.push_token)
 
     db.commit()
 
@@ -244,17 +249,10 @@ def create_job(
 @job_router.patch("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def patch_job(
     job_data: s.JobPatch,
-    job_uuid: str,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-
     if job_data.profession_id:
         job.profession_id = job_data.profession_id
     if job_data.city:
@@ -277,8 +275,11 @@ def patch_job(
         job.customer_phone = job_data.customer_phone
     if job_data.customer_street_address:
         job.customer_street_address = job_data.customer_street_address
-    if job_data.status:
-        job.status = s.enums.JobStatus(job_data.status)
+
+    user = job.worker if current_user == job.owner else job.owner
+    job.status = s.enums.JobStatus(job_data.status)
+
+    if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
 
@@ -286,27 +287,24 @@ def patch_job(
             notification_type = s.NotificationType.JOB_DONE
 
         notification: m.Notification = m.Notification(
-            user_id=job.owner_id,
+            user_id=user.id,
             entity_id=job.id,
             type=notification_type,
         )
         db.add(notification)
 
-        push_handler = PushHandler()
-        push_handler.send_notification(
-            s.PushNotificationMessage(
-                device_tokens=[device.push_token for device in job.owner.devices],
-                payload=s.PushNotificationPayload(
-                    notification_type=notification_type,
-                    job_uuid=job.uuid,
-                ),
+        if user.notification_job_status:
+            push_handler = PushHandler()
+            push_handler.send_notification(
+                s.PushNotificationMessage(
+                    device_tokens=[device.push_token for device in user.devices],
+                    payload=s.PushNotificationPayload(
+                        notification_type=notification_type,
+                        job_uuid=job.uuid,
+                    ),
+                )
             )
-        )
-        log(
-            log.INFO,
-            "Notification sended successfully to (owner) user [%s]",
-            job.owner.first_name,
-        )
+
     try:
         db.commit()
     except SQLAlchemyError as e:
@@ -322,17 +320,10 @@ def patch_job(
 @job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def update_job(
     job_data: s.JobUpdate,
-    job_uuid: str,
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
     db: Session = Depends(get_db),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-
     job.profession_id = job_data.profession_id
     job.city = job_data.city
     job.payment = job_data.payment
@@ -345,34 +336,35 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
     job.status = s.enums.JobStatus(job_data.status)
+
+    notification_type = None
     if job.status == s.enums.JobStatus.APPROVED:
         notification_type = s.NotificationType.JOB_STARTED
 
     if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
         notification_type = s.NotificationType.JOB_DONE
 
-    notification: m.Notification = m.Notification(
-        user_id=job.owner_id,
-        entity_id=job.id,
-        type=notification_type,
-    )
-    db.add(notification)
+    user = job.worker if current_user == job.owner else job.owner
 
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=[device.push_token for device in job.owner.devices],
-            payload=s.PushNotificationPayload(
-                notification_type=notification.type,
-                job_uuid=job.uuid,
-            ),
+    if notification_type and user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=job.id,
+            type=notification_type,
         )
-    )
-    log(
-        log.INFO,
-        "Notification sended successfully to (owner) user [%s]",
-        job.owner.first_name,
-    )
+        db.add(notification)
+
+        if user.notification_job_status:
+            push_handler = PushHandler()
+            push_handler.send_notification(
+                s.PushNotificationMessage(
+                    device_tokens=[device.push_token for device in user.devices],
+                    payload=s.PushNotificationPayload(
+                        notification_type=notification.type,
+                        job_uuid=job.uuid,
+                    ),
+                )
+            )
 
     try:
         db.commit()
@@ -388,18 +380,41 @@ def update_job(
 
 @job_router.delete("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def delete_job(
-    job_uuid: str,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
+    if current_user != job.owner:
+        log(log.INFO, "User [%s] is not related to job", current_user.first_name)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User not related",
         )
 
     job.is_deleted = True
+    devices_tokens = []
+    for application in job.applications:
+        notification: m.Notification = m.Notification(
+            user_id=application.worker.id,
+            entity_id=job.id,
+            type=s.enums.NotificationType.JOB_CANCELED,
+        )
+        db.add(notification)
+        if application.worker.notification_job_status:
+            for device in application.worker.devices:
+                devices_tokens.append(device.push_token)
+    if devices_tokens:
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=devices_tokens,
+                payload=s.PushNotificationPayload(
+                    notification_type=notification.type,
+                    job_uuid=job.uuid,
+                ),
+            )
+        )
+
     try:
         db.commit()
     except SQLAlchemyError as e:

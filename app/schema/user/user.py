@@ -41,6 +41,22 @@ class BaseUser(BaseModel):
     last_name: str
 
 
+class UserNotificationSettingsIn(BaseModel):
+    notification_profession_flag: bool | None
+    notification_profession: list[int] | None
+    notification_locations_flag: bool | None
+    notification_locations: list[int] | None
+    notification_job_status: bool | None
+
+
+class UserNotificationSettingsOut(BaseModel):
+    notification_profession_flag: bool
+    notification_profession: list[int]
+    notification_locations_flag: bool
+    notification_locations: list[int]
+    notification_job_status: bool
+
+
 class User(BaseUser):
     id: int
     uuid: str
@@ -58,12 +74,19 @@ class User(BaseUser):
     locations: list[Location]
     is_auth_by_google: bool
 
+    notification_profession_flag: bool
+    notification_profession: list[Profession]
+    notification_locations_flag: bool
+    notification_locations: list[Location]
+    notification_job_status: bool
+
     class Config:
         orm_mode = True
 
 
 class UserUpdate(BaseUser):
-    professions: list[int]
+    professions: list[int] | None
+    locations: list[int] | None
     picture: str | None
     phone: phone_field | None
     country_code: str | None

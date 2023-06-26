@@ -20,6 +20,8 @@ services:
     image: simple2b/tenkabel:latest
     restart: always
     command: bash ./start_server.sh
+    volumes:
+      - ./firebase_credentials.json:/app/firebase_credentials.json
     env_file:
       - .env
     environment:

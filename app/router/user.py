@@ -61,7 +61,7 @@ def patch_user(
         log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
     if data.picture:
         current_user.picture = data.picture
-        log(log.INFO, "User [%s] picture updated - [%s]", current_user.id, data.picture)
+        log(log.INFO, "User [%s] picture updated", current_user.id)
     if data.phone:
         current_user.phone = data.phone
         current_user.country_code = data.country_code
@@ -91,6 +91,33 @@ def patch_user(
                     )
                 )
                 db.flush()
+
+    if data.locations:
+        for location in current_user.locations:
+            location_obj: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        db.flush()
+        for location_id in data.locations:
+            user_location: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location_id,
+                )
+            )
+            if not user_location:
+                db.add(m.UserLocation(user_id=current_user.id, location_id=location_id))
+                db.flush()
+                log(
+                    log.INFO,
+                    "UserLocation [%s]-[%s] (user_id - location_id) created successfully",
+                    current_user.id,
+                    location_id,
+                )
 
     try:
         db.commit()
@@ -258,6 +285,7 @@ def get_user_jobs(
                 and_(
                     or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == current_user.id),
                     m.Job.status == s.enums.JobStatus.PENDING,
+                    m.Job.is_deleted == False,  # noqa E712
                 )
             )
 
@@ -265,14 +293,16 @@ def get_user_jobs(
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
-                or_(
-                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                and_(
+                    or_(
+                        m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                    ),
+                    m.Job.is_deleted == False,  # noqa E712
                 )
             )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:
-            # TODO: add cancel field search in jobs
             query = query.filter(m.Job.is_deleted == True)  # noqa E712
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 
@@ -342,3 +372,82 @@ def get_user_profile(
 
     log(log.INFO, "User [%s] info", user.username)
     return user
+
+
+@user_router.patch(
+    "/notification-settings",
+    status_code=status.HTTP_200_OK,
+    response_model=s.User,
+)
+def patch_user_notification_settings(
+    notification_settings: s.UserNotificationSettingsIn,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    if notification_settings.notification_job_status is not None:
+        current_user.notification_job_status = (
+            notification_settings.notification_job_status
+        )
+
+    if notification_settings.notification_profession is not None and len(
+        notification_settings.notification_profession
+    ):
+        for profession in current_user.notification_profession:
+            profession_obj: m.UserNotificationsProfessions = db.scalar(
+                select(m.UserNotificationsProfessions).where(
+                    m.UserNotificationsProfessions.user_id == current_user.id,
+                    m.UserNotificationsProfessions.profession_id == profession.id,
+                )
+            )
+            db.delete(profession_obj)
+        for profession_id in notification_settings.notification_profession:
+            db.add(
+                m.UserNotificationsProfessions(
+                    user_id=current_user.id, profession_id=profession_id
+                )
+            )
+
+    if notification_settings.notification_profession_flag is not None:
+        current_user.notification_profession_flag = (
+            notification_settings.notification_profession_flag
+        )
+
+    if notification_settings.notification_locations is not None and len(
+        notification_settings.notification_locations
+    ):
+        for location in current_user.notification_locations:
+            location_obj: m.UserNotificationLocation = db.scalar(
+                select(m.UserNotificationLocation).where(
+                    m.UserNotificationLocation.user_id == current_user.id,
+                    m.UserNotificationLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        for location_id in notification_settings.notification_locations:
+            db.add(
+                m.UserNotificationLocation(
+                    user_id=current_user.id, location_id=location_id
+                )
+            )
+
+    if notification_settings.notification_locations_flag is not None:
+        current_user.notification_locations_flag = (
+            notification_settings.notification_locations_flag
+        )
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(
+            log.INFO,
+            "Error while updating notifications settings user [%s] - %s",
+            current_user.id,
+            e,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Error updating notifications settings",
+        )
+
+    log(log.INFO, "User [%s] notifications updated successfully", current_user.id)
+    return current_user
