@@ -9,7 +9,7 @@ from app.logger import log
 from app.database import get_db
 from app.dependency import get_current_user
 from app.controller import PushHandler
-from app.utility.notification import notification_payload
+from app.utility.notification import get_notification_payload
 
 
 application_router = APIRouter(prefix="/application", tags=["Application"])
@@ -98,7 +98,7 @@ def update_application(
         push_handler.send_notification(
             s.PushNotificationMessage(
                 device_tokens=[device.push_token for device in user.devices],
-                payload=notification_payload(
+                payload=get_notification_payload(
                     notification_type=notification.type, job=job
                 ),
             )
@@ -207,7 +207,7 @@ def patch_application(
         push_handler.send_notification(
             s.PushNotificationMessage(
                 device_tokens=[device.push_token for device in user.devices],
-                payload=notification_payload(
+                payload=get_notification_payload(
                     notification_type=notification.type, job=job
                 ),
             )
@@ -295,7 +295,7 @@ def create_application(
         push_handler.send_notification(
             s.PushNotificationMessage(
                 device_tokens=[device.push_token for device in user.devices],
-                payload=notification_payload(
+                payload=get_notification_payload(
                     notification_type=notification.type, job=job
                 ),
             )

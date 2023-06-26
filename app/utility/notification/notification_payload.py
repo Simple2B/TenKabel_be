@@ -2,7 +2,7 @@ from app import schema as s
 from app import model as m
 
 
-def notification_payload(notification_type: s.NotificationType, job: m.Job):
+def get_notification_payload(notification_type: s.NotificationType, job: m.Job):
     return s.PushNotificationPayload(
         notification_type=notification_type,
         job_uuid=job.uuid,
