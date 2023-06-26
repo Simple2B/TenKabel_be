@@ -1,4 +1,3 @@
-from datetime import datetime
 import sqlalchemy as sa
 from sqlalchemy import orm
 
@@ -6,7 +5,6 @@ from app.database import db
 from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
-from app.model.applications import Application
 
 
 class PlatformPayment(db.Model):

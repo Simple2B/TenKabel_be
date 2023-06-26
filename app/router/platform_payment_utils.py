@@ -12,9 +12,12 @@ SECRET_KEY = settings.PAY_PLUS_SECRET_KEY
 API_URL = settings.PAY_PLUS_API_URL
 
 
-def pay_plus_headers():
+def pay_plus_headers(settings: Settings):
     log(log.INFO, "set pay plus headers")
-    auth = {"api_key": API_KEY, "secret_key": SECRET_KEY}
+    auth = {
+        "api_key": settings.PAY_PLUS_API_KEY,
+        "secret_key": settings.PAY_PLUS_SECRET_KEY,
+    }
     auth = json.dumps(auth)
     return {
         "Content-Type": "application/json",

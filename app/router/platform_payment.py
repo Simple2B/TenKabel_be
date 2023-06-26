@@ -1,6 +1,5 @@
 import httpx
-from fastapi import Depends, APIRouter, status
-from sqlalchemy import select
+from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependency import get_current_user, get_job_by_uuid
@@ -10,12 +9,6 @@ from app.logger import log
 from app.database import get_db
 from app.config import get_settings, Settings
 from .platform_payment_utils import pay_plus_headers
-
-
-# TERMINAL_ID = settings.PAY_PLUS_TERMINAL_ID
-# CASHIERS_ID = settings.PAY_PLUS_CASHIERS_ID
-# PAYMENT_PAGE_ID = settings.PAY_PLUS_PAYMENT_PAGE_ID
-
 
 payment_router = APIRouter(prefix="/payment", tags=["Payment"])
 
@@ -31,44 +24,35 @@ def get_url(
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    # /PaymentPages/generateLink
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
         amount=job.payment * 0.009 * 1.17,
-        # refURL_success: str | None
-        # refURL_failure: str | None
-        # refURL_cancel: str | None
-        # refURL_callback: str | None
         more_info_1=job.uuid,
         more_info_2=user.uuid,
     )
-
     try:
-        # Send a POST request with headers and JSON payload
         response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/PaymentPages/generateLink",
-            headers=pay_plus_headers(),
+            headers=pay_plus_headers(settings),
             json=request_data.dict(),
         )
-
-        # Check the response status code
-        if response.status_code == 200:
-            print("Request was successful!")
-        else:
-            print(f"Request failed with status code: {response.status_code}")
-
-        # Print the response content
-        print(response.text)
-
     except httpx.RequestError as e:
-        print(f"An error occurred while sending the request: {str(e)}")
+        log(
+            log.ERROR,
+            "Error occured while sending request:\n%s",
+            e,
+        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
     except httpx.HTTPStatusError as e:
-        print(f"Request failed with HTTP status code: {e.response.status_code}")
-        print(f"Response content: {e.response.text}")
+        log(
+            log.ERROR,
+            "Request failed:\n%s",
+            e,
+        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
 
-    except Exception as e:
-        print(f"An unexpected error occurred: {str(e)}")
+    return s.PlatformPaymentLinkOut(url=response["data"]["payment_page_link"])
 
 
 @payment_router.get(
