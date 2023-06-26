@@ -61,7 +61,7 @@ def patch_user(
         log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
     if data.picture:
         current_user.picture = data.picture
-        log(log.INFO, "User [%s] picture updated - [%s]", current_user.id, data.picture)
+        log(log.INFO, "User [%s] picture updated", current_user.id)
     if data.phone:
         current_user.phone = data.phone
         current_user.country_code = data.country_code
@@ -91,6 +91,33 @@ def patch_user(
                     )
                 )
                 db.flush()
+
+    if data.locations:
+        for location in current_user.locations:
+            location_obj: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        db.flush()
+        for location_id in data.locations:
+            user_location: m.UserLocation = db.scalar(
+                select(m.UserLocation).where(
+                    m.UserLocation.user_id == current_user.id,
+                    m.UserLocation.location_id == location_id,
+                )
+            )
+            if not user_location:
+                db.add(m.UserLocation(user_id=current_user.id, location_id=location_id))
+                db.flush()
+                log(
+                    log.INFO,
+                    "UserLocation [%s]-[%s] (user_id - location_id) created successfully",
+                    current_user.id,
+                    location_id,
+                )
 
     try:
         db.commit()
@@ -258,6 +285,7 @@ def get_user_jobs(
                 and_(
                     or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == current_user.id),
                     m.Job.status == s.enums.JobStatus.PENDING,
+                    m.Job.is_deleted == False,  # noqa E712
                 )
             )
 
@@ -265,14 +293,16 @@ def get_user_jobs(
 
         if manage_tab == s.Job.TabFilter.ACTIVE:
             query = query.where(
-                or_(
-                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                and_(
+                    or_(
+                        m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                    ),
+                    m.Job.is_deleted == False,  # noqa E712
                 )
             )
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
         if manage_tab == s.Job.TabFilter.ARCHIVE:
-            # TODO: add cancel field search in jobs
             query = query.filter(m.Job.is_deleted == True)  # noqa E712
             log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 

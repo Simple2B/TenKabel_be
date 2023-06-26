@@ -5,7 +5,7 @@ from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.dependency import get_current_user, get_user
+from app.dependency import get_current_user, get_user, get_job_by_uuid
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -249,24 +249,10 @@ def create_job(
 @job_router.patch("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def patch_job(
     job_data: s.JobPatch,
-    job_uuid: str,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-    if current_user not in (job.worker, job.owner):
-        log(log.INFO, "User [%s] is not related to job", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User not related",
-        )
-
     if job_data.profession_id:
         job.profession_id = job_data.profession_id
     if job_data.city:
@@ -334,25 +320,10 @@ def patch_job(
 @job_router.put("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def update_job(
     job_data: s.JobUpdate,
-    job_uuid: str,
-    db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+    db: Session = Depends(get_db),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-
-    if current_user not in (job.worker, job.owner):
-        log(log.INFO, "User [%s] is not related to job", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User not related",
-        )
-
     job.profession_id = job_data.profession_id
     job.city = job_data.city
     job.payment = job_data.payment
@@ -409,21 +380,12 @@ def update_job(
 
 @job_router.delete("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
 def delete_job(
-    job_uuid: str,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
 ):
-    job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-
-    if not job:
-        log(log.INFO, "Job [%s] wasn`t found", job_uuid)
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Job not found",
-        )
-
     if current_user != job.owner:
-        log(log.INFO, "User [%s] is not related to job", job_uuid)
+        log(log.INFO, "User [%s] is not related to job", current_user.first_name)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="User not related",

@@ -49,7 +49,7 @@ class PushHandler:
 
         try:
             messaging.send_multicast(multicast_message=message)
-            log(log.INFO, "SENDED")
+            log(log.INFO, "Notification sended")
             return {"status": "should be done"}
 
         except FirebaseError:
