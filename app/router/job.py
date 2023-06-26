@@ -13,6 +13,7 @@ from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
 from app.controller import PushHandler
+from app.utility.notification import notification_payload
 
 
 job_router = APIRouter(prefix="/job", tags=["Jobs"])
@@ -234,9 +235,8 @@ def create_job(
     push_handler.send_notification(
         s.PushNotificationMessage(
             device_tokens=devices,
-            payload=s.PushNotificationPayload(
-                notification_type=s.NotificationType.JOB_CREATED,
-                job_uuid=new_job.uuid,
+            payload=notification_payload(
+                notification_type=s.NotificationType.JOB_CREATED, job=new_job
             ),
         )
     )
@@ -298,9 +298,8 @@ def patch_job(
             push_handler.send_notification(
                 s.PushNotificationMessage(
                     device_tokens=[device.push_token for device in user.devices],
-                    payload=s.PushNotificationPayload(
-                        notification_type=notification_type,
-                        job_uuid=job.uuid,
+                    payload=notification_payload(
+                        notification_type=notification_type, job=job
                     ),
                 )
             )
@@ -359,9 +358,8 @@ def update_job(
             push_handler.send_notification(
                 s.PushNotificationMessage(
                     device_tokens=[device.push_token for device in user.devices],
-                    payload=s.PushNotificationPayload(
-                        notification_type=notification.type,
-                        job_uuid=job.uuid,
+                    payload=notification_payload(
+                        notification_type=notification.type, job=job
                     ),
                 )
             )
@@ -408,9 +406,8 @@ def delete_job(
         push_handler.send_notification(
             s.PushNotificationMessage(
                 device_tokens=devices_tokens,
-                payload=s.PushNotificationPayload(
-                    notification_type=notification.type,
-                    job_uuid=job.uuid,
+                payload=notification_payload(
+                    notification_type=notification.type, job=job
                 ),
             )
         )
