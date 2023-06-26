@@ -1,5 +1,5 @@
 import httpx
-from fastapi import Depends, APIRouter, status, HTTPException
+from fastapi import Depends, APIRouter, status, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from app.dependency import get_current_user, get_job_by_uuid
@@ -8,7 +8,7 @@ import app.schema as s
 from app.logger import log
 from app.database import get_db
 from app.config import get_settings, Settings
-from .platform_payment_utils import pay_plus_headers
+from app.utility.platform_payment_utils import pay_plus_headers
 
 payment_router = APIRouter(prefix="/payment", tags=["Payment"])
 
@@ -59,8 +59,8 @@ def get_url(
     "/webhook", status_code=status.HTTP_200_OK, response_model=s.PlatformPaymentLinkIn
 )
 def pay_platform_commission(
+    request: Request,
     db: Session = Depends(get_db),
-    user: m.User = Depends(get_current_user),
     settings: Settings = Depends(get_settings),
 ):
     return
