@@ -28,18 +28,18 @@ def get_url(
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    # if db.scalars(
-    #     select(m.PlatformPayment).where(
-    #         m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
-    #         m.PlatformPayment.job_id == job.id,
-    #         m.PlatformPayment.user_id == user.id,
-    #     )
-    # ):
-    #     log(log.INFO, "Job [%s] has already been paid", job.uuid)
-    #     raise HTTPException(
-    #         status_code=status.HTTP_409_CONFLICT,
-    #         detail="Job has already been paid",
-    #     )
+    if db.scalars(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
+            m.PlatformPayment.job_id == job.id,
+            m.PlatformPayment.user_id == user.id,
+        )
+    ):
+        log(log.INFO, "Job [%s] has already been paid", job.uuid)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Job has already been paid",
+        )
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
         amount=job.payment * 0.009 * 1.17,
@@ -89,29 +89,21 @@ async def pay_platform_commission(
             detail="Not valid data",
         )
     if request_data.get("transaction_type") == "Charge":
-        # TODO handle bad transaction
         log(log.INFO, "transaction_type is  Charge")
         transaction = request_data["transaction"]
         status_code = transaction.get("status_code")
         log(log.INFO, "Status code [%s]", status_code)
-        if status_code != "000":
-            log(log.ERROR, "transaction is unsucces status code is not 000")
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Not valid data",
-            )
-
         user_uuid: str = json.loads(transaction["more_info_1"])["user_uuid"]
         user: m.User | None = db.scalar(select(m.User).where(m.User.uuid == user_uuid))
         if not user:
-            log(log.ERROR, "User was not found")
+            log(log.ERROR, "User [%s] was not found", user_uuid)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="User was not found"
             )
         job_uuid: str = json.loads(transaction["more_info_1"])["job_uuid"]
         job: m.Job | None = db.scalar(select(m.Job).where(m.Job.uuid == job_uuid))
         if not job:
-            log(log.ERROR, "Job was not found")
+            log(log.ERROR, "Job [%s] was not found", job_uuid)
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Job was not found"
             )
@@ -132,6 +124,3 @@ async def pay_platform_commission(
             "Payment details has been successfully stored - [%s]",
             payment.uuid,
         )
-        job.payment_status = s.Job.PaymentStatus.PAID
-        db.commit()
-        log(log.INFO, "Job payment status has been successfully updated")
