@@ -337,6 +337,8 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
     job.status = s.enums.JobStatus(job_data.status)
+    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
     notification_type = None
     if job.status == s.enums.JobStatus.APPROVED:
