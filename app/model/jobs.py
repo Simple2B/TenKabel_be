@@ -50,11 +50,11 @@ class Job(db.Model):
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 
-    payment_status: orm.Mapped[s.Job.PaymentStatus] = orm.mapped_column(
-        sa.Enum(s.Job.PaymentStatus), default=s.Job.PaymentStatus.UNPAID
+    payment_status: orm.Mapped[s.enums.PaymentStatus] = orm.mapped_column(
+        sa.Enum(s.enums.PaymentStatus), default=s.enums.PaymentStatus.UNPAID
     )
-    commission_status: orm.Mapped[s.Job.CommissionStatus] = orm.mapped_column(
-        sa.Enum(s.Job.CommissionStatus), default=s.Job.CommissionStatus.UNPAID
+    commission_status: orm.Mapped[s.enums.CommissionStatus] = orm.mapped_column(
+        sa.Enum(s.enums.CommissionStatus), default=s.enums.CommissionStatus.UNPAID
     )
 
     who_pays: orm.Mapped[s.Job.WhoPays] = orm.mapped_column(
