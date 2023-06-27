@@ -92,9 +92,8 @@ class Job(db.Model):
             self.formatted_time = value
 
     @property
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
-
-    @property
     def application_worker_ids(self):
         return [application.worker_id for application in self.applications]
+
+    def __repr__(self):
+        return f"<{self.id}: {self.name}>"

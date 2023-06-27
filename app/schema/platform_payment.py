@@ -15,8 +15,5 @@ class PlatformPaymentLinkIn(BaseModel):
     refURL_cancel: str | None
     refURL_callback: str | None
     create_token: bool = True
-
-    # add uuid job
     more_info_1: str
     # add uuid user
-    more_info_2: str
