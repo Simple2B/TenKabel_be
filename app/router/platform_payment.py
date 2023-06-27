@@ -28,7 +28,7 @@ def get_url(
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    if db.scalars(
+    if db.scalar(
         select(m.PlatformPayment).where(
             m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
             m.PlatformPayment.job_id == job.id,
