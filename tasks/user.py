@@ -90,3 +90,4 @@ def login_user(
 
         token = s.Token.parse_obj(response.json())
         log(log.INFO, "User token: %s", token.access_token)
+        return token.access_token
