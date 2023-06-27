@@ -12,6 +12,10 @@ from app.logger import log
 from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
+from app.utility.notification import (
+    check_profession_notification,
+    check_location_notification,
+)
 from app.controller import PushHandler
 from app.utility.notification import get_notification_payload
 
@@ -182,11 +186,8 @@ def create_job(
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
-        if (
-            city in user.notification_locations and user.notification_locations_flag
-        ) or (
-            profession in user.notification_profession
-            and user.notification_profession_flag
+        if (check_profession_notification(profession, user)) or (
+            check_location_notification(city, user)
         ):
             for device in user.devices:
                 devices.append(device.push_token)
@@ -205,6 +206,8 @@ def create_job(
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
     log(log.INFO, "[%d] notifications created", len(users))
+    log(log.INFO, "[%d] notifications sended", len(devices))
+
     return new_job
 
 
