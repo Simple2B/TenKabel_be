@@ -78,6 +78,8 @@ class JobIn(BaseModel):
 
 class JobUpdate(JobIn):
     status: JobStatus
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
 
 
 class JobPatch(BaseModel):
