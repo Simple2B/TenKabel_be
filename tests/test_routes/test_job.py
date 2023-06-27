@@ -340,7 +340,10 @@ def test_patch_job(
         select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
     )
     request_data: s.JobPatch = s.JobPatch(
-        name=NEW_NAME, status=s.enums.JobStatus.IN_PROGRESS
+        name=NEW_NAME,
+        status=s.enums.JobStatus.IN_PROGRESS,
+        payment_status=s.enums.PaymentStatus.UNPAID,
+        commission_status=s.enums.CommissionStatus.UNPAID,
     )
     user = job.owner
 
@@ -363,6 +366,8 @@ def test_patch_job(
     request_data: s.JobPatch = s.JobPatch(
         customer_last_name=NEW_NAME + "1",
         status=s.enums.JobStatus.JOB_IS_FINISHED,
+        payment_status=s.enums.PaymentStatus.UNPAID,
+        commission_status=s.enums.CommissionStatus.UNPAID,
     )
     response = client.patch(
         f"api/job/{job.uuid}",

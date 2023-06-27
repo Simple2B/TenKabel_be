@@ -278,6 +278,8 @@ def patch_job(
 
     user = job.worker if current_user == job.owner else job.owner
     job.status = s.enums.JobStatus(job_data.status)
+    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
     if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
