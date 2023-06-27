@@ -59,6 +59,22 @@ jobs:
           push: true
           tags: simple2b/tenkabel:latest
 
+  send_telegram_notification:
+    needs: [tests]
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: Linux
+    steps:
+      - name: Send Telegram message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            A new pull request has been opened. PR#: ${{ github.event.pull_request.number }}
+            Title: ${{ github.event.pull_request.title }}
+            Author: ${{ github.event.pull_request.user.login }}
+            URL: ${{ github.event.pull_request.html_url }}
+
   deploy:
     runs-on: Linux
     needs: build
@@ -71,7 +87,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd ten_kabel; ./up
-      - name: send telegram message on push
+      - name: send telegram message on push and pull
         uses: appleboy/telegram-action@master
         with:
           to: ${{ secrets.TELEGRAM_TO }}
