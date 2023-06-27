@@ -33,8 +33,8 @@ class Job(BaseJob):
 
     id: int
     status: JobStatus | str
-    payment_status: PaymentStatus | str
-    commission_status: CommissionStatus | str
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
     who_pays: WhoPays | str
     is_deleted: bool
     owner: User
@@ -87,8 +87,8 @@ class JobPatch(BaseModel):
     city: str | None
     payment: int | None
     commission: int | None
-    payment_status: PaymentStatus | str
-    commission_status: CommissionStatus | str
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
     name: str | None
     description: str | None
     time: str | None
