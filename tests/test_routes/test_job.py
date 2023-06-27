@@ -185,6 +185,7 @@ def test_create_job(
         city=city.name_en,
         payment=10000,
         commission=10000,
+        who_pays=s.Job.WhoPays.ME,
         name="Test Task",
         description="Just do anything",
         time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),

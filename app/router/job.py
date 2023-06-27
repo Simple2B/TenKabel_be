@@ -157,6 +157,9 @@ def create_job(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
+    if data.who_pays:
+        who_pays = s.Job.WhoPays(data.who_pays)
+
     new_job = m.Job(
         owner_id=current_user.id,
         profession_id=data.profession_id,
@@ -164,6 +167,7 @@ def create_job(
         description=data.description,
         payment=data.payment,
         commission=data.commission,
+        who_pays=who_pays,
         city=data.city,
         time=data.time,
         customer_first_name=data.customer_first_name,
