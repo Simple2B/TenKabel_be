@@ -20,7 +20,7 @@ class PlatformPaymentLinkIn(BaseModel):
     more_info_1: str
 
 
-class PlatformPayment(PlatformPaymentLinkIn):
+class PlatformPayment(BaseModel):
     uuid: str
     status: PlatformPaymentStatus
 
