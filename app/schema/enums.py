@@ -1,3 +1,4 @@
+import enum
 from app.utility import IndexableStringEnum
 
 
@@ -29,3 +30,13 @@ class PlatformPaymentStatus(IndexableStringEnum):
     IDLE = "IDLE"
     PENDING = "PENDING"
     PAID = "PAID"
+
+
+class PaymentStatus(enum.Enum):
+    PAID = "paid"
+    UNPAID = "unpaid"
+
+
+class CommissionStatus(enum.Enum):
+    PAID = "paid"
+    UNPAID = "unpaid"
