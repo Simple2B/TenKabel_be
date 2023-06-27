@@ -223,7 +223,7 @@ def test_search_job(
     create_jobs(db)
     fill_test_data(db)
 
-    response = client.get("api/job/search")
+    response = client.get("api/job/jobs")
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
@@ -236,25 +236,23 @@ def test_search_job(
     )
     assert job
 
-    response = client.get("api/job/search", params={"q": f"{job.city}"})
+    response = client.get("api/job/jobs", params={"q": f"{job.city}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
     assert all([resp_job.city == job.city for resp_job in response_jobs_list.jobs])
 
-    response = client.get("api/job/search", params={"q": f"{job.name}"})
+    response = client.get("api/job/jobs", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    response = client.get("api/job/search", params={"q": f"{job.description}"})
+    response = client.get("api/job/jobs", params={"q": f"{job.description}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    response = client.get(
-        "api/job/search", params={"q": "non_existin_city_for_sure_123"}
-    )
+    response = client.get("api/job/jobs", params={"q": "non_existin_city_for_sure_123"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
