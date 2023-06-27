@@ -34,11 +34,3 @@ class PlatformPayment(db.Model):
         backref="platform_payments",
         uselist=False,
     )
-
-    # job: orm.Mapped[m.User] = orm.relationship(
-    #     "Job",
-    #     foreign_keys=[job_id],
-    #     viewonly=True,
-    #     backref="platform_payment",
-    #     uselist=False,
-    # )

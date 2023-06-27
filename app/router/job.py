@@ -284,6 +284,14 @@ def patch_job(
     if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
+            db.add(
+                m.PlatformPayment(
+                    user_id=current_user.id,
+                    job_id=job.id,
+                    status=s.enums.PlatformPaymentStatus.PENDING,
+                )
+            )
+            db.commit()
 
         if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
             notification_type = s.NotificationType.JOB_DONE
