@@ -278,10 +278,20 @@ def patch_job(
 
     user = job.worker if current_user == job.owner else job.owner
     job.status = s.enums.JobStatus(job_data.status)
+    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
     if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
+            db.add(
+                m.PlatformPayment(
+                    user_id=current_user.id,
+                    job_id=job.id,
+                    status=s.enums.PlatformPaymentStatus.PENDING,
+                )
+            )
+            db.commit()
 
         if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
             notification_type = s.NotificationType.JOB_DONE
@@ -335,6 +345,8 @@ def update_job(
     job.customer_phone = job_data.customer_phone
     job.customer_street_address = job_data.customer_street_address
     job.status = s.enums.JobStatus(job_data.status)
+    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
     notification_type = None
     if job.status == s.enums.JobStatus.APPROVED:

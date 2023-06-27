@@ -4,7 +4,8 @@ from pydantic import BaseModel
 from .user import User
 from .profession import Profession
 from .application import ApplicationOut
-from .enums import JobStatus
+from .enums import JobStatus, PaymentStatus, CommissionStatus
+from .platform_payment import PlatformPayment
 
 
 class BaseJob(BaseModel):
@@ -22,14 +23,6 @@ class BaseJob(BaseModel):
 
 
 class Job(BaseJob):
-    class PaymentStatus(enum.Enum):
-        PAID = "paid"
-        UNPAID = "unpaid"
-
-    class CommissionStatus(enum.Enum):
-        PAID = "paid"
-        UNPAID = "unpaid"
-
     class WhoPays(enum.Enum):
         ME = "me"
         CLIENT = "client"
@@ -41,8 +34,9 @@ class Job(BaseJob):
 
     id: int
     status: JobStatus | str
-    payment_status: PaymentStatus | str
-    commission_status: CommissionStatus | str
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
+    platform_payment: PlatformPayment | None
     who_pays: WhoPays | str
     is_deleted: bool
     owner: User
@@ -86,6 +80,8 @@ class JobIn(BaseModel):
 
 class JobUpdate(JobIn):
     status: JobStatus
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
 
 
 class JobPatch(BaseModel):
@@ -93,6 +89,8 @@ class JobPatch(BaseModel):
     city: str | None
     payment: int | None
     commission: int | None
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
     name: str | None
     description: str | None
     time: str | None

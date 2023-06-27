@@ -1,3 +1,4 @@
+import enum
 from app.utility import IndexableStringEnum
 
 
@@ -23,3 +24,19 @@ class NotificationType(IndexableStringEnum):
     APPLICATION_REJECTED = "APPLICATION_REJECTED"
 
     MAX_APPLICATION_TYPE = "MAX_APPLICATION_TYPE"
+
+
+class PlatformPaymentStatus(IndexableStringEnum):
+    IDLE = "IDLE"
+    PENDING = "PENDING"
+    PAID = "PAID"
+
+
+class PaymentStatus(enum.Enum):
+    PAID = "paid"
+    UNPAID = "unpaid"
+
+
+class CommissionStatus(enum.Enum):
+    PAID = "paid"
+    UNPAID = "unpaid"

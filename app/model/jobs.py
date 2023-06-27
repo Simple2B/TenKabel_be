@@ -7,6 +7,7 @@ from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
 from app.model.applications import Application
+from .platform_payment import PlatformPayment
 
 
 class Job(db.Model):
@@ -50,11 +51,11 @@ class Job(db.Model):
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 
-    payment_status: orm.Mapped[s.Job.PaymentStatus] = orm.mapped_column(
-        sa.Enum(s.Job.PaymentStatus), default=s.Job.PaymentStatus.UNPAID
+    payment_status: orm.Mapped[s.enums.PaymentStatus] = orm.mapped_column(
+        sa.Enum(s.enums.PaymentStatus), default=s.enums.PaymentStatus.UNPAID
     )
-    commission_status: orm.Mapped[s.Job.CommissionStatus] = orm.mapped_column(
-        sa.Enum(s.Job.CommissionStatus), default=s.Job.CommissionStatus.UNPAID
+    commission_status: orm.Mapped[s.enums.CommissionStatus] = orm.mapped_column(
+        sa.Enum(s.enums.CommissionStatus), default=s.enums.CommissionStatus.UNPAID
     )
 
     who_pays: orm.Mapped[s.Job.WhoPays] = orm.mapped_column(
@@ -75,6 +76,9 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
+    platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(
+        "PlatformPayment", uselist=False, backref="job"
+    )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
@@ -92,9 +96,8 @@ class Job(db.Model):
             self.formatted_time = value
 
     @property
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
-
-    @property
     def application_worker_ids(self):
         return [application.worker_id for application in self.applications]
+
+    def __repr__(self):
+        return f"<{self.id}: {self.name}>"

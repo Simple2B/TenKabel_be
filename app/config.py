@@ -11,6 +11,14 @@ class Settings(BaseSettings):
     ADMIN_EMAIL: EmailStr = "admin@admin.com"
     DEFAULT_PAGE_SIZE: int = 10
 
+    # PayPlus
+    PAY_PLUS_API_KEY: str = ""
+    PAY_PLUS_SECRET_KEY: str = ""
+    PAY_PLUS_API_URL: str = ""
+    PAY_PLUS_TERMINAL_ID: str = ""
+    PAY_PLUS_CASHIERS_ID: str = ""
+    PAY_PLUS_PAYMENT_PAGE_ID: str = ""
+
     # GOOGLE
     GOOGLE_BUCKET_NAME: str = "tenkabel"
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
