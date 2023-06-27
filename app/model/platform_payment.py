@@ -28,9 +28,9 @@ class PlatformPayment(db.Model):
 
     # relationship
     user: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[id], viewonly=True, backref="users"
+        "User", foreign_keys=[user_id], viewonly=True, backref="user"
     )
 
     job: orm.Mapped[m.User] = orm.relationship(
-        "Job", foreign_keys=[id], viewonly=True, backref="jobs"
+        "Job", foreign_keys=[job_id], viewonly=True, backref="job"
     )
