@@ -12,6 +12,10 @@ from app.logger import log
 from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
+from app.utility.notification import (
+    check_profession_notification,
+    check_location_notification,
+)
 from app.controller import PushHandler
 from app.utility.notification import get_notification_payload
 
@@ -35,10 +39,21 @@ def get_jobs(
     max_price: int = None,
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
+    q: str | None = "",
 ) -> s.ListJob:
     query = get_pending_jobs_query_for_user(db, user)
 
-    if (
+    if q:
+        query = query.where(
+            or_(
+                m.Job.name.icontains(f"%{q}%"),
+                m.Job.description.icontains(f"%{q}%"),
+                m.Job.city.icontains(f"%{q}%"),
+            )
+        )
+        log(log.INFO, "Job filtered by [%s] containing", q)
+
+    elif (
         user is None
         or user.google_openid_key
         or any([profession_id, city, min_price, max_price])
@@ -83,55 +98,6 @@ def get_jobs(
     jobs: s.ListJob = s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
     log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
     return jobs
-
-
-@job_router.get("/search", status_code=status.HTTP_200_OK, response_model=s.ListJob)
-def search_job(
-    q: str | None = "",
-    db: Session = Depends(get_db),
-    user: m.User | None = Depends(get_user),
-) -> s.ListJob:
-    query = get_pending_jobs_query_for_user(db, user)
-
-    if q:
-        query = query.where(
-            or_(
-                m.Job.name.icontains(f"%{q}%"),
-                m.Job.description.icontains(f"%{q}%"),
-                m.Job.city.icontains(f"%{q}%"),
-            )
-        )
-
-    elif user:
-        profession_ids: list[int] = [profession.id for profession in user.professions]
-        cities_names: list[str] = [location.name_en for location in user.locations]
-        if profession_ids:
-            filter_conditions = []
-            for prof_id in profession_ids:
-                filter_conditions.append(m.Job.profession_id == prof_id)
-            query = query.filter(or_(*filter_conditions))
-
-            log(
-                log.INFO,
-                "Job filtered by profession ids [%s] user interests",
-                profession_ids,
-            )
-        if cities_names:
-            filter_conditions = []
-            for location in cities_names:
-                filter_conditions.append(m.Job.city.ilike(location))
-            query = query.filter(or_(*filter_conditions))
-            log(
-                log.INFO,
-                "Job filtered by cities names [%s] user interests",
-                ",".join(cities_names),
-            )
-        if not cities_names and not profession_ids:
-            log(log.INFO, "Job returned with no filters")
-
-    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at.desc())).all()
-    log(log.INFO, "Job (%s) filtered by [%s] containing", len(jobs), q)
-    return s.ListJob(jobs=jobs)
 
 
 @job_router.get("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)
@@ -224,11 +190,8 @@ def create_job(
             type=s.NotificationType.JOB_CREATED,
         )
         db.add(notification)
-        if (
-            city in user.notification_locations and user.notification_locations_flag
-        ) or (
-            profession in user.notification_profession
-            and user.notification_profession_flag
+        if (check_profession_notification(profession, user)) or (
+            check_location_notification(city, user)
         ):
             for device in user.devices:
                 devices.append(device.push_token)
@@ -247,6 +210,8 @@ def create_job(
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
     log(log.INFO, "[%d] notifications created", len(users))
+    log(log.INFO, "[%d] notifications sended", len(devices))
+
     return new_job
 
 
