@@ -7,6 +7,7 @@ from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
 from app.model.applications import Application
+from .platform_payment import PlatformPayment
 
 
 class Job(db.Model):
@@ -74,6 +75,9 @@ class Job(db.Model):
     )
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
+    )
+    platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(
+        "PlatformPayment", uselist=False, backref="job"
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)

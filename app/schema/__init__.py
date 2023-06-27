@@ -39,4 +39,8 @@ from .notification import (
     NotificationList,
 )
 
-from .platform_payment import PlatformPaymentLinkOut, PlatformPaymentLinkIn
+from .platform_payment import (
+    PlatformPaymentLinkOut,
+    PlatformPaymentLinkIn,
+    PlatformPayment,
+)

@@ -1,5 +1,7 @@
 from pydantic import BaseModel, AnyHttpUrl
 
+from .enums import PlatformPaymentStatus
+
 
 class PlatformPaymentLinkOut(BaseModel):
     url: AnyHttpUrl
@@ -16,4 +18,11 @@ class PlatformPaymentLinkIn(BaseModel):
     refURL_callback: str | None
     create_token: bool = True
     more_info_1: str
-    # add uuid user
+
+
+class PlatformPayment(PlatformPaymentLinkIn):
+    uuid: str
+    status: PlatformPaymentStatus
+
+    class Config:
+        orm_mode = True

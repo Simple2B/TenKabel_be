@@ -7,11 +7,6 @@ from app.config import get_settings, Settings
 settings: Settings = get_settings()
 
 
-API_KEY = settings.PAY_PLUS_API_KEY
-SECRET_KEY = settings.PAY_PLUS_SECRET_KEY
-API_URL = settings.PAY_PLUS_API_URL
-
-
 def pay_plus_headers(settings: Settings):
     log(log.INFO, "set pay plus headers")
     auth = {

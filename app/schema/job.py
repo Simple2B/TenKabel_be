@@ -5,6 +5,7 @@ from .user import User
 from .profession import Profession
 from .application import ApplicationOut
 from .enums import JobStatus, PaymentStatus, CommissionStatus
+from .platform_payment import PlatformPayment
 
 
 class BaseJob(BaseModel):
@@ -35,6 +36,7 @@ class Job(BaseJob):
     status: JobStatus | str
     payment_status: PaymentStatus
     commission_status: CommissionStatus
+    platform_payment: PlatformPayment | None
     who_pays: WhoPays | str
     is_deleted: bool
     owner: User
