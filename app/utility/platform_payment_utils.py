@@ -1,7 +1,5 @@
 import json
-import httpx
 
-from app.logger import log
 from app.config import get_settings, Settings
 
 settings: Settings = get_settings()
