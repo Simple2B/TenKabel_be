@@ -28,18 +28,19 @@ def get_url(
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    if db.scalars(
-        select(m.PlatformPayment).where(
-            m.PlatformPayment.job_id == job.id,
-            m.PlatformPayment.user_id == user.id,
-            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
-        )
-    ):
-        log(log.INFO, "Job [%s] has already been paid", job.uuid)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Job has already been paid",
-        )
+    # TODO uncomment
+    # if db.scalars(
+    #     select(m.PlatformPayment).where(
+    #         m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
+    #         m.PlatformPayment.job_id == job.id,
+    #         m.PlatformPayment.user_id == user.id,
+    #     )
+    # ):
+    #     log(log.INFO, "Job [%s] has already been paid", job.uuid)
+    #     raise HTTPException(
+    #         status_code=status.HTTP_409_CONFLICT,
+    #         detail="Job has already been paid",
+    #     )
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
         amount=job.payment * 0.009 * 1.17,
