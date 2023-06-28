@@ -82,6 +82,13 @@ def update_application(
         job.status = s.enums.JobStatus.IN_PROGRESS
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
+        db.add(
+            m.PlatformPayment(
+                user_id=current_user.id,
+                job_id=job.id,
+                status=s.enums.PlatformPaymentStatus.PENDING,
+            )
+        )
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
