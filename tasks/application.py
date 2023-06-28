@@ -3,8 +3,7 @@ from sqlalchemy import select
 from fastapi import status
 
 from app.logger import log
-from tests.utility import create_jobs as cj, create_jobs_for_user as cjfu
-from .job import create_job, JOB_NAME
+from .job import create_job
 
 
 @task
