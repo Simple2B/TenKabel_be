@@ -30,9 +30,11 @@ def get_url(
 ):
     if db.scalar(
         select(m.PlatformPayment).where(
-            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
-            m.PlatformPayment.job_id == job.id,
-            m.PlatformPayment.user_id == user.id,
+            and_(
+                m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
+                m.PlatformPayment.job_id == job.id,
+                m.PlatformPayment.user_id == user.id,
+            )
         )
     ):
         log(log.INFO, "Job [%s] has already been paid", job.uuid)
