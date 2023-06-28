@@ -25,6 +25,10 @@ class PlatformPayment(db.Model):
         sa.Enum(s.enums.PlatformPaymentStatus),
         default=s.enums.PlatformPaymentStatus.IDLE,
     )
+    transaction_number: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), nullable=True
+    )
+    paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(64), nullable=True)
 
     # relationship
     user: orm.Mapped[m.User] = orm.relationship(
