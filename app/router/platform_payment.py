@@ -82,6 +82,7 @@ async def pay_platform_commission(
 ):
     try:
         request_data = await request.json()
+        log(log.INFO, "Webhook data:\n %s", request_data)
     except json.JSONDecodeError as e:
         log(log.ERROR, "Bad request data:\n%s", e)
         raise HTTPException(
@@ -98,14 +99,14 @@ async def pay_platform_commission(
         if not user:
             log(log.ERROR, "User [%s] was not found", user_uuid)
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="User was not found"
+                status_code=status.HTTP_409_CONFLICT, detail="User was not found"
             )
         job_uuid: str = json.loads(transaction["more_info_1"])["job_uuid"]
         job: m.Job | None = db.scalar(select(m.Job).where(m.Job.uuid == job_uuid))
         if not job:
             log(log.ERROR, "Job [%s] was not found", job_uuid)
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND, detail="Job was not found"
+                status_code=status.HTTP_409_CONFLICT, detail="Job was not found"
             )
         payment = m.PlatformPayment(
             user_id=user.id, job_id=job.id, status=s.enums.PlatformPaymentStatus.PAID
