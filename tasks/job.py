@@ -39,6 +39,15 @@ def create_job(
     profession: str = "Handyman",
     city: str = "Ariel",
 ):
+    """creates job with given name, description, profession and city
+
+    Args:
+        name (str, optional): job name. Defaults to JOB_NAME.
+        description (str, optional): job description. Defaults to JOB_DESCRIPTION.
+        profession (str, optional): job profession. Defaults to "Handyman".
+        city (str, optional): job city. Defaults to "Ariel".
+    """
+
     from datetime import datetime
 
     from fastapi.testclient import TestClient
@@ -48,13 +57,22 @@ def create_job(
     from app.main import app
     from app import schema as s
     from app import model as m
+    from tests.utility import create_locations, create_professions
+
+    db = dbo.Session()
+
+    if db.scalar(select(m.Job).where(m.Job.name == name)):
+        log(log.WARNING, "Job [%s] already exists", name)
+        return db.scalar(select(m.Job).where(m.Job.name == name))
 
     token = login_user(ctx)
-    db = dbo.Session()
+
+    create_professions(db)
+    create_locations(db)
 
     with TestClient(app) as client:
         profession_id: int = db.scalar(
-            select(m.Profession.id).where(m.Profession.name == profession)
+            select(m.Profession.id).where(m.Profession.name_en == profession)
         )
         assert profession_id
         job_data = s.JobIn(
@@ -62,6 +80,7 @@ def create_job(
             city=city,
             payment=1111,
             commission=10,
+            who_pays=s.Job.WhoPays.ME,
             name=name,
             description=description,
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -81,3 +100,5 @@ def create_job(
             return
 
         log(log.INFO, "Job created")
+
+        return db.scalar(select(m.Job).where(m.Job.name == JOB_NAME))
