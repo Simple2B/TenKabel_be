@@ -125,6 +125,14 @@ async def pay_platform_commission(
         payment.transaction_number = transaction["number"]
         payment.paid_at = datetime.fromisoformat(transaction["date"])
         payment.status = s.enums.PlatformPaymentStatus.PAID
+
+        # we want to be sure that both owner and worker paid for comission
+        if all(
+            pp.status == s.enums.PlatformPaymentStatus.PAID
+            for pp in job.platform_payments
+        ):
+            job.commission_status = s.enums.CommissionStatus.PAID
+
         db.commit()
         log(
             log.INFO,
