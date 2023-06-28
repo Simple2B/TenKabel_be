@@ -1,6 +1,7 @@
 from pydantic import BaseModel, AnyHttpUrl, validator
 
 from .enums import PlatformPaymentStatus
+from .user import User
 
 
 class PlatformPaymentLinkOut(BaseModel):
@@ -27,6 +28,7 @@ class PlatformPaymentLinkIn(BaseModel):
 class PlatformPayment(BaseModel):
     uuid: str
     status: PlatformPaymentStatus
+    user: User
 
     class Config:
         orm_mode = True
