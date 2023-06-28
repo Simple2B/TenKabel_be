@@ -76,8 +76,8 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
-    platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(
-        "PlatformPayment", uselist=False, backref="job"
+    platform_payments: orm.Mapped[PlatformPayment] = orm.relationship(
+        "PlatformPayment", backref="job"
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)

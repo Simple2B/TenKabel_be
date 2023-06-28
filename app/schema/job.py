@@ -36,7 +36,7 @@ class Job(BaseJob):
     status: JobStatus | str
     payment_status: PaymentStatus
     commission_status: CommissionStatus
-    platform_payment: PlatformPayment | None
+    platform_payments: list[PlatformPayment]
     who_pays: WhoPays | str
     is_deleted: bool
     owner: User
@@ -65,6 +65,7 @@ class JobIn(BaseModel):
     city: str
     payment: int
     commission: int
+    who_pays: Job.WhoPays | None
     name: str
     description: str
     time: str

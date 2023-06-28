@@ -5,6 +5,7 @@
   "cSpell.words": [
     "backref",
     "fastapi",
+    "payplus",
     "pydantic",
     "sqladmin",
     "sqlalchemy",

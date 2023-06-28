@@ -119,6 +119,9 @@ def create_job(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
+    if data.who_pays:
+        who_pays = s.Job.WhoPays(data.who_pays)
+
     new_job = m.Job(
         owner_id=current_user.id,
         profession_id=data.profession_id,
@@ -126,6 +129,7 @@ def create_job(
         description=data.description,
         payment=data.payment,
         commission=data.commission,
+        who_pays=who_pays,
         city=data.city,
         time=data.time,
         customer_first_name=data.customer_first_name,
@@ -187,14 +191,6 @@ def patch_job(
     if job_data.status and user:
         if job.status == s.enums.JobStatus.APPROVED:
             notification_type = s.NotificationType.JOB_STARTED
-            db.add(
-                m.PlatformPayment(
-                    user_id=current_user.id,
-                    job_id=job.id,
-                    status=s.enums.PlatformPaymentStatus.PENDING,
-                )
-            )
-            db.commit()
 
         if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
             notification_type = s.NotificationType.JOB_DONE
