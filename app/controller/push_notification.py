@@ -28,10 +28,7 @@ class PushHandler:
 
         message = messaging.MulticastMessage(
             tokens=message_data.device_tokens,
-            data={
-                "notification_type": message_data.payload.notification_type.value,
-                "job_uuid": message_data.payload.job_uuid,
-            },
+            data=message_data.payload.dict(),
             android=messaging.AndroidConfig(
                 ttl=3600,
                 priority="high",
