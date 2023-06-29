@@ -22,6 +22,7 @@ from tests.utility import (
     create_applications,
     create_applications_for_user,
     generate_customer_uid,
+    create_jobs_for_user,
 )
 
 
@@ -349,23 +350,14 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            or_(
-                and_(
-                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
-                    m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
-                ),
-                and_(
-                    m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
-                    m.Job.commission_status == s.enums.CommissionStatus.PAID,
-                ),
-            ),
-            or_(
-                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
-            ),
             m.Job.is_deleted == False,  # noqa E712
+            m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+            m.Job.status.in_(
+                [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
+            ),
         )
     )
+
     jobs = db.scalars(query).all()
 
     assert len(jobs) == len(resp_obj.jobs)
@@ -376,7 +368,7 @@ def test_get_user_profile(
             s.enums.JobStatus.IN_PROGRESS.value,
             s.enums.JobStatus.JOB_IS_FINISHED,
         )
-        assert job.payment_status != job.commission_status
+        assert job.payment_status == s.enums.PaymentStatus.UNPAID.value
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(

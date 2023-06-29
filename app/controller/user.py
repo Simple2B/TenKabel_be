@@ -42,21 +42,11 @@ def manage_tab_controller(
     if manage_tab == s.Job.TabFilter.ACTIVE:
         query = query.where(
             and_(
-                or_(
-                    and_(
-                        m.Job.payment_status == s.enums.PaymentStatus.PAID,
-                        m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
-                    ),
-                    and_(
-                        m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
-                        m.Job.commission_status == s.enums.CommissionStatus.PAID,
-                    ),
-                ),
-                or_(
-                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
-                ),
                 m.Job.is_deleted == False,  # noqa E712
+                m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                m.Job.status.in_(
+                    [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
+                ),
             )
         )
         log(log.INFO, "Jobs filtered by status: %s", manage_tab)
