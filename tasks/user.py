@@ -3,8 +3,7 @@ from sqlalchemy import select
 from fastapi import status
 
 
-# from sqlalchemy.orm import Session
-from app.model import User
+from app.model import User, Profession, Location, UserLocation, UserProfession
 from app.logger import log
 
 TEST_USER_PHONE = "001"
@@ -17,12 +16,16 @@ def create_user(
     _,
     telephone: str = TEST_USER_PHONE,
     password: str = TEST_PASSWORD,
+    location_id: int | None = None,
+    profession_id: int | None = None,
 ):
     """create user with given telephone and password
 
     Args:
         telephone (str, optional): user phone. Default value is "001".
         password (str, optional): user password. Default value is "pass".
+        location_id (int, optional): user location id. Default value is None.
+        profession_id (int, optional): user profession id. Default value is None.
     """
 
     from app.database import db
@@ -45,6 +48,32 @@ def create_user(
                 country_code="LI",
             )
             conn.add(user)
+            profession: Profession | None = conn.scalar(
+                select(Profession).where(Profession.id == profession_id)
+            )
+
+            if profession:
+                conn.add(
+                    UserProfession(
+                        user_id=user.id,
+                        profession_id=profession_id,
+                    )
+                )
+                log(log.INFO, "User's profession created [%s]", profession.name_en)
+
+            location: Location | None = conn.scalar(
+                select(Location).where(Location.id == location_id)
+            )
+
+            if location:
+                conn.add(
+                    UserLocation(
+                        user_id=user.id,
+                        location_id=location_id,
+                    )
+                )
+                log(log.INFO, "User's location created [%s]", location.name_en)
+
             conn.commit()
             log(
                 log.INFO,

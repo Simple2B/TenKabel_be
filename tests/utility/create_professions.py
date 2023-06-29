@@ -36,6 +36,7 @@ PROFESSIONS = [
 
 
 def create_professions(db: Session):
+    counter = 0
     for name in PROFESSIONS:
         profession = db.scalars(
             select(m.Profession).where(m.Profession.name_en == name["en"])
@@ -48,4 +49,6 @@ def create_professions(db: Session):
                 )
             )
             db.commit()
-    log(log.INFO, "Professions [%d] were created", len(PROFESSIONS))
+            counter += 1
+
+    log(log.INFO, "Professions [%d] were created", counter)

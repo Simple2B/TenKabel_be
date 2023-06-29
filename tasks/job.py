@@ -101,4 +101,84 @@ def create_job(
 
         log(log.INFO, "Job created")
 
-        return db.scalar(select(m.Job).where(m.Job.name == JOB_NAME))
+        return db.scalar(select(m.Job).where(m.Job.name == name))
+
+
+@task
+def create_job_for_notification(
+    ctx,
+    user_id: int,
+    name: str = JOB_NAME,
+    description: str = JOB_DESCRIPTION,
+):
+    """creates job with given name, description, profession and city for creating notification
+
+    Args:
+        user_id (int): user id
+        name (str, optional): job name. Defaults to JOB_NAME.
+        description (str, optional): job description. Defaults to JOB_DESCRIPTION.
+    """
+
+    from datetime import datetime
+
+    from fastapi.testclient import TestClient
+
+    from .user import login_user, create_user
+    from app.database import db as dbo
+    from app.main import app
+    from app import schema as s
+    from app import model as m
+
+    db = dbo.Session()
+
+    OWNER_PASSWORD = "string"
+    OWNER_PHONE = "+380660000000"
+
+    create_user(ctx, OWNER_PHONE, OWNER_PASSWORD)
+    token: str = login_user(ctx, OWNER_PHONE, OWNER_PASSWORD)
+
+    user: m.User = db.scalar(select(m.User).where(m.User.id == user_id))
+    if not user:
+        log(log.ERROR, "User [%s] not found", user_id)
+        return
+
+    if not (user.professions or user.locations):
+        log(log.ERROR, "User [%s] has no professions and locations", user_id)
+        return
+
+    with TestClient(app) as client:
+        profession_id: int = (
+            db.scalar(select(m.Profession.id))
+            if not user.professions
+            else user.professions[0].id
+        )
+
+        city: m.Location = (
+            db.scalar(select(m.Location)) if not user.locations else user.locations[0]
+        )
+        job_data = s.JobIn(
+            profession_id=profession_id,
+            city=city,
+            payment=1111,
+            commission=10,
+            who_pays=s.Job.WhoPays.ME,
+            name=name,
+            description=description,
+            time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            customer_first_name="Mykola",
+            customer_last_name="Černov",
+            customer_phone="+380123456789",
+            customer_street_address="Kyiv",
+        )
+        response = client.post(
+            "/api/job",
+            headers={"Authorization": f"Bearer {token}"},
+            json=job_data.dict(),
+        )
+        if response.status_code != status.HTTP_201_CREATED:
+            log(log.ERROR, "Job creating failed")
+            return
+
+        log(log.INFO, "Job created")
+
+        return db.scalar(select(m.Job).where(m.Job.name == name))
