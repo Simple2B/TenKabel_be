@@ -15,7 +15,7 @@ class BaseApplication(BaseModel):
     owner_id: int
     worker_id: int
     job_id: int
-    status: ApplicationStatus | str = ApplicationStatus.PENDING
+    status: ApplicationStatus = ApplicationStatus.PENDING
 
     class Config:
         use_enum_values = True
