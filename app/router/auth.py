@@ -48,7 +48,7 @@ def login_by_phone(
 def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
-    settings: Settings = Depends(get_settings),
+    # settings: Settings = Depends(get_settings),
 ):
     exist_user = db.scalar(select(m.User).where(m.User.phone == data.phone))
     if exist_user:
@@ -108,7 +108,7 @@ def sign_up(
             status_code=status.HTTP_409_CONFLICT, detail="Error storing user data"
         )
 
-    create_payplus_customer(user, settings, db)
+    # create_payplus_customer(user, settings, db)
 
     log(log.INFO, "User [%s] COMPLETELY signed up", user.phone)
     return user
@@ -144,6 +144,7 @@ def google_auth(
     # TODO: alot hardcoding there
     password = "*"
     country_code = "IL"
+
     if not user:
         if not data.display_name:
             first_name = ""
@@ -175,7 +176,6 @@ def google_auth(
                 detail="Error while saving creating a user",
             )
 
-        create_payplus_customer(user, settings, db)
         log(
             log.INFO,
             "User [%s] has been created (via Google account))",
@@ -198,6 +198,8 @@ def google_auth(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
         )
+
+    create_payplus_customer(user, settings, db)
 
     access_token: str = create_access_token(data={"user_id": user.id})
     log(log.INFO, "Access token for User [%s] generated", user.email)

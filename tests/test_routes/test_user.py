@@ -21,6 +21,7 @@ from tests.utility import (
     create_locations,
     create_applications,
     create_applications_for_user,
+    generate_customer_uid,
 )
 
 
@@ -150,7 +151,7 @@ def test_signup(
         select(m.User).where(m.User.phone == test_data.test_user.phone)
     )
     assert user
-    assert user.payplus_customer_uid
+    # assert user.payplus_customer_uid
     assert user.professions[0].id == request_data.profession_id
     assert [location.id for location in user.locations] == request_data.locations
 
@@ -281,8 +282,9 @@ def test_get_user_profile(
 
     monkeypatch.setattr(httpx, "post", mock_post)
 
-    fill_test_data(db)
     create_professions(db)
+    create_locations(db)
+    fill_test_data(db)
     create_jobs(db)
 
     user: m.User = db.scalar(
@@ -446,6 +448,8 @@ def test_get_user_profile(
         card_name="test",
     )
 
+    generate_customer_uid(user, db)
+
     response = client.post(
         "api/user/payplus-token",
         json=jsonable_encoder(card_data),
@@ -464,6 +468,7 @@ def test_update_user(
 ):
     fill_test_data(db)
     create_professions(db)
+    create_locations(db)
     create_jobs(db)
 
     PROFESSION_IDS = [1, 3]

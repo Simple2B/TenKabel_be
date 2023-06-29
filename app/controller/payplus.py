@@ -22,17 +22,17 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
         )
         return
 
-    request_data = {
-        "customer_name": user.first_name + user.last_name if user.last_name else "",
-        "email": user.email,
-        "phone": user.phone,
-    }
+    request_data = s.PayplusCustomerIn(
+        customer_name=user.first_name + user.last_name if user.last_name else "",
+        email=user.email,
+        phone=user.phone,
+    )
 
     try:
         response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/Customers/Add",
             headers=pay_plus_headers(settings),
-            json=request_data,
+            json=request_data.dict(),
         )
     except httpx.RequestError as e:
         log(
@@ -57,6 +57,7 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
         )
 
     response_data = response.json()
+    # TODO: pydantic
     user.payplus_customer_uid = response_data["data"]["customer_uid"]
     try:
         db.commit()
@@ -82,18 +83,18 @@ def create_payplus_token(
         return
 
     iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
-    request_data = {
-        "terminal_uid": settings.PAY_PLUS_TERMINAL_ID,
-        "customer_uid": user.payplus_customer_uid,
-        "credit_card_number": card_data.credit_card_number,
-        "card_date_mmyy": iso_card_date,
-    }
+    request_data = s.PayplusCardIn(
+        terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
+        customer_uid=user.payplus_customer_uid,
+        credit_card_number=card_data.credit_card_number,
+        card_date_mmyy=iso_card_date,
+    )
 
     try:
         response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/Token/Add",
             headers=pay_plus_headers(settings),
-            json=request_data,
+            json=request_data.dict(),
         )
     except httpx.RequestError as e:
         log(
@@ -118,6 +119,7 @@ def create_payplus_token(
         )
 
     response_data = response.json()
+    # TODO: pydantic schema
     user.payplus_card_uid = response_data["data"]["card_uid"]
     try:
         db.commit()

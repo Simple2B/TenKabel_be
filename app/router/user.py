@@ -455,7 +455,9 @@ def patch_user_notification_settings(
     return current_user
 
 
-@user_router.post("/payplus-token", status_code=status.HTTP_200_OK)
+@user_router.post(
+    "/payplus-token", status_code=status.HTTP_200_OK, response_model=s.User
+)
 def post_user_payplus_token(
     card_data: s.CardIn,
     db: Session = Depends(get_db),
@@ -463,3 +465,4 @@ def post_user_payplus_token(
     current_user: m.User = Depends(get_current_user),
 ):
     create_payplus_token(card_data, current_user, settings, db)
+    return current_user
