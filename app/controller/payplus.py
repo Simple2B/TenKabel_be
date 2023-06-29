@@ -81,9 +81,9 @@ def create_payplus_token(
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         return
 
-    iso_card_date: str = datetime.strptime(card_data.card_date_mmyy, "%m/%y")
+    iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
     request_data = {
-        "terminal_uid": settings.PAY_PLUS_TERMINAL_UID,
+        "terminal_uid": settings.PAY_PLUS_TERMINAL_ID,
         "customer_uid": user.payplus_customer_uid,
         "credit_card_number": card_data.credit_card_number,
         "card_date_mmyy": iso_card_date,
@@ -121,6 +121,7 @@ def create_payplus_token(
     user.payplus_card_uid = response_data["data"]["card_uid"]
     try:
         db.commit()
+        db.refresh(user)
     except SQLAlchemyError as e:
         log(log.ERROR, "Error post sign up user saving payplus card uid \n%s", e)
         raise HTTPException(

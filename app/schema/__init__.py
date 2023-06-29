@@ -45,4 +45,4 @@ from .platform_payment import (
     PlatformPayment,
 )
 
-from .card import CardIn, CardOut
+from .card import CardIn
