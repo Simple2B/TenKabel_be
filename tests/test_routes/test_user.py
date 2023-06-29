@@ -254,7 +254,7 @@ def test_get_user_profile(
     import httpx
 
     payplus_response = {
-        "result": {
+        "results": {
             "status": "success",
             "code": 0,
             "description": "operation has been success",
