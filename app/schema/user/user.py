@@ -73,6 +73,8 @@ class User(BaseUser):
     picture: str
     locations: list[Location]
     is_auth_by_google: bool
+    payplus_customer_uid: str | None
+    payplus_card_uid: str | None
 
     notification_profession_flag: bool
     notification_profession: list[Profession]

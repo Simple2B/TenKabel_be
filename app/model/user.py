@@ -47,6 +47,14 @@ class User(db.Model, BaseUser):
         sa.Boolean, default=True
     )
 
+    payplus_customer_uid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), nullable=True, unique=True
+    )
+
+    payplus_card_uid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36), nullable=True, unique=True
+    )
+
     @classmethod
     def authenticate_with_phone(
         cls,
