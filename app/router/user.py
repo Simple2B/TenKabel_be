@@ -8,10 +8,11 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
+from app.config import get_settings, Settings
 from app.dependency import get_current_user
 from app.database import get_db
 from app.hash_utils import hash_verify
-from app.controller import manage_tab_controller
+from app.controller import manage_tab_controller, create_payplus_token
 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
@@ -407,4 +408,17 @@ def patch_user_notification_settings(
         )
 
     log(log.INFO, "User [%s] notifications updated successfully", current_user.id)
+    return current_user
+
+
+@user_router.post(
+    "/payplus-token", status_code=status.HTTP_200_OK, response_model=s.User
+)
+def post_user_payplus_token(
+    card_data: s.CardIn,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+    current_user: m.User = Depends(get_current_user),
+):
+    create_payplus_token(card_data, current_user, settings, db)
     return current_user

@@ -27,6 +27,7 @@ def client(monkeypatch) -> Generator:
         monkeypatch.setattr(
             PushHandler, "send_notification", PushNotificationMock.send_notification
         )
+
         yield c
 
 

@@ -5,7 +5,12 @@ from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.dependency import get_current_user, get_user, get_job_by_uuid
+from app.dependency import (
+    get_current_user,
+    get_user,
+    get_job_by_uuid,
+    get_payplus_verified_user,
+)
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -121,7 +126,7 @@ def get_job(
 def create_job(
     data: s.JobIn,
     db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
+    current_user: m.User = Depends(get_payplus_verified_user),
 ):
     if data.who_pays:
         who_pays = s.Job.WhoPays(data.who_pays)

@@ -1,6 +1,8 @@
 import base64
+from datetime import datetime
 
 from fastapi import status
+from fastapi.encoders import jsonable_encoder
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select, or_, and_
@@ -9,6 +11,7 @@ from pydantic.error_wrappers import ValidationError
 import app.schema as s
 import app.model as m
 from app.hash_utils import hash_verify
+from app.utility import generate_uuid
 
 from tests.fixture import TestData
 from tests.utility import (
@@ -18,7 +21,7 @@ from tests.utility import (
     create_locations,
     create_applications,
     create_applications_for_user,
-    create_jobs_for_user,
+    generate_customer_uid,
 )
 
 
@@ -52,9 +55,34 @@ def test_auth(client: TestClient, db: Session, test_data: TestData):
 def test_signup(
     client: TestClient,
     db: Session,
+    monkeypatch,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
+    import httpx
+
+    payplus_response = {
+        "results": {
+            "status": "success",
+            "code": 0,
+            "description": "operation has been success",
+        },
+        "data": {"customer_uid": generate_uuid()},
+    }
+
+    def mock_post(*args, **kwargs):
+        class MockResponse:
+            def json(self):
+                return payplus_response
+
+            @property
+            def status_code(self):
+                return status.HTTP_200_OK
+
+        return MockResponse()
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+
     create_professions(db)
     create_locations(db)
     TEST_PHONE_NUMBER = test_data.test_user.phone
@@ -85,6 +113,7 @@ def test_signup(
         locations=[2, 3],
         country_code="IL",
     )
+
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
 
@@ -122,6 +151,7 @@ def test_signup(
         select(m.User).where(m.User.phone == test_data.test_user.phone)
     )
     assert user
+    # assert user.payplus_customer_uid
     assert user.professions[0].id == request_data.profession_id
     assert [location.id for location in user.locations] == request_data.locations
 
@@ -138,7 +168,33 @@ def test_signup(
     assert user.is_verified
 
 
-def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> None:
+def test_google_auth(
+    client: TestClient, db: Session, monkeypatch, test_data: TestData
+) -> None:
+    import httpx
+
+    payplus_response = {
+        "results": {
+            "status": "success",
+            "code": 0,
+            "description": "operation has been success",
+        },
+        "data": {"customer_uid": generate_uuid()},
+    }
+
+    def mock_post(*args, **kwargs):
+        class MockResponse:
+            def json(self):
+                return payplus_response
+
+            @property
+            def status_code(self):
+                return status.HTTP_200_OK
+
+        return MockResponse()
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+
     TEST_GOOGLE_MAIL = "somemail@gmail.com"
     request_data = s.GoogleAuthUser(
         email=TEST_GOOGLE_MAIL,
@@ -187,6 +243,7 @@ def test_google_auth(client: TestClient, db: Session, test_data: TestData) -> No
     # checking if the user has created
     user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
     assert user
+    assert user.payplus_customer_uid
 
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
@@ -196,10 +253,38 @@ def test_get_user_profile(
     client: TestClient,
     db: Session,
     test_data: TestData,
+    monkeypatch,
     authorized_users_tokens: list[s.Token],
 ):
-    fill_test_data(db)
+    import httpx
+
+    payplus_response = {
+        "result": {
+            "status": "success",
+            "code": 0,
+            "description": "operation has been success",
+        },
+        "data": {
+            "card_uid": generate_uuid(),
+        },
+    }
+
+    def mock_post(*args, **kwargs):
+        class MockResponse:
+            def json(self):
+                return payplus_response
+
+            @property
+            def status_code(self):
+                return status.HTTP_200_OK
+
+        return MockResponse()
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+
     create_professions(db)
+    create_locations(db)
+    fill_test_data(db)
     create_jobs(db)
 
     user: m.User = db.scalar(
@@ -378,6 +463,23 @@ def test_get_user_profile(
     for rate in resp_obj.applications:
         assert rate.owner_id == user.id
 
+    card_data = s.CardIn(
+        credit_card_number="1234567890123456",
+        card_date_mmyy=datetime(2021, 12, 1),
+        card_name="test",
+    )
+
+    generate_customer_uid(user, db)
+
+    response = client.post(
+        "api/user/payplus-token",
+        json=jsonable_encoder(card_data),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    assert user.payplus_card_uid is not None
+
 
 def test_update_user(
     client: TestClient,
@@ -387,6 +489,7 @@ def test_update_user(
 ):
     fill_test_data(db)
     create_professions(db)
+    create_locations(db)
     create_jobs(db)
 
     PROFESSION_IDS = [1, 3]
