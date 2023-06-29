@@ -224,15 +224,10 @@ def test_google_auth(
     user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
     assert not user
 
-    request_data = s.BaseUser(
+    request_data = s.GoogleAuthUser(
         email=test_data.test_user.email,
-        password=test_data.test_user.password,
-        username=test_data.test_user.username,
-        first_name=test_data.test_user.first_name,
-        last_name=test_data.test_user.last_name,
-        google_openid_key=test_data.test_user.google_openid_key,
-        picture=test_data.test_user.picture,
-        phone=test_data.test_user.phone,
+        display_name=test_data.test_user.username,
+        uid=test_data.test_user.google_openid_key,
     ).dict()
 
     response = client.post("api/auth/google", json=request_data)

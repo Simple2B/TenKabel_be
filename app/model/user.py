@@ -53,7 +53,7 @@ class User(db.Model, BaseUser):
     )
 
     payplus_card_uid: orm.Mapped[str] = orm.mapped_column(
-        sa.String(36), nullable=True, unique=True
+        sa.String(64), nullable=True, unique=True
     )
 
     @classmethod

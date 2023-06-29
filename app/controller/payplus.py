@@ -21,9 +21,12 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
             user.payplus_customer_uid,
         )
         return
+    if not (user.first_name or user.last_name):
+        log(log.ERROR, "User [%s] has no name", user.id)
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
     request_data = s.PayplusCustomerIn(
-        customer_name=user.first_name + user.last_name if user.last_name else "",
+        customer_name=user.first_name + (user.last_name if user.last_name else ""),
         email=user.email,
         phone=user.phone,
     )
@@ -81,8 +84,10 @@ def create_payplus_token(
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         return
-    log(log.DEBUG, "Card exp date is %s", card_data.card_date_mmyy)
-    iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
+    if type(card_data.card_date_mmyy) is datetime:
+        iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
+    else:
+        iso_card_date = card_data.card_date_mmyy
     request_data = s.PayplusCardIn(
         terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
         customer_uid=user.payplus_customer_uid,
@@ -120,6 +125,12 @@ def create_payplus_token(
 
     response_data = response.json()
     # TODO: pydantic schema
+    if response_data["result"]["status"] == "error":
+        log(log.ERROR, "Error creating payplus card")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error creating payplus card"
+        )
+
     user.payplus_card_uid = response_data["data"]["card_uid"]
     try:
         db.commit()
