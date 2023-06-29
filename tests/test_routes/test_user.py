@@ -18,6 +18,7 @@ from tests.utility import (
     create_locations,
     create_applications,
     create_applications_for_user,
+    create_jobs_for_user,
 )
 
 
@@ -207,6 +208,7 @@ def test_get_user_profile(
     create_applications(db)
     create_applications_for_user(db, user.id)
     create_applications_for_user(db, user.id)
+    create_jobs_for_user(db, user.id)
 
     response = client.get(
         "api/user/jobs",
@@ -289,7 +291,7 @@ def test_get_user_profile(
             s.enums.JobStatus.IN_PROGRESS.value,
             s.enums.JobStatus.JOB_IS_FINISHED,
         )
-        assert job.payment_status.value != job.commission_status.value
+        assert job.payment_status != job.commission_status
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
@@ -317,8 +319,8 @@ def test_get_user_profile(
     for job in resp_obj.jobs:
         assert int(job.id) in [j.id for j in jobs]
         assert job.is_deleted or (
-            job.payment_status == s.enums.PaymentStatus.PAID
-            and job.commission_status == s.enums.CommissionStatus.PAID
+            job.payment_status == s.enums.PaymentStatus.PAID.value
+            and job.commission_status == s.enums.CommissionStatus.PAID.value
         )
         assert user.id in (job.owner_id, job.worker_id)
 
