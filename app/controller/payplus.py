@@ -125,7 +125,7 @@ def create_payplus_token(
 
     response_data = response.json()
     # TODO: pydantic schema
-    if response_data["results"]["status"] == "error":
+    if response_data["result"]["status"] == "error":
         log(log.ERROR, "Error creating payplus card")
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating payplus card"
