@@ -7,7 +7,7 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
-from app.dependency import get_current_user
+from app.dependency import get_current_user, get_payplus_verified_user
 from app.controller import PushHandler
 from app.utility.notification import get_notification_payload
 
@@ -238,7 +238,7 @@ def patch_application(
 def create_application(
     application_data: s.ApplicationIn,
     db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
+    current_user: m.User = Depends(get_payplus_verified_user),
 ):
     job: m.Job = db.scalar(
         select(m.Job).where(

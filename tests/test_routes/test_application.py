@@ -11,6 +11,7 @@ from tests.utility import (
     fill_test_data,
     create_professions,
     create_jobs,
+    generate_customer_uid,
 )
 
 
@@ -28,14 +29,20 @@ def test_application_methods(
     job_id: int | None = db.scalar(
         select(m.Job.id).where((m.Job.status == s.enums.JobStatus.PENDING))
     )
-    auth_user_id = db.scalar(
-        select(m.User.id).where(
-            m.User.email == test_data.test_authorized_users[0].email
-        )
+    auth_user = db.scalar(
+        select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
 
     request_data: s.ApplicationIn = s.ApplicationIn(job_id=job_id)
 
+    response = client.post(
+        "api/application",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        json=request_data.dict(),
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+    generate_customer_uid(auth_user, db)
     response = client.post(
         "api/application",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
@@ -46,7 +53,7 @@ def test_application_methods(
     application: m.Application = db.scalar(
         select(m.Application).where(
             (m.Application.job_id == job_id)
-            and (m.Application.worker_id == auth_user_id)
+            and (m.Application.worker_id == auth_user.id)
         )
     )
 

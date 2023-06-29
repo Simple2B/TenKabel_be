@@ -5,7 +5,6 @@ from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-import httpx
 
 import app.schema as s
 import app.model as m
@@ -28,6 +27,8 @@ def test_payplus_form_url(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
+    import httpx
+
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)

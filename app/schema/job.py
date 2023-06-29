@@ -33,11 +33,11 @@ class Job(BaseJob):
         ARCHIVE = "archive"
 
     id: int
-    status: JobStatus | str
+    status: JobStatus
     payment_status: PaymentStatus
     commission_status: CommissionStatus
     platform_payments: list[PlatformPayment]
-    who_pays: WhoPays | str
+    who_pays: WhoPays
     is_deleted: bool
     owner: User
     worker: User | None

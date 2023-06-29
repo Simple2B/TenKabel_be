@@ -11,7 +11,7 @@ class BaseRate(BaseModel):
 
     owner_id: int
     worker_id: int
-    rate: RateStatus | str
+    rate: RateStatus
 
     class Config:
         use_enum_values = True

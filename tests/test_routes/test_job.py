@@ -15,6 +15,7 @@ from tests.utility import (
     create_locations,
     create_professions,
     create_jobs_for_user,
+    generate_customer_uid,
 )
 
 
@@ -153,6 +154,7 @@ def test_create_job(
     client: TestClient,
     db: Session,
     authorized_users_tokens: list[s.Token],
+    test_data: TestData,
 ):
     create_professions(db)
     create_locations(db)
@@ -186,7 +188,7 @@ def test_create_job(
         payment=10000,
         commission=10000,
         who_pays=s.Job.WhoPays.ME,
-        name="Test Task",
+        name="-=Test Task=-",
         description="Just do anything",
         time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         customer_first_name="test_first_name",
@@ -200,6 +202,18 @@ def test_create_job(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+    owner_user: m.User = db.scalar(
+        select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
+    )
+
+    generate_customer_uid(owner_user, db)
+    response = client.post(
+        "api/job",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
     assert response.status_code == status.HTTP_201_CREATED
     assert db.scalar(select(m.Job).filter_by(city=request_data.city))
     assert db.scalar(

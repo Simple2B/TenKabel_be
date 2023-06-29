@@ -10,6 +10,8 @@ import app.model as m
 import app.schema as s
 from app.oauth2 import create_access_token
 from app.logger import log
+from app.controller import create_payplus_customer
+from app.config import get_settings, Settings
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -46,6 +48,7 @@ def login_by_phone(
 def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
+    # settings: Settings = Depends(get_settings),
 ):
     exist_user = db.scalar(select(m.User).where(m.User.phone == data.phone))
     if exist_user:
@@ -104,6 +107,9 @@ def sign_up(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error storing user data"
         )
+
+    # create_payplus_customer(user, settings, db)
+
     log(log.INFO, "User [%s] COMPLETELY signed up", user.phone)
     return user
 
@@ -132,11 +138,13 @@ def verify(
 def google_auth(
     data: s.GoogleAuthUser,
     db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ):
     user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
     # TODO: alot hardcoding there
     password = "*"
     country_code = "IL"
+
     if not user:
         if not data.display_name:
             first_name = ""
@@ -167,6 +175,7 @@ def google_auth(
                 status=status.HTTP_409_CONFLICT,
                 detail="Error while saving creating a user",
             )
+
         log(
             log.INFO,
             "User [%s] has been created (via Google account))",
@@ -189,6 +198,8 @@ def google_auth(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
         )
+
+    create_payplus_customer(user, settings, db)
 
     access_token: str = create_access_token(data={"user_id": user.id})
     log(log.INFO, "Access token for User [%s] generated", user.email)

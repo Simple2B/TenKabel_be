@@ -28,20 +28,6 @@ def get_url(
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    if db.scalar(
-        select(m.PlatformPayment).where(
-            and_(
-                m.PlatformPayment.status == s.enums.PlatformPaymentStatus.PAID,
-                m.PlatformPayment.job_id == job.id,
-                m.PlatformPayment.user_id == user.id,
-            )
-        )
-    ):
-        log(log.INFO, "Job [%s] has already been paid", job.uuid)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Job has already been paid",
-        )
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
         amount=job.payment * 0.009 * 1.17,
@@ -126,6 +112,14 @@ async def pay_platform_commission(
         payment.transaction_number = transaction["number"]
         payment.paid_at = datetime.fromisoformat(transaction["date"])
         payment.status = s.enums.PlatformPaymentStatus.PAID
+
+        # we want to be sure that both owner and worker paid for comission
+        if all(
+            pp.status == s.enums.PlatformPaymentStatus.PAID
+            for pp in job.platform_payments
+        ):
+            job.commission_status = s.enums.CommissionStatus.PAID
+
         db.commit()
         log(
             log.INFO,
