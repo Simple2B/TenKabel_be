@@ -28,6 +28,8 @@ def upgrade():
         op.f("uq_users_payplus_card_uid"), "users", ["payplus_card_uid"]
     )
     # ### end Alembic commands ###
+    op.alter_column("users", "payplus_customer_uid", length=64, nullable=True)
+    op.alter_column("users", "payplus_card_uid", length=64, nullable=True)
 
 
 def downgrade():
