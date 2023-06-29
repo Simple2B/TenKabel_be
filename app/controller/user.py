@@ -7,7 +7,9 @@ from app import schema as s
 from app import model as m
 
 
-def manage_tab_controller(db: Session, current_user: m.User):
+def manage_tab_controller(
+    db: Session, current_user: m.User, query: select, manage_tab: s.Job.TabFilter
+):
     try:
         manage_tab: s.Job.TabFilter = s.Job.TabFilter(manage_tab)
         log(log.INFO, "s.Job.TabFilter parameter: (%s)", manage_tab.value)
@@ -42,18 +44,23 @@ def manage_tab_controller(db: Session, current_user: m.User):
             and_(
                 or_(
                     and_(
-                        m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                        m.Job.status != s.enums.JobStatus.JOB_IS_FINISHED,
+                        m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                        m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
                     ),
                     and_(
-                        m.Job.status != s.enums.JobStatus.IN_PROGRESS,
-                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                        m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                        m.Job.commission_status == s.enums.CommissionStatus.PAID,
                     ),
+                ),
+                or_(
+                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
                 ),
                 m.Job.is_deleted == False,  # noqa E712
             )
         )
         log(log.INFO, "Jobs filtered by status: %s", manage_tab)
+
     if manage_tab == s.Job.TabFilter.ARCHIVE:
         query = query.filter(
             or_(

@@ -262,12 +262,22 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.is_deleted == False,  # noqa E712
+            or_(
+                and_(
+                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                    m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+                ),
+                and_(
+                    m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                    m.Job.commission_status == s.enums.CommissionStatus.PAID,
+                ),
+            ),
             or_(
                 m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                 m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
             ),
-        ),
+            m.Job.is_deleted == False,  # noqa E712
+        )
     )
     jobs = db.scalars(query).all()
 
@@ -279,6 +289,7 @@ def test_get_user_profile(
             s.enums.JobStatus.IN_PROGRESS.value,
             s.enums.JobStatus.JOB_IS_FINISHED,
         )
+        assert job.payment_status.value != job.commission_status.value
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
@@ -292,14 +303,23 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.is_deleted == True,  # noqa E712
+            or_(
+                m.Job.is_deleted == True,  # noqa E712
+                and_(
+                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                    m.Job.commission_status == s.enums.CommissionStatus.PAID,
+                ),
+            ),
         )
     )
     jobs = db.scalars(query).all()
 
     for job in resp_obj.jobs:
         assert int(job.id) in [j.id for j in jobs]
-        assert job.is_deleted
+        assert job.is_deleted or (
+            job.payment_status == s.enums.PaymentStatus.PAID
+            and job.commission_status == s.enums.CommissionStatus.PAID
+        )
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
