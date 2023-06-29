@@ -44,3 +44,6 @@ from .platform_payment import (
     PlatformPaymentLinkIn,
     PlatformPayment,
 )
+
+from .card import CardIn
+from .payplus import PayplusCardIn, PayplusCustomerIn
