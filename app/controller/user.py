@@ -43,7 +43,10 @@ def manage_tab_controller(
         query = query.where(
             and_(
                 m.Job.is_deleted == False,  # noqa E712
-                m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                or_(
+                    m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                    m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+                ),
                 m.Job.status.in_(
                     [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
                 ),
