@@ -38,3 +38,16 @@ def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
         user = db.query(m.User).filter_by(id=token.user_id).first()
         return user
     return None
+
+
+def get_payplus_verified_user(
+    db: Session = Depends(get_db), current_user: m.User = Depends(get_current_user)
+) -> m.User:
+    """Raises an exception if the current user is not authenticated in payplus"""
+    if not current_user.payplus_customer_uid:
+        log(log.INFO, "User [%s] doesn`t have payplus customer uid", current_user.id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User doesn`t have payplus customer uid",
+        )
+    return current_user
