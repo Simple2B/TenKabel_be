@@ -81,7 +81,7 @@ def create_payplus_token(
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         return
-
+    log(log.DEBUG, "Card exp date is %s", card_data.card_date_mmyy)
     iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
     request_data = s.PayplusCardIn(
         terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
