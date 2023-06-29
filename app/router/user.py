@@ -12,7 +12,7 @@ from app.config import get_settings, Settings
 from app.dependency import get_current_user
 from app.database import get_db
 from app.hash_utils import hash_verify
-from app.controller import create_payplus_token
+from app.controller import manage_tab_controller, create_payplus_token
 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
@@ -262,51 +262,7 @@ def get_user_jobs(
     log(log.INFO, "Manage tab query parameter: (%s)", str(manage_tab))
 
     if manage_tab:
-        try:
-            manage_tab: s.Job.TabFilter = s.Job.TabFilter(manage_tab)
-            log(log.INFO, "s.Job.TabFilter parameter: (%s)", manage_tab.value)
-        except ValueError:
-            log(log.INFO, "Filter manage tab doesn't exist - %s", manage_tab)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="Wrong filter"
-            )
-        if manage_tab == s.Job.TabFilter.PENDING:
-            log(
-                log.INFO,
-                "Pending tab, getting jobs ids for user: (%d)",
-                current_user.id,
-            )
-            jobs_ids = db.scalars(
-                select(m.Application.job_id).where(
-                    or_(
-                        m.Application.worker_id == current_user.id,
-                    )
-                )
-            ).all()
-            query = select(m.Job).filter(
-                and_(
-                    or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == current_user.id),
-                    m.Job.status == s.enums.JobStatus.PENDING,
-                    m.Job.is_deleted == False,  # noqa E712
-                )
-            )
-
-            log(log.INFO, "Jobs filtered by ids: (%s)", ",".join(map(str, jobs_ids)))
-
-        if manage_tab == s.Job.TabFilter.ACTIVE:
-            query = query.where(
-                and_(
-                    or_(
-                        m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
-                    ),
-                    m.Job.is_deleted == False,  # noqa E712
-                )
-            )
-            log(log.INFO, "Jobs filtered by status: %s", manage_tab)
-        if manage_tab == s.Job.TabFilter.ARCHIVE:
-            query = query.filter(m.Job.is_deleted == True)  # noqa E712
-            log(log.INFO, "Jobs filtered by status: %s", manage_tab)
+        query = manage_tab_controller(db, current_user, query, manage_tab)
 
     jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
     log(
