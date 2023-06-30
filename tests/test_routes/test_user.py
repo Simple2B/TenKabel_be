@@ -92,6 +92,7 @@ def test_signup(
 
     try:
         request_data = s.UserSignUp(
+            email=test_data.test_user.email,
             first_name=test_data.test_user.first_name,
             last_name=test_data.test_user.last_name,
             password=test_data.test_user.password,
@@ -106,6 +107,7 @@ def test_signup(
         assert False
 
     request_data = s.UserSignUp(
+        email=test_data.test_user.email,
         first_name=test_data.test_user.first_name,
         last_name=test_data.test_user.last_name,
         password=test_data.test_user.password,
@@ -123,6 +125,7 @@ def test_signup(
 
     try:
         request_data = s.UserSignUp(
+            email=test_data.test_user.email,
             first_name=test_data.test_user.first_name,
             last_name=test_data.test_user.last_name,
             password=test_data.test_user.password,
@@ -137,6 +140,7 @@ def test_signup(
         assert False
 
     request_data = s.UserSignUp(
+        email=test_data.test_user.email + ".us",
         first_name=test_data.test_user.first_name + "1",
         last_name=test_data.test_user.last_name + "1",
         password=test_data.test_user.password + "1",
