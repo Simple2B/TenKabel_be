@@ -6,7 +6,7 @@ from fastapi import status
 from app.model import User, Profession, Location, UserLocation, UserProfession
 from app.logger import log
 
-TEST_USER_PHONE = "001"
+TEST_USER_PHONE = "660000001"
 TEST_PASSWORD = "pass"
 TEST_EMAIL_END = "@test.com"
 
@@ -30,8 +30,8 @@ def create_user(
 
     from app.database import db
 
-    first_name = "FIRST" + telephone
-    last_name = "LAST" + telephone
+    first_name = "FIRST" + telephone[-3:]
+    last_name = "LAST" + telephone[-3:]
     email = first_name + TEST_EMAIL_END
 
     with db.begin() as conn:
@@ -46,6 +46,7 @@ def create_user(
                 password=password,
                 is_verified=True,
                 country_code="LI",
+                payplus_customer_uid="test_uid",
             )
             conn.add(user)
             profession: Profession | None = conn.scalar(
@@ -120,3 +121,45 @@ def login_user(
         token = s.Token.parse_obj(response.json())
         log(log.INFO, "User token: %s", token.access_token)
         return token.access_token
+
+
+@task
+def delete_user(_, telephone: str = TEST_USER_PHONE, email: str | None = None):
+    """delete user with given telephone
+
+    Args:
+        telephone (str, optional): user phone. Defaults to "001".
+    """
+    from app.database import dbo
+
+    db = dbo.Session()
+    if email:
+        user = db.scalar(select(User).where(User.email == email))
+    else:
+        user = db.scalar(select(User).where(User.phone == telephone))
+
+    if not user:
+        log(log.WARNING, "User not found")
+
+    for job in user.jobs_to_do:
+        for application in job.applications:
+            db.delete(application)
+            db.commit()
+        db.delete(job)
+
+    for job in user.jobs_owned:
+        for application in job.applications:
+            db.delete(application)
+            db.commit()
+        db.delete(job)
+
+    for profession in user.professions:
+        db.delete(profession)
+
+    for location in user.locations:
+        db.delete(location)
+
+    for device in user.devices:
+        db.delete(device)
+
+    db.commit()

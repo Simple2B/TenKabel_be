@@ -14,6 +14,9 @@ o laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure d
 olor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 """
 
+OWNER_PASSWORD = "string"
+OWNER_PHONE = "660000001"
+
 
 @task
 def create_jobs(_):
@@ -107,16 +110,22 @@ def create_job(
 @task
 def create_job_for_notification(
     ctx,
-    user_id: int,
+    owner_phone: str | None = OWNER_PHONE,
+    owner_password: str | None = OWNER_PASSWORD,
     name: str = JOB_NAME,
     description: str = JOB_DESCRIPTION,
+    location_id: int | None = 1,
+    profession_id: int | None = 1,
 ):
     """creates job with given name, description, profession and city for creating notification
 
     Args:
-        user_id (int): user id
+        owner_phone (str, optional): owner phone. Defaults to OWNER_PHONE.
+        owner_password (str, optional): owner password. Defaults to OWNER_PASSWORD.
         name (str, optional): job name. Defaults to JOB_NAME.
         description (str, optional): job description. Defaults to JOB_DESCRIPTION.
+        location_id (int, optional): job location id. Defaults to 1.
+        profession_id (int, optional): job profession id. Defaults to 1.
     """
 
     from datetime import datetime
@@ -131,19 +140,16 @@ def create_job_for_notification(
 
     db = dbo.Session()
 
-    OWNER_PASSWORD = "string"
-    OWNER_PHONE = "+380660000000"
+    create_user(ctx, owner_phone, owner_password, location_id, profession_id)
+    token: str = login_user(ctx, owner_phone, owner_password)
+    user: m.User = db.scalar(select(m.User).where(m.User.phone == owner_phone))
 
-    create_user(ctx, OWNER_PHONE, OWNER_PASSWORD)
-    token: str = login_user(ctx, OWNER_PHONE, OWNER_PASSWORD)
-
-    user: m.User = db.scalar(select(m.User).where(m.User.id == user_id))
     if not user:
-        log(log.ERROR, "User [%s] not found", user_id)
+        log(log.ERROR, "User [%s] not found", owner_phone)
         return
 
     if not (user.professions or user.locations):
-        log(log.ERROR, "User [%s] has no professions and locations", user_id)
+        log(log.ERROR, "User [%s] has no professions and locations", owner_phone)
         return
 
     with TestClient(app) as client:
@@ -158,7 +164,7 @@ def create_job_for_notification(
         )
         job_data = s.JobIn(
             profession_id=profession_id,
-            city=city,
+            city=city.name_en,
             payment=1111,
             commission=10,
             who_pays=s.Job.WhoPays.ME,
@@ -182,3 +188,7 @@ def create_job_for_notification(
         log(log.INFO, "Job created")
 
         return db.scalar(select(m.Job).where(m.Job.name == name))
+
+
+def update_job_status():
+    pass

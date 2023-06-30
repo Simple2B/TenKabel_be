@@ -5,6 +5,7 @@
   "version": "0.2.0",
   "configurations": [
 
+
     {
       "name": "Run app",
       "type": "python",
@@ -44,6 +45,14 @@
       "request": "launch",
       "module": "invoke",
       "args": ["create-job"],
+      "justMyCode": true
+    },
+    {
+      "name": "create-job-for-notification",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["create-job-for-notification"],
       "justMyCode": true
     }
   ]
