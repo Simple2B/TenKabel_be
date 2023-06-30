@@ -24,7 +24,6 @@ def test_application_methods(
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
-    # create_applications(db)
 
     job_id: int | None = db.scalar(
         select(m.Job.id).where((m.Job.status == s.enums.JobStatus.PENDING))
@@ -106,11 +105,6 @@ def test_application_methods(
     application.status = s.BaseApplication.ApplicationStatus.PENDING
     db.commit()
 
-    # application = db.scalar(
-    #     select(m.Application).where(
-    #         m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
-    #     )
-    # )
     response = client.put(
         f"api/application/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},

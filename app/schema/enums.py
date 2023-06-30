@@ -26,12 +26,7 @@ class NotificationType(IndexableStringEnum):
     MAX_APPLICATION_TYPE = "MAX_APPLICATION_TYPE"
 
 
-class PlatformPaymentStatus(IndexableStringEnum):
-    IDLE = "IDLE"
-    PENDING = "PENDING"
-    PAID = "PAID"
-
-
+# Job
 class PaymentStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
@@ -40,3 +35,22 @@ class PaymentStatus(enum.Enum):
 class CommissionStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
+
+
+# Payplus
+class PlatformPaymentStatus(enum.Enum):
+    PAID = "PAID"
+    UNPAID = "UNPAID"
+    REJECTED = "REJECTED"
+
+
+class PlatformComissionStatus(IndexableStringEnum):
+    IDLE = "IDLE"
+    PENDING = "PENDING"
+    PAID = "PAID"
+
+
+class PlatformPaymentPeriod(enum.Enum):
+    WEEKLY = "WEEKLY"
+    MONTHLY = "MONTHLY"
+    YEARLY = "YEARLY"

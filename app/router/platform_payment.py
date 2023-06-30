@@ -30,7 +30,7 @@ def get_url(
 ):
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
-        amount=job.payment * 0.009 * 1.17,
+        amount=job.payment * settings.COMISSION_COEFFICIENT,
         more_info_1=json.dumps(
             dict(
                 user_uuid=user.uuid,
@@ -97,10 +97,10 @@ async def pay_platform_commission(
                 status_code=status.HTTP_409_CONFLICT, detail="Job was not found"
             )
         payment = db.scalar(
-            select(m.PlatformPayment).where(
+            select(m.PlatformComission).where(
                 and_(
-                    m.PlatformPayment.job_id == job.id,
-                    m.PlatformPayment.user_id == user.id,
+                    m.PlatformComission.job_id == job.id,
+                    m.PlatformComission.user_id == user.id,
                 )
             )
         )

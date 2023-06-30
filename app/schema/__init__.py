@@ -27,7 +27,14 @@ from .application import (
     ApplicationPatch,
 )
 from .who_am_i import WhoAmIOut
-from .enums import JobStatus, NotificationType, PaymentStatus, CommissionStatus
+from .enums import (
+    JobStatus,
+    NotificationType,
+    PaymentStatus,
+    CommissionStatus,
+    PlatformPaymentPeriod,
+    PlatformComissionStatus,
+)
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
 from .auth import LogoutIn

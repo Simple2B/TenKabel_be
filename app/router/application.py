@@ -83,10 +83,10 @@ def update_application(
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
         db.add(
-            m.PlatformPayment(
+            m.PlatformComission(
                 user_id=current_user.id,
                 job_id=job.id,
-                status=s.enums.PlatformPaymentStatus.PENDING,
+                status=s.enums.PlatformComissionStatus.PENDING,
             )
         )
     else:
@@ -100,7 +100,6 @@ def update_application(
             type=notification_type,
         )
         db.add(notification)
-
         push_handler = PushHandler()
         push_handler.send_notification(
             s.PushNotificationMessage(

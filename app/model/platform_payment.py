@@ -16,19 +16,20 @@ class PlatformPayment(db.Model):
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
     )
-
-    job_id: orm.Mapped[int] = orm.mapped_column(
-        sa.ForeignKey("jobs.id"), nullable=False
+    type: orm.Mapped[s.enums.PlatformPaymentPeriod] = orm.mapped_column(
+        sa.Enum(s.enums.PlatformPaymentPeriod),
+        default=s.enums.PlatformPaymentPeriod.WEEKLY,
     )
-
     status: orm.Mapped[s.enums.PlatformPaymentStatus] = orm.mapped_column(
         sa.Enum(s.enums.PlatformPaymentStatus),
-        default=s.enums.PlatformPaymentStatus.IDLE,
+        default=s.enums.PlatformPaymentStatus.UNPAID,
     )
-    transaction_number: orm.Mapped[str] = orm.mapped_column(
-        sa.String(36), nullable=True
+    reject: orm.Mapped[str] = orm.mapped_column()  # reason of reject
+
+    paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(), nullable=True)
+    rejected_at: orm.Mapped[sa.DateTime] = orm.mapped_column(
+        sa.DateTime(), nullable=True
     )
-    paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(64), nullable=True)
 
     # relationship
     user: orm.Mapped[m.User] = orm.relationship(
