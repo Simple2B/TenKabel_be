@@ -1,12 +1,12 @@
 from invoke import task
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import status
 
 from app.logger import log
 from .job import create_job
 
 
-WORKER_PHONE = "001"
+WORKER_PHONE = "002"
 WORKER_PASSWORD = "pass"
 
 
@@ -30,7 +30,11 @@ def create_application(ctx, job_id: int | None = None):
     if not job_id:
         job = create_job(ctx)
     else:
-        job = db.scalar(select(m.Job).where(m.Job.id == job_id))
+        job = db.scalar(
+            select(m.Job).where(
+                and_(m.Job.id == job_id, m.Job.status == s.enums.JobStatus.PENDING)
+            )
+        )
 
         if not job:
             log(log.ERROR, "Job [%s] not found", job_id)
@@ -54,6 +58,7 @@ def create_application(ctx, job_id: int | None = None):
         log(log.INFO, "Application created")
 
 
+@task
 def create_application_for_notification(
     ctx,
     job_id: int | None = None,
@@ -64,6 +69,8 @@ def create_application_for_notification(
 
     Args:
         job_id (int, optional): job id. Defaults to None (gets from create-job).
+        worker_phone (str, optional): worker phone. Defaults to "001".
+        worker_password (str, optional): worker password. Defaults to "pass".
     """
     from fastapi.testclient import TestClient
     from .user import login_user, create_user
@@ -81,11 +88,11 @@ def create_application_for_notification(
     if not job_id:
         job = create_job(ctx)
     else:
-        job = db.scalar(select(m.Job).where(m.Job.id == job_id))
-
-        if not job:
-            log(log.ERROR, "Job [%s] not found", job_id)
-            return
+        job = db.scalar(
+            select(m.Job).where(
+                and_(m.Job.id == job_id, m.Job.status == s.enums.JobStatus.PENDING)
+            )
+        )
 
     with TestClient(app) as client:
         request_data: s.ApplicationIn = s.ApplicationIn(job_id=job.id)

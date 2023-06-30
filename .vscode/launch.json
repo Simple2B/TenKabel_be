@@ -54,6 +54,14 @@
       "module": "invoke",
       "args": ["create-job-for-notification"],
       "justMyCode": true
+    },
+    {
+      "name": "patch-job-status",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["patch-job-status"],
+      "justMyCode": true
     }
   ]
 }

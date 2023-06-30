@@ -1,5 +1,5 @@
 from invoke import task
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import status
 
 from app.logger import log
@@ -14,8 +14,8 @@ o laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure d
 olor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
 """
 
-OWNER_PASSWORD = "string"
-OWNER_PHONE = "660000001"
+OWNER_PASSWORD = "pass"
+OWNER_PHONE = "001"
 
 
 @task
@@ -41,6 +41,8 @@ def create_job(
     description: str = JOB_DESCRIPTION,
     profession: str = "Handyman",
     city: str = "Ariel",
+    owner_phone: str | None = OWNER_PHONE,
+    owner_password: str | None = OWNER_PASSWORD,
 ):
     """creates job with given name, description, profession and city
 
@@ -49,6 +51,8 @@ def create_job(
         description (str, optional): job description. Defaults to JOB_DESCRIPTION.
         profession (str, optional): job profession. Defaults to "Handyman".
         city (str, optional): job city. Defaults to "Ariel".
+        owner_phone (str, optional): owner phone. Defaults to OWNER_PHONE.
+        owner_password (str, optional): owner password. Defaults to OWNER_PASSWORD.
     """
 
     from datetime import datetime
@@ -68,7 +72,7 @@ def create_job(
         log(log.WARNING, "Job [%s] already exists", name)
         return db.scalar(select(m.Job).where(m.Job.name == name))
 
-    token = login_user(ctx)
+    token = login_user(ctx, owner_phone, owner_password)
 
     create_professions(db)
     create_locations(db)
@@ -190,5 +194,56 @@ def create_job_for_notification(
         return db.scalar(select(m.Job).where(m.Job.name == name))
 
 
-def update_job_status():
-    pass
+@task
+def patch_job_status(
+    ctx,
+    name: str = JOB_NAME,
+    owner_phone: str | None = OWNER_PHONE,
+    owner_password: str | None = OWNER_PASSWORD,
+):
+    """updates job status to next stage
+
+    Args:
+        name (str, optional): job name. Defaults to "-=test_job=-".
+        owner_phone (str | None): Defaults to "001".
+        owner_password (str | None): Defaults to "string".
+    """
+
+    from fastapi.testclient import TestClient
+
+    from .user import login_user, create_user
+    from app.database import db as dbo
+    from app.main import app
+    from app import schema as s
+    from app import model as m
+
+    db = dbo.Session()
+
+    token: str = login_user(ctx, owner_phone, owner_password)
+    job = db.scalar(select(m.Job).where(m.Job.name == name))
+    if not job:
+        log(log.ERROR, "Job [%s] not found", name)
+        return
+
+    with TestClient(app) as client:
+        try:
+            next_job_status = job.status.next()
+        except IndexError:
+            log(log.ERROR, "Job status is already last")
+            return
+
+        job_data = s.JobPatch(
+            status=next_job_status,
+        )
+        response = client.patch(
+            f"api/job/{job.uuid}",
+            headers={"Authorization": f"Bearer {token}"},
+            json=job_data.dict(),
+        )
+        if response.status_code != status.HTTP_200_OK:
+            log(log.ERROR, "Job status updating failed")
+            return
+
+        log(log.INFO, "Job status updated")
+
+        return db.scalar(select(m.Job).where(m.Job.name == name))

@@ -90,8 +90,8 @@ class JobPatch(BaseModel):
     city: str | None
     payment: int | None
     commission: int | None
-    payment_status: PaymentStatus
-    commission_status: CommissionStatus
+    payment_status: PaymentStatus | None
+    commission_status: CommissionStatus | None
     name: str | None
     description: str | None
     time: str | None

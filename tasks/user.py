@@ -1,12 +1,12 @@
 from invoke import task
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import status
 
 
 from app.model import User, Profession, Location, UserLocation, UserProfession
 from app.logger import log
 
-TEST_USER_PHONE = "660000001"
+TEST_USER_PHONE = "001"
 TEST_PASSWORD = "pass"
 TEST_EMAIL_END = "@test.com"
 
@@ -124,42 +124,72 @@ def login_user(
 
 
 @task
-def delete_user(_, telephone: str = TEST_USER_PHONE, email: str | None = None):
-    """delete user with given telephone
+def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
+    """delete user with given telephone or email
 
     Args:
-        telephone (str, optional): user phone. Defaults to "001".
+        phone (str, optional): user phone. Defaults to "001".
+        email (str, optional): user email. Defaults to None.
     """
-    from app.database import dbo
+    from app.database import db as dbo
+    from app.model import Application, Notification
+    from app import schema as s
 
     db = dbo.Session()
     if email:
         user = db.scalar(select(User).where(User.email == email))
     else:
-        user = db.scalar(select(User).where(User.phone == telephone))
+        user = db.scalar(select(User).where(User.phone == phone))
 
     if not user:
         log(log.WARNING, "User not found")
 
     for job in user.jobs_to_do:
         for application in job.applications:
+            log(log.INFO, "Application deleted [%s]", application.job.name)
             db.delete(application)
             db.commit()
+
+        log(log.INFO, "Job deleted [%s]", job.name)
         db.delete(job)
 
     for job in user.jobs_owned:
         for application in job.applications:
+            log(log.INFO, "Application deleted [%s]", application.job.name)
             db.delete(application)
             db.commit()
+
+        log(log.INFO, "Job deleted [%s]", job.name)
         db.delete(job)
 
     for profession in user.professions:
+        log(log.INFO, "User profession deleted [%s]", profession.name_en)
         db.delete(profession)
 
     for location in user.locations:
+        log(log.INFO, "User location deleted [%s]", location.name_en)
         db.delete(location)
 
     for device in user.devices:
+        log(log.INFO, "User device deleted [%s]", device.push_token)
         db.delete(device)
 
+    applications = db.scalars(
+        select(Application).where(Application.worker_id == user.id)
+    ).all()
+    applications += db.scalars(
+        select(Application).where(Application.owner_id == user.id)
+    ).all()
+
+    for application in applications:
+        log(log.INFO, "Application deleted [%s]", application.job.name)
+        db.delete(application)
+
+    for notification in user.notifications:
+        log(log.INFO, "Notification deleted [%s]", notification.type)
+        db.delete(notification)
+
+    db.commit()
+    log(log.INFO, "User %s deleted", phone)
+    db.delete(user)
     db.commit()
