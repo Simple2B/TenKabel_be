@@ -1,8 +1,10 @@
 # from shutil import unregister_archive_format
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+import sqlalchemy as sa
+from sqlalchemy import select, exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+
 
 from app.dependency import get_current_user
 from app.database import get_db
@@ -48,10 +50,8 @@ def login_by_phone(
 def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
-    # settings: Settings = Depends(get_settings),
 ):
-    exist_user = db.scalar(select(m.User).where(m.User.phone == data.phone))
-    if exist_user:
+    if db.scalar(exists().where(m.User.phone == data.phone).select()):
         log(log.ERROR, "User [%s] already exist", data.phone)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -59,6 +59,7 @@ def sign_up(
         )
 
     user: m.User = m.User(
+        email=data.email,
         first_name=data.first_name,
         last_name=data.last_name,
         password=data.password,
@@ -140,7 +141,11 @@ def google_auth(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ):
-    user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
+    user: m.User | None = (
+        db.query(m.User)
+        .filter(sa.func.lower(m.User.email) == sa.func.lower(data.email))
+        .first()
+    )
     # TODO: alot hardcoding there
     password = "*"
     country_code = "IL"

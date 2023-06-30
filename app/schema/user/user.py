@@ -1,7 +1,7 @@
 from datetime import datetime
 import enum
 
-from pydantic import BaseModel, AnyHttpUrl, constr
+from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 
 from app.schema.profession import Profession
 from app.schema.location import Location
@@ -25,10 +25,11 @@ class UserSignUp(AuthUser):
     profession_id: int | None
     locations: list[int] | None
     country_code: str
+    email: EmailStr
 
 
 class GoogleAuthUser(BaseModel):
-    email: str
+    email: EmailStr
     photo_url: AnyHttpUrl | None
     uid: str | None
     display_name: str | None
