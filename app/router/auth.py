@@ -1,8 +1,10 @@
 # from shutil import unregister_archive_format
 from fastapi import APIRouter, Depends, HTTPException, status
+import sqlalchemy as sa
 from sqlalchemy import select, exists
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+
 
 from app.dependency import get_current_user
 from app.database import get_db
@@ -139,7 +141,11 @@ def google_auth(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ):
-    user: m.User | None = db.query(m.User).filter_by(email=data.email).first()
+    user: m.User | None = (
+        db.query(m.User)
+        .filter(sa.func.lower(m.User.email) == sa.func.lower(data.email))
+        .first()
+    )
     # TODO: alot hardcoding there
     password = "*"
     country_code = "IL"
