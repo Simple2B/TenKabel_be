@@ -9,6 +9,7 @@ whoami_router = APIRouter(prefix="/whoami", tags=["Whoami"])
 
 @whoami_router.get("/user", status_code=status.HTTP_200_OK, response_model=s.WhoAmIOut)
 def whoami(current_user: m.User = Depends(get_current_user)):
-    return s.WhoAmIOut(
-        uuid=current_user.uuid, payplus_card_uid=current_user.payplus_card_uid
-    )
+    is_payplus_card_uid = False
+    if current_user.payplus_card_uid:
+        is_payplus_card_uid = True
+    return s.WhoAmIOut(uuid=current_user.uuid, is_payplus_card_uid=is_payplus_card_uid)

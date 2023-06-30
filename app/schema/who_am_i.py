@@ -3,4 +3,4 @@ from pydantic import BaseModel
 
 class WhoAmIOut(BaseModel):
     uuid: str
-    payplus_card_uid: str | None
+    is_payplus_card_uid: bool
