@@ -182,11 +182,6 @@ def google_auth(
             user.email,
         )
 
-    # TODO: get user picture from google
-    # if data.photo_url:
-    #     user.picture = data.photo_url
-    #     db.commit()
-
     user: m.User = m.User.authenticate(
         db,
         user.email,

@@ -22,6 +22,7 @@ from tests.utility import (
     create_applications,
     create_applications_for_user,
     generate_customer_uid,
+    create_jobs_for_user,
 )
 
 
@@ -224,15 +225,10 @@ def test_google_auth(
     user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
     assert not user
 
-    request_data = s.BaseUser(
+    request_data = s.GoogleAuthUser(
         email=test_data.test_user.email,
-        password=test_data.test_user.password,
-        username=test_data.test_user.username,
-        first_name=test_data.test_user.first_name,
-        last_name=test_data.test_user.last_name,
-        google_openid_key=test_data.test_user.google_openid_key,
-        picture=test_data.test_user.picture,
-        phone=test_data.test_user.phone,
+        display_name=test_data.test_user.username,
+        uid=test_data.test_user.google_openid_key,
     ).dict()
 
     response = client.post("api/auth/google", json=request_data)
@@ -259,7 +255,7 @@ def test_get_user_profile(
     import httpx
 
     payplus_response = {
-        "result": {
+        "results": {
             "status": "success",
             "code": 0,
             "description": "operation has been success",
@@ -293,6 +289,7 @@ def test_get_user_profile(
     create_applications(db)
     create_applications_for_user(db, user.id)
     create_applications_for_user(db, user.id)
+    create_jobs_for_user(db, user.id)
 
     response = client.get(
         "api/user/jobs",
@@ -350,11 +347,15 @@ def test_get_user_profile(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
             m.Job.is_deleted == False,  # noqa E712
             or_(
-                m.Job.status == s.enums.JobStatus.IN_PROGRESS,
-                m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
             ),
-        ),
+            m.Job.status.in_(
+                [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
+            ),
+        )
     )
+
     jobs = db.scalars(query).all()
 
     assert len(jobs) == len(resp_obj.jobs)
@@ -364,6 +365,10 @@ def test_get_user_profile(
         assert job.status in (
             s.enums.JobStatus.IN_PROGRESS.value,
             s.enums.JobStatus.JOB_IS_FINISHED,
+        )
+        assert (
+            job.payment_status == s.enums.PaymentStatus.UNPAID.value
+            or job.commission_status == s.enums.CommissionStatus.UNPAID.value
         )
         assert user.id in (job.owner_id, job.worker_id)
 
@@ -378,14 +383,23 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.is_deleted == True,  # noqa E712
+            or_(
+                m.Job.is_deleted == True,  # noqa E712
+                and_(
+                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                    m.Job.commission_status == s.enums.CommissionStatus.PAID,
+                ),
+            ),
         )
     )
     jobs = db.scalars(query).all()
 
     for job in resp_obj.jobs:
         assert int(job.id) in [j.id for j in jobs]
-        assert job.is_deleted
+        assert job.is_deleted or (
+            job.payment_status == s.enums.PaymentStatus.PAID.value
+            and job.commission_status == s.enums.CommissionStatus.PAID.value
+        )
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
