@@ -1,5 +1,5 @@
 from invoke import task
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from fastapi import status
 
 from app.logger import log
@@ -211,7 +211,7 @@ def patch_job_status(
 
     from fastapi.testclient import TestClient
 
-    from .user import login_user, create_user
+    from .user import login_user
     from app.database import db as dbo
     from app.main import app
     from app import schema as s

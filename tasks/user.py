@@ -1,5 +1,5 @@
 from invoke import task
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from fastapi import status
 
 
@@ -132,8 +132,7 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         email (str, optional): user email. Defaults to None.
     """
     from app.database import db as dbo
-    from app.model import Application, Notification
-    from app import schema as s
+    from app.model import Application
 
     db = dbo.Session()
     if email:
