@@ -25,6 +25,7 @@ class UserSignUp(AuthUser):
     profession_id: int | None
     locations: list[int] | None
     country_code: str
+    email: constr(max_length=128, strip_whitespace=True)
 
 
 class GoogleAuthUser(BaseModel):
