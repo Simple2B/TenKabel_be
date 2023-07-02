@@ -41,6 +41,6 @@ def create_notifications(db: Session):
                 type=type,
             )
             db.add(notification)
-            db.commit()
+    db.commit()
 
     log(log.INFO, "Notifications created - %s", db.query(m.Application).count())

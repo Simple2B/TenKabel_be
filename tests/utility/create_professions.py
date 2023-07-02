@@ -48,7 +48,7 @@ def create_professions(db: Session):
                     name_hebrew=name["hebrew"],
                 )
             )
-            db.commit()
             counter += 1
+    db.commit()
 
     log(log.INFO, "Professions [%d] were created", counter)

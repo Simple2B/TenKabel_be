@@ -91,5 +91,5 @@ def create_locations(db: Session):
                 name_hebrew=name["hebrew"],
             )
             db.add(location)
-            db.commit()
+    db.commit()
     log(log.INFO, "Locations [%d] were created", len(LOCATIONS))
