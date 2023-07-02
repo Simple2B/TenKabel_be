@@ -65,7 +65,7 @@ class JobIn(BaseModel):
     city: str
     payment: int
     commission: int
-    who_pays: Job.WhoPays | None
+    who_pays: Job.WhoPays
     name: str
     description: str
     time: str
@@ -90,8 +90,8 @@ class JobPatch(BaseModel):
     city: str | None
     payment: int | None
     commission: int | None
-    payment_status: PaymentStatus
-    commission_status: CommissionStatus
+    payment_status: PaymentStatus | None
+    commission_status: CommissionStatus | None
     name: str | None
     description: str | None
     time: str | None

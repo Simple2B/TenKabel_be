@@ -12,7 +12,6 @@ from sqladmin import Admin
 
 from app.database import get_engine
 from app.router import router
-from app.database import engine
 from app.admin import authentication_backend
 from app.logger import log
 

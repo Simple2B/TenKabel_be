@@ -9,7 +9,7 @@ from app.schema.location import Location
 phone_field = constr(
     max_length=128,
     strip_whitespace=True,
-    regex=r"[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{5,7}$",
+    regex=r"[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{0,7}$",
 )
 
 
