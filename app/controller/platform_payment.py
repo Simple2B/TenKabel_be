@@ -1,5 +1,4 @@
-# flake8: noqa
-from datetime import datetime
+import json
 
 from fastapi import status, HTTPException
 from sqlalchemy import select
@@ -10,6 +9,7 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.config import Settings
+from .payplus import payplus_weekly_charge
 
 
 def create_platform_payment(
@@ -99,15 +99,18 @@ def collect_fee(
     db: Session,
     settings: Settings,
 ):
-    platform_payments: m.PlatformPayment = db.scalars(m.PlatformPayment).all()
+    platform_payments: list[m.PlatformPayment] = db.scalars(
+        select(m.PlatformPayment)
+    ).all()
     for platform_payment in platform_payments:
-        ...
-        request_data: s.PayPlusCharge = s.PayPlusCharge(
+        job_price: float = platform_payment.platform_comissions[0].job.payment
+        payplus_charge_data: s.PayPlusCharge = s.PayPlusCharge(
             terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
             cashier_uid=settings.PAY_PLUS_CASHIERS_ID,
-            amount=amount,
-            currency_code=settings.PAY_PLUS_CURRENCY_CODE,
+            amount=job_price * settings.COMISSION_COEFFICIENT,
+            currency_code=settings.PAYPLUS_CURRENCY_CODE,
             use_token=True,
-            token=user.payplus_card_uid,
-            more_info_1=json.dumps({"platform_payment_uid": platform_payment_uid}),
+            token=platform_payment.user.payplus_card_uid,
+            more_info_1=json.dumps({"platform_payment_uuid": platform_payment.uuid}),
         )
+        payplus_weekly_charge(payplus_charge_data, settings)

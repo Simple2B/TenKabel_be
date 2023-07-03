@@ -4,7 +4,7 @@ import json
 import httpx
 from fastapi import Depends, APIRouter, status, HTTPException, Request
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
+from sqlalchemy import select
 
 from app.dependency import get_current_user, get_job_by_uuid
 import app.model as m
@@ -82,47 +82,27 @@ async def pay_platform_commission(
         transaction = request_data["transaction"]
         status_code = transaction.get("status_code")
         log(log.INFO, "Status code [%s]", status_code)
-        user_uuid: str = json.loads(transaction["more_info_1"])["user_uuid"]
-        user: m.User | None = db.scalar(select(m.User).where(m.User.uuid == user_uuid))
-        if not user:
-            log(log.ERROR, "User [%s] was not found", user_uuid)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="User was not found"
-            )
-        job_uuid: str = json.loads(transaction["more_info_1"])["job_uuid"]
-        job: m.Job | None = db.scalar(select(m.Job).where(m.Job.uuid == job_uuid))
-        if not job:
-            log(log.ERROR, "Job [%s] was not found", job_uuid)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="Job was not found"
-            )
-        payment = db.scalar(
-            select(m.PlatformComission).where(
-                and_(
-                    m.PlatformComission.job_id == job.id,
-                    m.PlatformComission.user_id == user.id,
-                )
+        platform_payment_uuid: str = json.loads(transaction["more_info_1"])[
+            "platform_payment_uuid"
+        ]
+        platform_payment: m.PlatformPayment = db.scalar(
+            select(m.PlatformPayment).where(
+                m.PlatformPayment.uuid == platform_payment_uuid
             )
         )
-        if not payment:
-            log(log.INFO, "Payment for jon [%s] was not found", job.uuid)
+        if not platform_payment:
+            log(log.INFO, "Platform Payment [%s] was not found", platform_payment_uuid)
             raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT, detail="Job was not found"
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Platform payment was not found",
             )
-        payment.transaction_number = transaction["number"]
-        payment.paid_at = datetime.fromisoformat(transaction["date"])
-        payment.status = s.enums.PlatformPaymentStatus.PAID
-
-        # we want to be sure that both owner and worker paid for comission
-        if all(
-            pp.status == s.enums.PlatformPaymentStatus.PAID
-            for pp in job.platform_payments
-        ):
-            job.commission_status = s.enums.CommissionStatus.PAID
+        platform_payment.transaction_number = transaction["number"]
+        platform_payment.status = s.enums.PlatformPaymentStatus.PAID
+        platform_payment.paid_at = datetime.fromisoformat(transaction["date"])
 
         db.commit()
         log(
             log.INFO,
-            "Payment details has been successfully updated - [%s]",
-            payment.uuid,
+            "Platform Payment details has been successfully updated - [%s]",
+            platform_payment.uuid,
         )

@@ -8,7 +8,7 @@ from app.utility import generate_uuid
 
 from app import schema as s
 from app.config import Settings, get_settings
-
+from .user import User
 
 settings: Settings = get_settings()
 
@@ -38,6 +38,10 @@ class PlatformPayment(db.Model):
     paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(), nullable=True)
     rejected_at: orm.Mapped[sa.DateTime] = orm.mapped_column(
         sa.DateTime(), nullable=True
+    )
+
+    user: orm.Mapped[User] = orm.relationship(
+        "User", foreign_keys=[user_id], backref="platform_payments"
     )
 
     def __repr__(self):
