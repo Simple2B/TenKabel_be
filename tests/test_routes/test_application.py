@@ -12,6 +12,7 @@ from tests.utility import (
     create_professions,
     create_jobs,
     generate_customer_uid,
+    generate_card_token,
 )
 
 
@@ -43,6 +44,8 @@ def test_application_methods(
     assert response.status_code == status.HTTP_409_CONFLICT
 
     generate_customer_uid(auth_user, db)
+    generate_card_token(auth_user, db)
+
     response = client.post(
         "api/application",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},

@@ -1,9 +1,16 @@
 from invoke import task
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from fastapi import status
 
 
-from app.model import User, Profession, Location, UserLocation, UserProfession
+from app.model import (
+    User,
+    Profession,
+    Application,
+    Location,
+    UserLocation,
+    UserProfession,
+)
 from app.logger import log
 
 TEST_USER_PHONE = "001"
@@ -132,7 +139,6 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         email (str, optional): user email. Defaults to None.
     """
     from app.database import db as dbo
-    from app.model import Application
 
     db = dbo.Session()
     if email:
@@ -163,15 +169,34 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
 
     for profession in user.professions:
         log(log.INFO, "User profession deleted [%s]", profession.name_en)
-        db.delete(profession)
+        user_profession = db.scalar(
+            select(UserProfession).where(
+                and_(
+                    UserProfession.profession_id == profession.id,
+                    UserProfession.user_id == user.id,
+                )
+            )
+        )
+        db.delete(user_profession)
+        db.flush()
 
     for location in user.locations:
         log(log.INFO, "User location deleted [%s]", location.name_en)
-        db.delete(location)
+        user_location = db.scalar(
+            select(UserLocation).where(
+                and_(
+                    UserLocation.location_id == location.id,
+                    UserLocation.user_id == user.id,
+                )
+            )
+        )
+        db.delete(user_location)
+        db.flush()
 
     for device in user.devices:
         log(log.INFO, "User device deleted [%s]", device.push_token)
         db.delete(device)
+        db.flush()
 
     applications = db.scalars(
         select(Application).where(Application.worker_id == user.id)
@@ -183,10 +208,12 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
     for application in applications:
         log(log.INFO, "Application deleted [%s]", application.job.name)
         db.delete(application)
+        db.flush()
 
     for notification in user.notifications:
         log(log.INFO, "Notification deleted [%s]", notification.type)
         db.delete(notification)
+        db.flush()
 
     db.commit()
     log(log.INFO, "User %s deleted", phone)
