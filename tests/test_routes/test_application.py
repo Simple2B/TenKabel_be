@@ -119,24 +119,47 @@ def test_application_methods(
     applications = db.scalars(
         select(m.Application).where((m.Application.job_id == application.job_id))
     ).all()
+    accepted_application = [
+        application
+        for application in applications
+        if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED
+    ][0]
+    assert accepted_application.id == application.id
 
     # check for payment commission for both of users
+    # create test assertion
+    # for each user in job we have to check if platform payment and platform_comission exists
+
+    assert db.scalar(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.user_id == accepted_application.owner_id,
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+        )
+    )
+    assert db.scalar(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.user_id == accepted_application.worker_id,
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+        )
+    )
+
     assert db.scalar(
         select(m.PlatformComission).where(
-            m.PlatformComission.user_id == request_data.owner_id,
-            m.PlatformComission.job_id == request_data.job_id,
+            m.PlatformComission.user_id == accepted_application.owner_id,
+            m.PlatformComission.job_id == accepted_application.job_id,
         )
     )
     assert db.scalar(
         select(m.PlatformComission).where(
-            m.PlatformComission.user_id == request_data.worker_id,
-            m.PlatformComission.job_id == request_data.job_id,
+            m.PlatformComission.user_id == accepted_application.worker_id,
+            m.PlatformComission.job_id == accepted_application.job_id,
         )
     )
+
     assert db.scalar(
         select(m.Notification).where(
             and_(
-                m.Notification.entity_id == application.id,
+                m.Notification.entity_id == accepted_application.id,
                 m.Notification.type == s.NotificationType.APPLICATION_ACCEPTED,
             )
         )

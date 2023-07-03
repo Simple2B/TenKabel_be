@@ -8,7 +8,7 @@ import app.schema as s
 from app.logger import log
 from app.database import get_db
 from app.dependency import get_current_user, get_payplus_verified_user
-from app.controller import PushHandler, create_platform_payment
+from app.controller import PushHandler, create_application_payments
 from app.utility.notification import get_notification_payload
 
 
@@ -81,7 +81,7 @@ def update_application(
 
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
-        create_platform_payment(db, application)
+        create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
     else:
@@ -190,7 +190,7 @@ def patch_application(
 
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
-        create_platform_payment(db, application)
+        create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
     else:

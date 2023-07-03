@@ -9,27 +9,26 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.utility.time_measurement import get_datetime_after_target_day_of_week
 
 
-def create_platform_payment(db: Session, application: m.Application) -> None:
+def create_platform_payment(
+    db: Session,
+    user_id: int,
+) -> m.PlatformPayment:
     # getting weekly platform payment
-    # REDO
-    # GET LATEST  PAID PlatformPayment - if not then create
-    last_thursday = get_datetime_after_target_day_of_week(s.Weekday.THURSDAY)
-    weekly_platform_payment: m.PlatformPayment = db.scalar(
+    unpaid_platform_payment: m.PlatformPayment = db.scalar(
         select(m.PlatformPayment).where(
-            m.PlatformPayment.created_at >= last_thursday,
-            m.PlatformPayment.created_at <= datetime.now(),
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+            m.PlatformPayment.user_id == user_id,
         )
     )
-    if not weekly_platform_payment:
+    if not unpaid_platform_payment:
         log(log.INFO, "Creating weekly platform payment for upcoming week")
-        weekly_platform_payment = m.PlatformPayment()
-        db.add(weekly_platform_payment)
+        unpaid_platform_payment = m.PlatformPayment(user_id=user_id)
+        db.add(unpaid_platform_payment)
         try:
             db.commit()
-            db.refresh(weekly_platform_payment)
+            db.refresh(unpaid_platform_payment)
         except SQLAlchemyError as e:
             log(log.ERROR, "Error while creating weekly platform payment - \n[%s]", e)
             raise HTTPException(
@@ -39,56 +38,63 @@ def create_platform_payment(db: Session, application: m.Application) -> None:
         log(
             log.INFO,
             "Weekly platform - [%s] payment created successfully",
-            weekly_platform_payment.id,
+            unpaid_platform_payment.id,
         )
+    return unpaid_platform_payment
 
-        worker_comission = db.scalar(
-            select(m.PlatformComission).where(
-                m.PlatformComission.user_id == application.worker_id,
-                m.PlatformComission.job_id == application.job_id,
-            )
+
+def create_platform_comission(
+    db: Session,
+    platform_payment: m.PlatformPayment,
+    user_id: int,
+    job_id: int,
+) -> m.PlatformComission:
+    user_comission = db.scalar(
+        select(m.PlatformComission).where(
+            m.PlatformComission.user_id == user_id,
+            m.PlatformComission.job_id == job_id,
         )
-        if not worker_comission:
-            worker_comission = m.PlatformComission(
-                user_id=application.worker_id,
-                job_id=application.job_id,
-                platform_payment_id=weekly_platform_payment.id,
-            )
-            db.add(worker_comission)
-            try:
-                db.commit()
-                db.refresh(worker_comission)
-            except SQLAlchemyError as e:
-                log(log.ERROR, "Error while creating worker_comission \n[%s]", e)
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Error while creating weekly platform payment",
-                )
-
-        owner_comission = db.scalar(
-            select(m.PlatformComission).where(
-                m.PlatformComission.user_id == application.job.owner_id,
-                m.PlatformComission.job_id == application.job_id,
-            )
+    )
+    if not user_comission:
+        user_comission = m.PlatformComission(
+            user_id=user_id,
+            job_id=job_id,
+            platform_payment_id=platform_payment.id,
         )
-        if not owner_comission:
-            owner_comission = m.PlatformComission(
-                user_id=application.job.owner_id,
-                job_id=application.job_id,
-                platform_payment_id=weekly_platform_payment.id,
+        db.add(user_comission)
+        try:
+            db.commit()
+            db.refresh(user_comission)
+        except SQLAlchemyError as e:
+            log(log.ERROR, "Error while creating user comission \n[%s]", e)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Error while creating platform comission",
             )
-            db.add(owner_comission)
-            try:
-                db.commit()
-                db.refresh(owner_comission)
-            except SQLAlchemyError as e:
-                log(log.ERROR, "Error while creating owner_comission \n[%s]", e)
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Error while creating weekly platform payment",
-                )
+    return user_comission
 
 
-def collect_fee():
-    # Get all from platform payment all comissions and calculate fee
+def create_application_payments(db: Session, application: m.Application):
+    user_ids = [application.worker_id, application.owner_id]
+    for user_id in user_ids:
+        platform_payment = create_platform_payment(
+            db=db,
+            user_id=user_id,
+        )
+        create_platform_comission(
+            db=db,
+            user_id=user_id,
+            job_id=application.job_id,
+            platform_payment=platform_payment,
+        )
+    log(
+        log.INFO,
+        "Application payments created successfully for job - [%s]",
+        application.job_id,
+    )
 
+
+def collect_fee(
+    db: Session,
+):
+    ...

@@ -42,19 +42,10 @@ class PlatformPaymentStatus(enum.Enum):
     PAID = "PAID"
     UNPAID = "UNPAID"
     REJECTED = "REJECTED"
+    PROGRESS = "PROGRESS"
 
 
 class PlatformPaymentPeriod(enum.Enum):
     WEEKLY = "WEEKLY"
     MONTHLY = "MONTHLY"
     YEARLY = "YEARLY"
-
-
-class Weekday(enum.Enum):
-    MONDAY = 0
-    TUESDAY = 1
-    WEDNESDAY = 2
-    THURSDAY = 3
-    FRIDAY = 4
-    SATURDAY = 5
-    SUNDAY = 6
