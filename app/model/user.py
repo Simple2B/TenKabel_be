@@ -22,6 +22,11 @@ class User(db.Model, BaseUser):
     )
     first_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     last_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
+
+    platform_payment: orm.Mapped[int] = orm.mapped_column(
+        sa.ForeignKey("platform_payments.id"), nullable=True
+    )
+
     professions: orm.Mapped[Profession] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )

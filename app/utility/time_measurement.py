@@ -1,8 +1,10 @@
-from app.logger import log
-
-from functools import wraps
-import time
 import sys
+import time
+from datetime import datetime, timedelta
+from functools import wraps
+
+from app.logger import log
+import app.schema as s
 
 
 def time_measurement(func):
@@ -24,3 +26,11 @@ def time_measurement(func):
         return result
 
     return wrapper
+
+
+# Calculate the date of the most recent Thursday
+def get_datetime_after_target_day_of_week(target_day: s.Weekday) -> datetime:
+    today = datetime.now().date()
+    current_day = today.weekday()
+    days_ahead = (current_day - target_day.value) % 7
+    return today - timedelta(days=days_ahead)

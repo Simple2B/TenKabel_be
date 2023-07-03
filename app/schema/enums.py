@@ -1,5 +1,5 @@
 import enum
-from app.utility import IndexableStringEnum
+from app.utility.enum_mixin import IndexableStringEnum
 
 
 class JobStatus(IndexableStringEnum):
@@ -44,13 +44,17 @@ class PlatformPaymentStatus(enum.Enum):
     REJECTED = "REJECTED"
 
 
-class PlatformComissionStatus(IndexableStringEnum):
-    IDLE = "IDLE"
-    PENDING = "PENDING"
-    PAID = "PAID"
-
-
 class PlatformPaymentPeriod(enum.Enum):
     WEEKLY = "WEEKLY"
     MONTHLY = "MONTHLY"
     YEARLY = "YEARLY"
+
+
+class Weekday(enum.Enum):
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6

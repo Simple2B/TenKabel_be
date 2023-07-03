@@ -3,8 +3,9 @@ from sqlalchemy import orm
 
 from app.database import db
 from app.utility import generate_uuid
-from app import schema as s
+
 from app import model as m
+from .platform_payment import PlatformPayment
 
 
 class PlatformComission(db.Model):
@@ -24,20 +25,17 @@ class PlatformComission(db.Model):
         sa.ForeignKey("platform_payments.id"),
         nullable=True,  # TODO conside change to False?
     )
-
-    status: orm.Mapped[s.enums.PlatformComissionStatus] = orm.mapped_column(
-        sa.Enum(s.enums.PlatformComissionStatus),
-        default=s.enums.PlatformComissionStatus.IDLE,
-    )
-    transaction_number: orm.Mapped[str] = orm.mapped_column(
-        sa.String(36), nullable=True
-    )
-    paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(64), nullable=True)
-
     # relationship
     user: orm.Mapped[m.User] = orm.relationship(
         "User",
         foreign_keys=[user_id],
+        viewonly=True,
+        uselist=False,
+    )
+    platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(
+        "PlatformPayment",
+        foreign_keys=[platform_payment_id],
+        backref="platform_comissions",
         viewonly=True,
         uselist=False,
     )

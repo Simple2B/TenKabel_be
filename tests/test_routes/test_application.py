@@ -90,7 +90,6 @@ def test_application_methods(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
-
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(application)
     assert application.status == s.BaseApplication.ApplicationStatus.DECLINED
@@ -121,6 +120,19 @@ def test_application_methods(
         select(m.Application).where((m.Application.job_id == application.job_id))
     ).all()
 
+    # check for payment commission for both of users
+    assert db.scalar(
+        select(m.PlatformComission).where(
+            m.PlatformComission.user_id == request_data.owner_id,
+            m.PlatformComission.job_id == request_data.job_id,
+        )
+    )
+    assert db.scalar(
+        select(m.PlatformComission).where(
+            m.PlatformComission.user_id == request_data.worker_id,
+            m.PlatformComission.job_id == request_data.job_id,
+        )
+    )
     assert db.scalar(
         select(m.Notification).where(
             and_(
@@ -135,3 +147,6 @@ def test_application_methods(
             assert (
                 exist_application.status == s.BaseApplication.ApplicationStatus.DECLINED
             )
+
+
+# TODO test create coule platform payments and then check

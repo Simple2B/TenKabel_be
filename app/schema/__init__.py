@@ -33,7 +33,7 @@ from .enums import (
     PaymentStatus,
     CommissionStatus,
     PlatformPaymentPeriod,
-    PlatformComissionStatus,
+    Weekday,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut

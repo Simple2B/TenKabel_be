@@ -4,3 +4,4 @@ from .pagination import create_pagination
 from .push_notification import PushHandler
 from .user import manage_tab_controller
 from .payplus import create_payplus_customer, create_payplus_token
+from .platform_payment import create_platform_payment
