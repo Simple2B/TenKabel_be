@@ -148,6 +148,7 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
 
     if not user:
         log(log.WARNING, "User not found")
+        return
 
     for job in user.jobs_to_do:
         for application in job.applications:
@@ -169,28 +170,31 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
 
     for profession in user.professions:
         log(log.INFO, "User profession deleted [%s]", profession.name_en)
-        user_profession = db.scalar(
-            select(UserProfession).where(
-                and_(
-                    UserProfession.profession_id == profession.id,
-                    UserProfession.user_id == user.id,
+
+        db.delete(
+            db.scalar(
+                select(UserProfession).where(
+                    and_(
+                        UserProfession.profession_id == profession.id,
+                        UserProfession.user_id == user.id,
+                    )
                 )
             )
         )
-        db.delete(user_profession)
         db.flush()
 
     for location in user.locations:
         log(log.INFO, "User location deleted [%s]", location.name_en)
-        user_location = db.scalar(
-            select(UserLocation).where(
-                and_(
-                    UserLocation.location_id == location.id,
-                    UserLocation.user_id == user.id,
+        db.delete(
+            db.scalar(
+                select(UserLocation).where(
+                    and_(
+                        UserLocation.location_id == location.id,
+                        UserLocation.user_id == user.id,
+                    )
                 )
             )
         )
-        db.delete(user_location)
         db.flush()
 
     for device in user.devices:
