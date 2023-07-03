@@ -39,7 +39,7 @@ def fill_test_data(db: Session):
         db.add(user)
 
     log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
-
+    db.flush()
     for uid_user in range(1, NUM_TEST_USERS):
         count_rates = random.randint(0, MAX_RATES_NUM)
         rates_num_total += count_rates
@@ -50,6 +50,7 @@ def fill_test_data(db: Session):
                 rate=random.choice([e for e in s.BaseRate.RateStatus]),
             )
             db.add(rate)
+        db.flush()
     users: list[m.User] = db.scalars(select(m.User)).all()
     for user in users:
         if profession_ids:

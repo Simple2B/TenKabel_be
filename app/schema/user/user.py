@@ -74,6 +74,7 @@ class User(BaseUser):
     picture: str
     locations: list[Location]
     is_auth_by_google: bool
+    card_name: str | None
 
     notification_profession_flag: bool
     notification_profession: list[Profession]

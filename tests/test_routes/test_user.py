@@ -476,6 +476,7 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
 
     assert user.payplus_card_uid is not None
+    assert user.card_name == card_data.card_name
 
 
 def test_update_user(

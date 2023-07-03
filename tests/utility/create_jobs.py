@@ -77,6 +77,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         )
         db.add(job)
         created_jobs.append(job)
+        db.flush()
 
     for job in created_jobs:
         # job status can't be pending with existing worker
