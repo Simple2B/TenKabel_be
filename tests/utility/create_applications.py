@@ -36,7 +36,7 @@ def create_applications(db: Session):
                 ),
             )
             db.add(application)
-            db.commit()
+    db.commit()
 
     log(log.INFO, "Applications created - %s", db.query(m.Application).count())
 
@@ -66,7 +66,6 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
                 status=s.BaseApplication.ApplicationStatus.PENDING,
             )
             db.add(application)
-            db.commit()
             applications_count += 1
 
         log(
@@ -88,7 +87,6 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
             status=s.BaseApplication.ApplicationStatus.PENDING,
         )
         db.add(application)
-        db.commit()
         worker_jobs_count += 1
 
     log(
@@ -97,3 +95,4 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
         user_id,
         worker_jobs_count,
     )
+    db.commit()

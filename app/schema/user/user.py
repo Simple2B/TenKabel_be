@@ -1,7 +1,7 @@
 from datetime import datetime
 import enum
 
-from pydantic import BaseModel, AnyHttpUrl, constr
+from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 
 from app.schema.profession import Profession
 from app.schema.location import Location
@@ -9,7 +9,7 @@ from app.schema.location import Location
 phone_field = constr(
     max_length=128,
     strip_whitespace=True,
-    regex=r"[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{5,7}$",
+    regex=r"[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{0,7}$",
 )
 
 
@@ -25,11 +25,11 @@ class UserSignUp(AuthUser):
     profession_id: int | None
     locations: list[int] | None
     country_code: str
-    email: constr(max_length=128, strip_whitespace=True)
+    email: EmailStr
 
 
 class GoogleAuthUser(BaseModel):
-    email: str
+    email: EmailStr
     photo_url: AnyHttpUrl | None
     uid: str | None
     display_name: str | None
@@ -74,6 +74,7 @@ class User(BaseUser):
     picture: str
     locations: list[Location]
     is_auth_by_google: bool
+    card_name: str | None
 
     notification_profession_flag: bool
     notification_profession: list[Profession]

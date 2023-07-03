@@ -11,8 +11,6 @@ from app.config import get_settings, Settings
 settings: Settings = get_settings()
 
 
-engine = create_engine(settings.DATABASE_URI)
-
 db = Alchemical(settings.DATABASE_URI, session_options={"autoflush": False})
 
 

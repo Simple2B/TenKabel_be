@@ -76,8 +76,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             customer_street_address=fake.address(),
         )
         db.add(job)
-        db.commit()
         created_jobs.append(job)
+        db.flush()
 
     for job in created_jobs:
         # job status can't be pending with existing worker
@@ -88,9 +88,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         while job.owner_id == job.worker_id:
             job.worker_id = random.choice(worker_ids[:-1])
 
-        db.commit()
-
     log(log.INFO, "Jobs created - %s", test_jobs_num)
+    db.commit()
 
 
 def create_jobs_for_user(
@@ -153,7 +152,6 @@ def create_jobs_for_user(
             customer_street_address=fake.address(),
         )
         db.add(job2)
-        db.commit()
         created_jobs.append(job1)
         created_jobs.append(job2)
 
@@ -169,6 +167,6 @@ def create_jobs_for_user(
         while job.owner_id == job.worker_id:
             job.worker_id = random.choice(worker_ids)
 
-        db.commit()
+    db.commit()
 
     log(log.INFO, "Jobs for user [%s] created - %s", user_id, test_jobs_num)

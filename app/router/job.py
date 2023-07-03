@@ -1,7 +1,7 @@
 import re
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from sqlalchemy import select, or_, and_
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -17,11 +17,7 @@ from app.logger import log
 from app.database import get_db
 from app.utility import time_measurement
 from app.utility.get_pending_jobs_query import get_pending_jobs_query_for_user
-from app.utility.notification import (
-    check_profession_notification,
-    check_location_notification,
-)
-from app.controller import PushHandler
+from app.controller import PushHandler, job_created_notify
 from app.utility.notification import get_notification_payload
 
 
@@ -155,67 +151,9 @@ def create_job(
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Error creating new job"
         )
-    db.refresh(new_job)
-    city: m.Location = db.scalar(
-        select(m.Location).where(m.Location.name_en == new_job.city)
-    )
-    profession: m.Profession = db.scalar(
-        select(m.Profession).where(m.Profession.id == new_job.profession_id)
-    )
-    users: list[m.User] = db.scalars(
-        select(m.User).where(
-            and_(
-                m.User.locations.contains(city),
-                m.User.professions.contains(profession),
-            )
-        )
-    ).all()
-    users += db.scalars(
-        select(m.User).where(
-            and_(
-                m.User.locations.contains(city),
-                ~m.User.professions.any(),
-            )
-        )
-    ).all()
-    users += db.scalars(
-        select(m.User).where(
-            and_(
-                ~m.User.locations.any(),
-                m.User.professions.contains(profession),
-            )
-        )
-    ).all()
 
-    devices: list[str] = list()
-    for user in users:
-        notification: m.Notification = m.Notification(
-            user_id=user.id,
-            entity_id=new_job.id,
-            type=s.NotificationType.JOB_CREATED,
-        )
-        db.add(notification)
-        if (check_profession_notification(profession, user)) or (
-            check_location_notification(city, user)
-        ):
-            for device in user.devices:
-                devices.append(device.push_token)
-
-    db.commit()
-
-    push_handler = PushHandler()
-    push_handler.send_notification(
-        s.PushNotificationMessage(
-            device_tokens=devices,
-            payload=get_notification_payload(
-                notification_type=s.NotificationType.JOB_CREATED, job=new_job
-            ),
-        )
-    )
-
+    job_created_notify(new_job, db)
     log(log.INFO, "Job [%s] created successfully", new_job.id)
-    log(log.INFO, "[%d] notifications created", len(users))
-    log(log.INFO, "[%d] notifications sended", len(devices))
 
     return new_job
 

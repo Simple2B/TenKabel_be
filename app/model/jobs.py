@@ -83,11 +83,12 @@ class Job(db.Model):
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
     @property
-    def time(self):
+    def time(self) -> str:
         return self.formatted_time
 
     @time.setter
     def time(self, value: str):
+        # TODO: refactor !!!
         try:
             self.formatted_time = datetime.strptime(
                 str(value), "%Y-%m-%d %H:%M"

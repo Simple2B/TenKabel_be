@@ -16,6 +16,7 @@ from tests.utility import (
     create_professions,
     create_jobs_for_user,
     generate_customer_uid,
+    generate_card_token,
 )
 
 
@@ -209,6 +210,7 @@ def test_create_job(
     )
 
     generate_customer_uid(owner_user, db)
+    generate_card_token(owner_user, db)
     response = client.post(
         "api/job",
         json=request_data.dict(),
@@ -297,6 +299,7 @@ def test_update_job(
         commission=job.commission,
         payment_status=s.enums.PaymentStatus.PAID,
         commission_status=s.enums.CommissionStatus.UNPAID,
+        who_pays=s.Job.WhoPays.ME,
         name=job.name,
         description=job.description,
         time=job.time,
@@ -324,6 +327,7 @@ def test_update_job(
         payment_status=s.enums.PaymentStatus.PAID,
         commission_status=s.enums.CommissionStatus.PAID,
         name=job.name,
+        who_pays=s.Job.WhoPays.ME,
         description=job.description,
         time=job.time,
         customer_first_name=job.customer_first_name,

@@ -14,7 +14,6 @@ def create_test_superuser(db, test_data):
             country_code=test_data.test_superuser.country_code,
         )
     )
-    db.commit()
 
 
 def fill_db_by_test_data(db: Session, test_data: TestData):
@@ -33,7 +32,6 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 country_code=u.country_code,
             )
         )
-        db.commit()
     for u in test_data.test_authorized_users:
         db.add(
             m.User(
@@ -47,7 +45,6 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 country_code=u.country_code,
             )
         )
-        db.commit()
 
     for notification in test_data.test_notifications_applications:
         db.add(
@@ -57,7 +54,6 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 type=notification.type,
             )
         )
-        db.commit()
 
     for notification in test_data.test_notifications_jobs:
         db.add(
@@ -67,7 +63,8 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 type=notification.type,
             )
         )
-        db.commit()
 
         # TODO
         # professions and locations for this users !!!
+
+    db.commit()
