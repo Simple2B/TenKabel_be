@@ -264,7 +264,7 @@ def get_user_jobs(
     if manage_tab:
         query = manage_tab_controller(db, current_user, query, manage_tab)
 
-    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
+    jobs: list[m.Job] = db.scalars(query.order_by(desc(m.Job.created_at))).all()
     log(
         log.INFO,
         "User [%s] with id (%s) got [%s] jobs total",
