@@ -88,7 +88,8 @@ def create_payplus_token(
 ) -> None:
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
-        return
+        log(log.INFO, "Continuing as card update")
+        # return
     if type(card_data.card_date_mmyy) is datetime:
         iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
     else:
@@ -131,9 +132,15 @@ def create_payplus_token(
     response_data = response.json()
     # TODO: pydantic schema
     if response_data["results"]["status"] == "error":
-        log(log.ERROR, "Error creating payplus card")
+        log(
+            log.ERROR,
+            "Error creating payplus card - %s"
+            % response_data["results"]["description"],
+        )
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Error creating payplus card"
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Error creating payplus card - %s"
+            % response_data["results"]["description"],
         )
 
     user.payplus_card_uid = response_data["data"]["card_uid"]
