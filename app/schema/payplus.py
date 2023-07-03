@@ -16,3 +16,13 @@ class PayplusCustomerIn(BaseModel):
 
 class PayplusToken(BaseModel):
     card_uid: str
+
+
+class PayPlusCharge(BaseModel):
+    terminal_uid: str
+    cashier_uid: str
+    amount: int
+    currency_code: str | None
+    use_token: bool = True
+    token: str
+    more_info_1: str | None

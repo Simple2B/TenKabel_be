@@ -151,3 +151,31 @@ def create_payplus_token(
         "User [%s] payplus card uid created and stored",
         user.id,
     )
+
+
+def payplus_weekly_charge(
+    charge_data: s.PayPlusCharge,
+    settings: Settings,
+):
+    try:
+        response = httpx.post(
+            f"{settings.PAY_PLUS_API_URL}/Transactions/Charge",
+            headers=pay_plus_headers(settings),
+            json=charge_data.dict(),
+        )
+    except httpx.RequestError as e:
+        log(
+            log.ERROR,
+            "Error occured while sending request to pay comission:\n%s",
+            e,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while charging comission",
+        )
+    response = response.json()
+    log(
+        log.INFO,
+        "Payplus charge has been successfull: %s",
+        response["data"]["transaction"]["uid"],
+    )

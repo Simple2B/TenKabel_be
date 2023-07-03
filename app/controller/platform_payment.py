@@ -9,6 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
+from app.config import Settings
 
 
 def create_platform_payment(
@@ -96,5 +97,17 @@ def create_application_payments(db: Session, application: m.Application):
 
 def collect_fee(
     db: Session,
+    settings: Settings,
 ):
-    ...
+    platform_payments: m.PlatformPayment = db.scalars(m.PlatformPayment).all()
+    for platform_payment in platform_payments:
+        ...
+        request_data: s.PayPlusCharge = s.PayPlusCharge(
+            terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
+            cashier_uid=settings.PAY_PLUS_CASHIERS_ID,
+            amount=amount,
+            currency_code=settings.PAY_PLUS_CURRENCY_CODE,
+            use_token=True,
+            token=user.payplus_card_uid,
+            more_info_1=json.dumps({"platform_payment_uid": platform_payment_uid}),
+        )
