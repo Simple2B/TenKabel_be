@@ -19,6 +19,9 @@ class PlatformPayment(db.Model):
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
 
+    transaction_number: orm.Mapped[str] = orm.mapped_column(
+        sa.String(64), nullable=True
+    )
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
     )  # payer_id
