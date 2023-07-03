@@ -137,6 +137,8 @@ def create_payplus_token(
         )
 
     user.payplus_card_uid = response_data["data"]["card_uid"]
+    user.card_name = card_data.card_name
+
     try:
         db.commit()
         db.refresh(user)

@@ -56,6 +56,8 @@ class User(db.Model, BaseUser):
         sa.String(64), nullable=True, unique=True
     )
 
+    card_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
+
     @classmethod
     def authenticate_with_phone(
         cls,
