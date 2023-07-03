@@ -16,6 +16,7 @@ from tests.utility import (
     create_professions,
     create_jobs_for_user,
     generate_customer_uid,
+    generate_card_token,
 )
 
 
@@ -209,6 +210,7 @@ def test_create_job(
     )
 
     generate_customer_uid(owner_user, db)
+    generate_card_token(owner_user, db)
     response = client.post(
         "api/job",
         json=request_data.dict(),

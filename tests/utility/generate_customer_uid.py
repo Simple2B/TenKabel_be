@@ -13,3 +13,14 @@ def generate_customer_uid(user: m.User, db: Session) -> str:
     db.refresh(user)
 
     return user.payplus_customer_uid
+
+
+def generate_card_token(user: m.User, db: Session) -> str:
+    if user.payplus_card_uid:
+        return user.payplus_card_uid
+
+    user.payplus_card_uid = generate_uuid()
+    db.commit()
+    db.refresh(user)
+
+    return user.payplus_card_uid
