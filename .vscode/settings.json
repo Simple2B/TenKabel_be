@@ -5,6 +5,7 @@
   "cSpell.words": [
     "backref",
     "fastapi",
+    "httpx",
     "mmyy",
     "payplus",
     "pydantic",

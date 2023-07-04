@@ -77,7 +77,7 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
-    platform_comissions: orm.Mapped[PlatformCommission] = orm.relationship(
+    platform_commissions: orm.Mapped[PlatformCommission] = orm.relationship(
         "PlatformCommission", backref="job"
     )
 
