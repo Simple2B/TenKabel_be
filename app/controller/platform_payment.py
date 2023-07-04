@@ -100,14 +100,31 @@ def collect_fee(
     settings: Settings,
 ):
     platform_payments: list[m.PlatformPayment] = db.scalars(
-        select(m.PlatformPayment)
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID
+        )
     ).all()
+
     for platform_payment in platform_payments:
-        job_price: float = platform_payment.platform_comissions[0].job.payment
+        comission_amount: list = []  # list of comission amounts
+        platform_payment.status = (
+            s.enums.PlatformPaymentStatus.PROGRESS
+        )  # settings status to progress
+        platform_comissions: list[m.PlatformComission] = db.scalars(
+            select(m.PlatformComission).where(
+                m.PlatformComission.platform_payment_id == platform_payment.id,
+                m.PlatformPayment.user_id == platform_payment.user_id,
+            )
+        ).all()  # getting all platform comissions for this platform payment
+        for pc in platform_comissions:
+            comission_amount.append(
+                pc.job.payment * settings.COMISSION_COEFFICIENT
+            )  # calculating comission amount
+
         payplus_charge_data: s.PayPlusCharge = s.PayPlusCharge(
             terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
             cashier_uid=settings.PAY_PLUS_CASHIERS_ID,
-            amount=job_price * settings.COMISSION_COEFFICIENT,
+            amount=sum(comission_amount),
             currency_code=settings.PAYPLUS_CURRENCY_CODE,
             use_token=True,
             token=platform_payment.user.payplus_card_uid,
