@@ -1,8 +1,8 @@
 """init
 
-Revision ID: 3ccfd575a4da
+Revision ID: 1957daef8907
 Revises: 
-Create Date: 2023-06-21 13:32:31.760743
+Create Date: 2023-07-04 15:02:08.113911
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "3ccfd575a4da"
+revision = "1957daef8907"
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -25,6 +25,28 @@ def upgrade():
         sa.Column("name_en", sa.String(length=64), nullable=False),
         sa.Column("name_hebrew", sa.String(length=64), nullable=False),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_locations")),
+    )
+    op.create_table(
+        "platform_payments",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
+        sa.Column("transaction_number", sa.String(length=64), nullable=True),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column(
+            "status",
+            sa.Enum(
+                "PAID", "UNPAID", "REJECTED", "PROGRESS", name="platformpaymentstatus"
+            ),
+            nullable=False,
+        ),
+        sa.Column("reject_reason", sa.String(length=512), nullable=False),
+        sa.Column("created_at", sa.DateTime(), nullable=True),
+        sa.Column("paid_at", sa.DateTime(), nullable=True),
+        sa.Column("rejected_at", sa.DateTime(), nullable=True),
+        sa.ForeignKeyConstraint(
+            ["user_id"], ["users.id"], name=op.f("fk_platform_payments_user_id_users")
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_platform_payments")),
     )
     op.create_table(
         "professions",
@@ -54,6 +76,13 @@ def upgrade():
         sa.Column("phone", sa.String(length=128), nullable=True),
         sa.Column("first_name", sa.String(length=64), nullable=False),
         sa.Column("last_name", sa.String(length=64), nullable=False),
+        sa.Column("platform_payment", sa.Integer(), nullable=True),
+        sa.Column("notification_profession_flag", sa.Boolean(), nullable=False),
+        sa.Column("notification_locations_flag", sa.Boolean(), nullable=False),
+        sa.Column("notification_job_status", sa.Boolean(), nullable=False),
+        sa.Column("payplus_customer_uid", sa.String(length=36), nullable=True),
+        sa.Column("payplus_card_uid", sa.String(length=64), nullable=True),
+        sa.Column("card_name", sa.String(length=64), nullable=True),
         sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("uuid", sa.String(length=36), nullable=False),
         sa.Column("email", sa.String(length=128), nullable=True),
@@ -64,8 +93,14 @@ def upgrade():
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("country_code", sa.String(length=32), nullable=False),
         sa.Column("is_verified", sa.Boolean(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["platform_payment"],
+            ["platform_payments.id"],
+            name=op.f("fk_users_platform_payment_platform_payments"),
+        ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_users")),
         sa.UniqueConstraint("email", name=op.f("uq_users_email")),
+        sa.UniqueConstraint("payplus_card_uid", name=op.f("uq_users_payplus_card_uid")),
         sa.UniqueConstraint("phone", name=op.f("uq_users_phone")),
     )
     op.create_table(
@@ -116,7 +151,7 @@ def upgrade():
         ),
         sa.Column(
             "commission_status",
-            sa.Enum("PAID", "UNPAID", name="commissionstatus"),
+            sa.Enum("PAID", "UNPAID", "REQUESTED", name="commissionstatus"),
             nullable=False,
         ),
         sa.Column("who_pays", sa.Enum("ME", "CLIENT", name="whopays"), nullable=False),
@@ -146,6 +181,7 @@ def upgrade():
                 "JOB_DONE",
                 "JOB_CANCELED",
                 "JOB_PAID",
+                "COMMISSION_REQUESTED",
                 "COMMISSION_PAID",
                 "MAX_JOB_TYPE",
                 "APPLICATION_CREATED",
@@ -165,25 +201,6 @@ def upgrade():
         sa.PrimaryKeyConstraint("id", name=op.f("pk_notifications")),
     )
     op.create_table(
-        "rate",
-        sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("uuid", sa.String(length=36), nullable=False),
-        sa.Column("owner_id", sa.Integer(), nullable=False),
-        sa.Column("worker_id", sa.Integer(), nullable=False),
-        sa.Column(
-            "rate",
-            sa.Enum("POSITIVE", "NEGATIVE", "NEUTRAL", name="ratestatus"),
-            nullable=False,
-        ),
-        sa.ForeignKeyConstraint(
-            ["owner_id"], ["users.id"], name=op.f("fk_rate_owner_id_users")
-        ),
-        sa.ForeignKeyConstraint(
-            ["worker_id"], ["users.id"], name=op.f("fk_rate_worker_id_users")
-        ),
-        sa.PrimaryKeyConstraint("id", name=op.f("pk_rate")),
-    )
-    op.create_table(
         "users_locations",
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("location_id", sa.Integer(), nullable=False),
@@ -197,6 +214,42 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint(
             "user_id", "location_id", name=op.f("pk_users_locations")
+        ),
+    )
+    op.create_table(
+        "users_notifications_locations",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("location_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["location_id"],
+            ["locations.id"],
+            name=op.f("fk_users_notifications_locations_location_id_locations"),
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+            name=op.f("fk_users_notifications_locations_user_id_users"),
+        ),
+        sa.PrimaryKeyConstraint(
+            "user_id", "location_id", name=op.f("pk_users_notifications_locations")
+        ),
+    )
+    op.create_table(
+        "users_notifications_professions",
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("profession_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["profession_id"],
+            ["professions.id"],
+            name=op.f("fk_users_notifications_professions_profession_id_professions"),
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+            name=op.f("fk_users_notifications_professions_user_id_users"),
+        ),
+        sa.PrimaryKeyConstraint(
+            "user_id", "profession_id", name=op.f("pk_users_notifications_professions")
         ),
     )
     op.create_table(
@@ -240,20 +293,69 @@ def upgrade():
         ),
         sa.PrimaryKeyConstraint("id", name=op.f("pk_applications")),
     )
+    op.create_table(
+        "platform_commissions",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("job_id", sa.Integer(), nullable=False),
+        sa.Column("platform_payment_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(
+            ["job_id"], ["jobs.id"], name=op.f("fk_platform_commissions_job_id_jobs")
+        ),
+        sa.ForeignKeyConstraint(
+            ["platform_payment_id"],
+            ["platform_payments.id"],
+            name=op.f("fk_platform_commissions_platform_payment_id_platform_payments"),
+        ),
+        sa.ForeignKeyConstraint(
+            ["user_id"],
+            ["users.id"],
+            name=op.f("fk_platform_commissions_user_id_users"),
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_platform_commissions")),
+    )
+    op.create_table(
+        "rate",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("uuid", sa.String(length=36), nullable=False),
+        sa.Column("owner_id", sa.Integer(), nullable=False),
+        sa.Column("worker_id", sa.Integer(), nullable=False),
+        sa.Column("job_id", sa.Integer(), nullable=False),
+        sa.Column(
+            "rate",
+            sa.Enum("POSITIVE", "NEGATIVE", "NEUTRAL", name="ratestatus"),
+            nullable=False,
+        ),
+        sa.ForeignKeyConstraint(
+            ["job_id"], ["jobs.id"], name=op.f("fk_rate_job_id_jobs")
+        ),
+        sa.ForeignKeyConstraint(
+            ["owner_id"], ["users.id"], name=op.f("fk_rate_owner_id_users")
+        ),
+        sa.ForeignKeyConstraint(
+            ["worker_id"], ["users.id"], name=op.f("fk_rate_worker_id_users")
+        ),
+        sa.PrimaryKeyConstraint("id", name=op.f("pk_rate")),
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table("rate")
+    op.drop_table("platform_commissions")
     op.drop_table("applications")
     op.drop_table("users_professions")
+    op.drop_table("users_notifications_professions")
+    op.drop_table("users_notifications_locations")
     op.drop_table("users_locations")
-    op.drop_table("rate")
     op.drop_table("notifications")
     op.drop_table("jobs")
     op.drop_table("devices")
     op.drop_table("users")
     op.drop_table("superusers")
     op.drop_table("professions")
+    op.drop_table("platform_payments")
     op.drop_table("locations")
     # ### end Alembic commands ###
