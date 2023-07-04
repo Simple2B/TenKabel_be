@@ -162,7 +162,7 @@ def create_payplus_token(
     )
 
 
-def payplus_weekly_charge(
+def payplus_periodic_charge(
     charge_data: s.PayPlusCharge,
     settings: Settings,
 ):

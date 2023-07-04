@@ -9,7 +9,7 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.config import Settings
-from .payplus import payplus_weekly_charge
+from .payplus import payplus_periodic_charge
 
 
 def create_platform_payment(
@@ -31,10 +31,10 @@ def create_platform_payment(
             db.commit()
             db.refresh(unpaid_platform_payment)
         except SQLAlchemyError as e:
-            log(log.ERROR, "Error while creating weekly platform payment - \n[%s]", e)
+            log(log.ERROR, "Error while creating platform payment - \n[%s]", e)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Error while creating weekly platform payment",
+                detail="Error while creating platform payment",
             )
         log(
             log.INFO,
@@ -67,7 +67,13 @@ def create_platform_comission(
             db.commit()
             db.refresh(user_comission)
         except SQLAlchemyError as e:
-            log(log.ERROR, "Error while creating user comission \n[%s]", e)
+            log(
+                log.ERROR,
+                "Error while creating user [%s] comission for job [%s]:\n[%s]",
+                user_id,
+                job_id,
+                e,
+            )
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Error while creating platform comission",
@@ -113,12 +119,13 @@ def collect_fee(
         platform_comissions: list[m.PlatformComission] = db.scalars(
             select(m.PlatformComission).where(
                 m.PlatformComission.platform_payment_id == platform_payment.id,
-                m.PlatformPayment.user_id == platform_payment.user_id,
             )
         ).all()  # getting all platform comissions for this platform payment
         for pc in platform_comissions:
             comission_amount.append(
-                pc.job.payment * settings.COMISSION_COEFFICIENT
+                pc.job.payment
+                * settings.VAT_COEFFICIENT
+                * settings.COMISSION_COEFFICIENT
             )  # calculating comission amount
 
         payplus_charge_data: s.PayPlusCharge = s.PayPlusCharge(
@@ -130,4 +137,4 @@ def collect_fee(
             token=platform_payment.user.payplus_card_uid,
             more_info_1=json.dumps({"platform_payment_uuid": platform_payment.uuid}),
         )
-        payplus_weekly_charge(payplus_charge_data, settings)
+        payplus_periodic_charge(payplus_charge_data, settings)

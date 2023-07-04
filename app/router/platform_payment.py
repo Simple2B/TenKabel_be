@@ -30,7 +30,7 @@ def get_url(
 ):
     request_data: s.PlatformPaymentLinkIn = s.PlatformPaymentLinkIn(
         payment_page_uid=settings.PAY_PLUS_PAYMENT_PAGE_ID,
-        amount=job.payment * settings.COMISSION_COEFFICIENT,
+        amount=job.payment * settings.VAT_COEFFICIENT * settings.COMISSION_COEFFICIENT,
         more_info_1=json.dumps(
             dict(
                 user_uuid=user.uuid,

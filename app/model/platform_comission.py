@@ -23,7 +23,7 @@ class PlatformComission(db.Model):
     )
     platform_payment_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("platform_payments.id"),
-        nullable=True,
+        nullable=False,
     )
 
     # relationships

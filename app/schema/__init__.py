@@ -32,7 +32,6 @@ from .enums import (
     NotificationType,
     PaymentStatus,
     CommissionStatus,
-    PlatformPaymentPeriod,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut

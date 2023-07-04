@@ -24,8 +24,8 @@ class Settings(BaseSettings):
     GOOGLE_BUCKET_NAME: str = "tenkabel"
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
 
-    # TODO PRICE COEFFICIENT
-    COMISSION_COEFFICIENT: float = 0.009 * 1.17
+    VAT_COEFFICIENT: float = 1.17
+    COMISSION_COEFFICIENT: float = 0.009
 
     class Config:
         env_file = "project.env", ".env"

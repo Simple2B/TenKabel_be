@@ -43,9 +43,3 @@ class PlatformPaymentStatus(enum.Enum):
     UNPAID = "UNPAID"
     REJECTED = "REJECTED"
     PROGRESS = "PROGRESS"
-
-
-class PlatformPaymentPeriod(enum.Enum):
-    WEEKLY = "WEEKLY"
-    MONTHLY = "MONTHLY"
-    YEARLY = "YEARLY"

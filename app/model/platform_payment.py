@@ -25,11 +25,6 @@ class PlatformPayment(db.Model):
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
     )  # payer_id
-
-    period_type: orm.Mapped[s.enums.PlatformPaymentPeriod] = orm.mapped_column(
-        sa.Enum(s.enums.PlatformPaymentPeriod),
-        default=s.enums.PlatformPaymentPeriod.WEEKLY,
-    )
     status: orm.Mapped[s.enums.PlatformPaymentStatus] = orm.mapped_column(
         sa.Enum(s.enums.PlatformPaymentStatus),
         default=s.enums.PlatformPaymentStatus.UNPAID,

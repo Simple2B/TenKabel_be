@@ -7,7 +7,7 @@ from .user import manage_tab_controller
 from .payplus import (
     create_payplus_customer,
     create_payplus_token,
-    payplus_weekly_charge,
+    payplus_periodic_charge,
 )
 from .platform_payment import (
     create_platform_payment,
