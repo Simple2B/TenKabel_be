@@ -19,5 +19,4 @@ from .platform_payment import (
     create_platform_payment,
     create_platform_comission,
     create_application_payments,
-    collect_fee,
 )

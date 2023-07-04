@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     GOOGLE_BUCKET_NAME: str = "tenkabel"
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
 
+    # REDIS
+    REDIS_URL: str = ""
+    FEE_PAY_DAY: int = 3
+    DAILY_REPORT_HOURS: int = 22
+    DAILY_REPORT_MINUTES: int = 0
+
     VAT_COEFFICIENT: float = 1.17
     COMISSION_COEFFICIENT: float = 0.009
 
