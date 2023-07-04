@@ -15,12 +15,13 @@ from app.utility import generate_uuid
 
 from tests.fixture import TestData
 from tests.utility import (
-    create_jobs,
     fill_test_data,
+    create_jobs,
     create_professions,
     create_locations,
     create_applications,
     create_applications_for_user,
+    create_rates,
     generate_customer_uid,
     create_jobs_for_user,
 )
@@ -290,10 +291,11 @@ def test_get_user_profile(
     user: m.User = db.scalar(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
+
     create_applications(db)
     create_applications_for_user(db, user.id)
-    create_applications_for_user(db, user.id)
-    create_jobs_for_user(db, user.id)
+    create_jobs_for_user(db, user.id, 15)
+    create_rates(db)
 
     response = client.get(
         "api/user/jobs",
@@ -448,7 +450,7 @@ def test_get_user_profile(
     assert response.status_code == status.HTTP_200_OK
     resp_obj: s.RateList = s.RateList.parse_obj(response.json())
     for rate in resp_obj.rates:
-        assert rate.worker_id == user.id
+        assert rate.owner_id == user.id
 
     response = client.get(
         "api/user/applications?type=owner",

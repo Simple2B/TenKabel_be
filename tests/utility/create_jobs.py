@@ -48,7 +48,7 @@ TEST_CITIES = [
 
 
 def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
-    worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()] + [None]
+    worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()]
     statuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
@@ -57,7 +57,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
 
     for _ in range(test_jobs_num):
         job: m.Job = m.Job(
-            owner_id=random.choice(worker_ids[:-1]),
+            owner_id=random.choice(worker_ids),
             worker_id=random.choice(worker_ids),
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
@@ -75,6 +75,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             customer_phone=fake.phone_number(),
             customer_street_address=fake.address(),
         )
+
         db.add(job)
         created_jobs.append(job)
         db.flush()
