@@ -4,6 +4,11 @@ from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from app.controller.notification import (
+    handle_job_commission_notification,
+    handle_job_payment_notification,
+    handle_job_status_update_notification,
+)
 
 from app.dependency import (
     get_current_user,
@@ -11,6 +16,7 @@ from app.dependency import (
     get_job_by_uuid,
     get_payplus_verified_user,
 )
+from app.exceptions import ValueDownGradeForbidden
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -165,65 +171,55 @@ def patch_job(
     current_user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    if job_data.profession_id:
-        job.profession_id = job_data.profession_id
-    if job_data.city:
-        job.city = job_data.city
-    if job_data.payment:
-        job.payment = job_data.payment
-    if job_data.commission:
-        job.commission = job_data.commission
-    if job_data.name:
-        job.name = job_data.name
-    if job_data.description:
-        job.description = job_data.description
-    if job_data.time:
-        job.time = job_data.time
-    if job_data.customer_first_name:
-        job.customer_first_name = job_data.customer_first_name
-    if job_data.customer_last_name:
-        job.customer_last_name = job_data.customer_last_name
-    if job_data.customer_phone:
-        job.customer_phone = job_data.customer_phone
-    if job_data.customer_street_address:
-        job.customer_street_address = job_data.customer_street_address
+    initial_job = s.Job.from_orm(job)
+    try:
+        if job_data.profession_id:
+            job.profession_id = job_data.profession_id
+        if job_data.city:
+            job.city = job_data.city
+        if job_data.payment:
+            job.payment = job_data.payment
+        if job_data.commission:
+            job.commission = job_data.commission
+        if job_data.name:
+            job.name = job_data.name
+        if job_data.description:
+            job.description = job_data.description
+        if job_data.time:
+            job.time = job_data.time
+        if job_data.customer_first_name:
+            job.customer_first_name = job_data.customer_first_name
+        if job_data.customer_last_name:
+            job.customer_last_name = job_data.customer_last_name
+        if job_data.customer_phone:
+            job.customer_phone = job_data.customer_phone
+        if job_data.customer_street_address:
+            job.customer_street_address = job_data.customer_street_address
+    except ValueDownGradeForbidden as e:
+        log(log.ERROR, "Error while patching job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
+        )
 
-    user = job.worker if current_user == job.owner else job.owner
     job.status = s.enums.JobStatus(job_data.status)
     job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
     job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
-    if job_data.status and user:
-        if job.status == s.enums.JobStatus.APPROVED:
-            notification_type = s.NotificationType.JOB_STARTED
+    if job_data.status:
+        handle_job_status_update_notification(current_user, job, db, initial_job)
 
-        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-            notification_type = s.NotificationType.JOB_DONE
+    if job_data.payment_status:
+        handle_job_payment_notification(current_user, job, db, initial_job)
 
-        notification: m.Notification = m.Notification(
-            user_id=user.id,
-            entity_id=job.id,
-            type=notification_type,
-        )
-        db.add(notification)
-
-        if user.notification_job_status:
-            push_handler = PushHandler()
-            push_handler.send_notification(
-                s.PushNotificationMessage(
-                    device_tokens=[device.push_token for device in user.devices],
-                    payload=get_notification_payload(
-                        notification_type=notification_type, job=job
-                    ),
-                )
-            )
+    if job_data.commission_status:
+        handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()
     except SQLAlchemyError as e:
         log(log.INFO, "Error while patching job - %s", e)
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Error pathcing job"
+            status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
         )
 
     log(log.INFO, "Job [%s] patched successfully", job.name)
@@ -237,48 +233,31 @@ def update_job(
     job: m.Job = Depends(get_job_by_uuid),
     db: Session = Depends(get_db),
 ):
-    job.profession_id = job_data.profession_id
-    job.city = job_data.city
-    job.payment = job_data.payment
-    job.commission = job_data.commission
-    job.name = job_data.name
-    job.description = job_data.description
-    job.time = job_data.time
-    job.customer_first_name = job_data.customer_first_name
-    job.customer_last_name = job_data.customer_last_name
-    job.customer_phone = job_data.customer_phone
-    job.customer_street_address = job_data.customer_street_address
-    job.status = s.enums.JobStatus(job_data.status)
-    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
-    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
-
-    notification_type = None
-    if job.status == s.enums.JobStatus.APPROVED:
-        notification_type = s.NotificationType.JOB_STARTED
-
-    if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-        notification_type = s.NotificationType.JOB_DONE
-
-    user = job.worker if current_user == job.owner else job.owner
-
-    if notification_type and user:
-        notification: m.Notification = m.Notification(
-            user_id=user.id,
-            entity_id=job.id,
-            type=notification_type,
+    initial_job = s.Job.from_orm(job)
+    try:
+        job.profession_id = job_data.profession_id
+        job.city = job_data.city
+        job.payment = job_data.payment
+        job.commission = job_data.commission
+        job.name = job_data.name
+        job.description = job_data.description
+        job.time = job_data.time
+        job.customer_first_name = job_data.customer_first_name
+        job.customer_last_name = job_data.customer_last_name
+        job.customer_phone = job_data.customer_phone
+        job.customer_street_address = job_data.customer_street_address
+        job.status = s.enums.JobStatus(job_data.status)
+        job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+        job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
+    except ValueDownGradeForbidden as e:
+        log(log.ERROR, "Error while updating job [%i] - %s", job.id, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
         )
-        db.add(notification)
 
-        if user.notification_job_status:
-            push_handler = PushHandler()
-            push_handler.send_notification(
-                s.PushNotificationMessage(
-                    device_tokens=[device.push_token for device in user.devices],
-                    payload=get_notification_payload(
-                        notification_type=notification.type, job=job
-                    ),
-                )
-            )
+    handle_job_status_update_notification(current_user, job, db, initial_job)
+    handle_job_payment_notification(current_user, job, db, initial_job)
+    handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()

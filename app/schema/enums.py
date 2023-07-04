@@ -15,6 +15,7 @@ class NotificationType(IndexableStringEnum):
     JOB_DONE = "JOB_DONE"
     JOB_CANCELED = "JOB_CANCELED"
     JOB_PAID = "JOB_PAID"
+    COMMISSION_REQUESTED = "COMMISSION_REQUESTED"
     COMMISSION_PAID = "COMMISSION_PAID"
 
     MAX_JOB_TYPE = "MAX_JOB_TYPE"
@@ -35,6 +36,7 @@ class PaymentStatus(enum.Enum):
 class CommissionStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
+    REQUESTED = "requested"
 
 
 # Payplus
