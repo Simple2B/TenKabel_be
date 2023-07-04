@@ -11,6 +11,7 @@ from app.dependency import (
     get_job_by_uuid,
     get_payplus_verified_user,
 )
+from app.exceptions import ValueDownGradeForbidden
 import app.model as m
 import app.schema as s
 from app.logger import log
@@ -165,28 +166,34 @@ def patch_job(
     current_user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
-    if job_data.profession_id:
-        job.profession_id = job_data.profession_id
-    if job_data.city:
-        job.city = job_data.city
-    if job_data.payment:
-        job.payment = job_data.payment
-    if job_data.commission:
-        job.commission = job_data.commission
-    if job_data.name:
-        job.name = job_data.name
-    if job_data.description:
-        job.description = job_data.description
-    if job_data.time:
-        job.time = job_data.time
-    if job_data.customer_first_name:
-        job.customer_first_name = job_data.customer_first_name
-    if job_data.customer_last_name:
-        job.customer_last_name = job_data.customer_last_name
-    if job_data.customer_phone:
-        job.customer_phone = job_data.customer_phone
-    if job_data.customer_street_address:
-        job.customer_street_address = job_data.customer_street_address
+    try:
+        if job_data.profession_id:
+            job.profession_id = job_data.profession_id
+        if job_data.city:
+            job.city = job_data.city
+        if job_data.payment:
+            job.payment = job_data.payment
+        if job_data.commission:
+            job.commission = job_data.commission
+        if job_data.name:
+            job.name = job_data.name
+        if job_data.description:
+            job.description = job_data.description
+        if job_data.time:
+            job.time = job_data.time
+        if job_data.customer_first_name:
+            job.customer_first_name = job_data.customer_first_name
+        if job_data.customer_last_name:
+            job.customer_last_name = job_data.customer_last_name
+        if job_data.customer_phone:
+            job.customer_phone = job_data.customer_phone
+        if job_data.customer_street_address:
+            job.customer_street_address = job_data.customer_street_address
+    except ValueDownGradeForbidden as e:
+        log(log.ERROR, "Error while patching job - %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
+        )
 
     user = job.worker if current_user == job.owner else job.owner
     job.status = s.enums.JobStatus(job_data.status)
@@ -223,7 +230,7 @@ def patch_job(
     except SQLAlchemyError as e:
         log(log.INFO, "Error while patching job - %s", e)
         raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Error pathcing job"
+            status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
         )
 
     log(log.INFO, "Job [%s] patched successfully", job.name)
@@ -237,20 +244,26 @@ def update_job(
     job: m.Job = Depends(get_job_by_uuid),
     db: Session = Depends(get_db),
 ):
-    job.profession_id = job_data.profession_id
-    job.city = job_data.city
-    job.payment = job_data.payment
-    job.commission = job_data.commission
-    job.name = job_data.name
-    job.description = job_data.description
-    job.time = job_data.time
-    job.customer_first_name = job_data.customer_first_name
-    job.customer_last_name = job_data.customer_last_name
-    job.customer_phone = job_data.customer_phone
-    job.customer_street_address = job_data.customer_street_address
-    job.status = s.enums.JobStatus(job_data.status)
-    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
-    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
+    try:
+        job.profession_id = job_data.profession_id
+        job.city = job_data.city
+        job.payment = job_data.payment
+        job.commission = job_data.commission
+        job.name = job_data.name
+        job.description = job_data.description
+        job.time = job_data.time
+        job.customer_first_name = job_data.customer_first_name
+        job.customer_last_name = job_data.customer_last_name
+        job.customer_phone = job_data.customer_phone
+        job.customer_street_address = job_data.customer_street_address
+        job.status = s.enums.JobStatus(job_data.status)
+        job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
+        job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
+    except ValueDownGradeForbidden as e:
+        log(log.ERROR, "Error while updating job [%i] - %s", job.id, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
+        )
 
     notification_type = None
     if job.status == s.enums.JobStatus.APPROVED:

@@ -104,24 +104,24 @@ class Job(db.Model):
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
 
-    @orm.validates("commission_status")
+    @orm.validates("payment_status")
     def validate_commission_status(self, key, value):
         if (
             self.payment_status == s.enums.PaymentStatus.PAID
-            and value != s.enums.CommissionStatus.PAID
-        ):
-            raise ValueDownGradeForbidden(
-                "Commission status can only be PAID if payment status is PAID"
-            )
-        return value
-
-    @orm.validates("payment_status")
-    def validate_payment_status(self, key, value):
-        if (
-            self.commission_status == s.enums.CommissionStatus.PAID
             and value != s.enums.PaymentStatus.PAID
         ):
             raise ValueDownGradeForbidden(
-                "Payment status can only be PAID if commission status is PAID"
+                "Payment status can only be PAID if payment status is PAID"
+            )
+        return value
+
+    @orm.validates("commission_status")
+    def validate_payment_status(self, key, value):
+        if (
+            self.commission_status == s.enums.CommissionStatus.PAID
+            and value != s.enums.CommissionStatus.PAID
+        ):
+            raise ValueDownGradeForbidden(
+                "Commission status can only be PAID if commission status is PAID"
             )
         return value
