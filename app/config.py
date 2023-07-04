@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
 
     # REDIS
-    REDIS_URL: str = ""
+    REDIS_URL: str = "redis://:password@redis"
     FEE_PAY_DAY: int = 3
     DAILY_REPORT_HOURS: int = 22
     DAILY_REPORT_MINUTES: int = 0

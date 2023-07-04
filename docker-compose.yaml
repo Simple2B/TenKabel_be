@@ -5,7 +5,8 @@ services:
     restart: always
     ports:
       - 127.0.0.1:${REDIS_PORT:-6379}:6379
-
+    command: >
+      --requirepass ${REDIS_PASSWORD}
   db:
     image: postgres:14
     volumes:
@@ -28,6 +29,7 @@ services:
     command: bash ./start_server.sh
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      REDIS_URL: redis://:${REDIS_PASSWORD:-password}@redis
     ports:
       - 127.0.0.1:8008:80
     depends_on:

@@ -7,11 +7,6 @@ settings: Settings = get_settings()
 
 
 @app.task
-def func():
-    print("test")
-
-
-@app.task
 def pay_plus_fee():
     from app.controller.platform_payment import collect_fee
 
@@ -30,18 +25,11 @@ def setup_periodic_tasks(sender, **kwargs):
     )
     sender.add_periodic_task(
         crontab(
-            minute=1,
+            day_of_week=settings.FEE_PAY_DAY,
+            hour=settings.DAILY_REPORT_HOURS,
+            minute=settings.DAILY_REPORT_MINUTES,
         ),
-        func.s(),
+        pay_plus_fee.s(),
         name="Weekly collecting fee",
     )
-    # sender.add_periodic_task(
-    #     crontab(
-    #         day_of_week=settings.FEE_PAY_DAY,
-    #         hour=settings.DAILY_REPORT_HOURS,
-    #         minute=settings.DAILY_REPORT_MINUTES,
-    #     ),
-    #     collect_fee.s(),
-    #     name="Weekly collecting fee",
-    # )
     log(log.INFO, "Tasks scheduled!")
