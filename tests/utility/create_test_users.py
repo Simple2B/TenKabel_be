@@ -5,11 +5,9 @@ from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from app import model as m
-from app import schema as s
 from app.logger import log
 
 NUM_TEST_USERS = 100
-MAX_RATES_NUM = 5
 TEST_IMAGES = []
 
 
@@ -40,17 +38,7 @@ def fill_test_data(db: Session):
 
     log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
     db.flush()
-    for uid_user in range(1, NUM_TEST_USERS):
-        count_rates = random.randint(0, MAX_RATES_NUM)
-        rates_num_total += count_rates
-        for _ in range(count_rates):
-            rate = m.Rate(
-                worker_id=uid_user,
-                owner_id=random.randint(1, NUM_TEST_USERS),
-                rate=random.choice([e for e in s.BaseRate.RateStatus]),
-            )
-            db.add(rate)
-        db.flush()
+
     users: list[m.User] = db.scalars(select(m.User)).all()
     for user in users:
         if profession_ids:

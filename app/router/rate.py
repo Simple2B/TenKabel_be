@@ -7,6 +7,8 @@ import app.model as m
 import app.schema as s
 from app.logger import log
 from app.database import get_db
+from app.controller import create_rate_controller
+from app.dependency import get_current_user
 
 
 rate_router = APIRouter(prefix="/rate", tags=["Rate"])
@@ -98,21 +100,7 @@ def patch_rate(
 def create_rate(
     rate_data: s.BaseRate,
     db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
 ):
-    new_rate: m.Rate = m.Rate(
-        owner_id=rate_data.owner_id,
-        worker_id=rate_data.worker_id,
-        rate=s.BaseRate.RateStatus(rate_data.rate),
-    )
-
-    db.add(new_rate)
-    try:
-        db.commit()
-    except SQLAlchemyError as e:
-        log(log.ERROR, "Error while creating new rate - %s", e)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Error creating new rate"
-        )
-
-    log(log.INFO, "Rate [%s] created successfully", new_rate.id)
-    return new_rate
+    rate = create_rate_controller(rate_data, db)
+    return rate

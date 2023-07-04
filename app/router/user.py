@@ -281,7 +281,7 @@ def get_user_rates(
     current_user: m.User = Depends(get_current_user),
 ):
     rates: s.RateList = db.scalars(
-        select(m.Rate).where(m.Rate.worker_id == current_user.id)
+        select(m.Rate).where(m.Rate.owner_id == current_user.id)
     ).all()
     log(
         log.INFO,

@@ -50,6 +50,8 @@ class Job(BaseJob):
     city: str
     time: str
     applications: list[ApplicationOut]
+    rated_by_owner: bool
+    rated_by_worker: bool
 
     class Config:
         use_enum_values = True

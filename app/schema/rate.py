@@ -9,6 +9,7 @@ class BaseRate(BaseModel):
         NEGATIVE = "negative"
         NEUTRAL = "neutral"
 
+    job_id: int
     owner_id: int
     worker_id: int
     rate: RateStatus
@@ -19,6 +20,7 @@ class BaseRate(BaseModel):
 
 
 class RatePatch(BaseModel):
+    job_id: int | None
     owner_id: int | None
     worker_id: int | None
     rate: BaseRate.RateStatus | None

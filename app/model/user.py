@@ -105,15 +105,21 @@ class User(db.Model, BaseUser):
 
     @property
     def positive_rates_count(self) -> int:
-        return sum([rate.rate == s.BaseRate.RateStatus.POSITIVE for rate in self.rates])
+        return sum(
+            [rate.rate == s.BaseRate.RateStatus.POSITIVE for rate in self.owned_rates]
+        )
 
     @property
     def negative_rates_count(self) -> int:
-        return sum([rate.rate == s.BaseRate.RateStatus.NEGATIVE for rate in self.rates])
+        return sum(
+            [rate.rate == s.BaseRate.RateStatus.NEGATIVE for rate in self.owned_rates]
+        )
 
     @property
     def neutral_rates_count(self) -> int:
-        return sum([rate.rate == s.BaseRate.RateStatus.NEUTRAL for rate in self.rates])
+        return sum(
+            [rate.rate == s.BaseRate.RateStatus.NEUTRAL for rate in self.owned_rates]
+        )
 
     def __repr__(self):
         return f"<{self.id}: {self.first_name} {self.last_name}>"
