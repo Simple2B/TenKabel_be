@@ -17,7 +17,7 @@ from .payplus import (
 )
 from .platform_payment import (
     create_platform_payment,
-    create_platform_comission,
+    create_platform_commission,
     create_application_payments,
     collect_fee,
 )

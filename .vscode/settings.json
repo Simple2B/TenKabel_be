@@ -11,6 +11,7 @@
     "sqladmin",
     "sqlalchemy",
     "starlette",
+    "uselist",
     "viewonly"
   ],
   "python.formatting.provider": "black",

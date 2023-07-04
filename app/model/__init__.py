@@ -15,7 +15,7 @@ from .user_notifications_location import UserNotificationLocation
 from .device import Device
 
 from .notification import Notification
-from .platform_comission import PlatformComission
+from .platform_comission import PlatformCommission
 from .platform_payment import PlatformPayment
 
 from app.database import db
