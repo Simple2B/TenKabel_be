@@ -50,6 +50,7 @@ def login_by_phone(
 def sign_up(
     data: s.UserSignUp,
     db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
 ):
     if db.scalar(exists().where(m.User.phone == data.phone).select()):
         log(log.ERROR, "User [%s] already exist", data.phone)
@@ -109,7 +110,7 @@ def sign_up(
             status_code=status.HTTP_409_CONFLICT, detail="Error storing user data"
         )
 
-    # create_payplus_customer(user, settings, db)
+    create_payplus_customer(user, settings, db)
 
     log(log.INFO, "User [%s] COMPLETELY signed up", user.phone)
     return user
