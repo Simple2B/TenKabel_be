@@ -1,6 +1,5 @@
 from app import model as m
 from app import schema as s
-from app.database import db
 from app.logger import log
 from sqlalchemy import select
 from sqlalchemy.orm import Session

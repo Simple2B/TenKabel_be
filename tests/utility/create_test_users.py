@@ -5,7 +5,6 @@ from sqlalchemy import select
 
 from sqlalchemy.orm import Session
 from app import model as m
-from app import schema as s
 from app.logger import log
 
 NUM_TEST_USERS = 100
