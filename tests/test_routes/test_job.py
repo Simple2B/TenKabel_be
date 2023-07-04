@@ -297,9 +297,9 @@ def test_update_job(
         city=job.city,
         payment=job.payment,
         commission=job.commission,
-        payment_status=s.enums.PaymentStatus.PAID,
-        commission_status=s.enums.CommissionStatus.UNPAID,
-        who_pays=s.Job.WhoPays.ME,
+        payment_status=job.payment_status,
+        commission_status=job.commission_status,
+        who_pays=job.who_pays,
         name=job.name,
         description=job.description,
         time=job.time,
@@ -327,14 +327,14 @@ def test_update_job(
         payment_status=s.enums.PaymentStatus.PAID,
         commission_status=s.enums.CommissionStatus.PAID,
         name=job.name,
-        who_pays=s.Job.WhoPays.ME,
+        who_pays=job.who_pays,
         description=job.description,
         time=job.time,
         customer_first_name=job.customer_first_name,
         customer_last_name=job.customer_last_name,
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
-        status=s.enums.JobStatus.JOB_IS_FINISHED,
+        status=job.status,
     )
     response = client.put(
         f"api/job/{job.uuid}",
@@ -346,6 +346,32 @@ def test_update_job(
     job: m.Job = db.scalar(select(m.Job).where(m.Job.uuid == job.uuid))
     db.refresh(job)
     assert job.status == s.enums.JobStatus.JOB_IS_FINISHED
+
+    request_data: s.JobUpdate = s.JobUpdate(
+        profession_id=job.profession_id,
+        city=job.city,
+        payment=job.payment,
+        commission=job.commission,
+        payment_status=s.enums.PaymentStatus.UNPAID,
+        commission_status=job.commission_status,
+        name=job.name,
+        who_pays=job.who_pays,
+        description=job.description,
+        time=job.time,
+        customer_first_name=job.customer_first_name,
+        customer_last_name=job.customer_last_name,
+        customer_phone=job.customer_phone,
+        customer_street_address=job.customer_street_address,
+        status=job.status,
+    )
+
+    response = client.put(
+        f"api/job/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
 
 
 def test_patch_job(
@@ -363,8 +389,8 @@ def test_patch_job(
     request_data: s.JobPatch = s.JobPatch(
         name=NEW_NAME,
         status=s.enums.JobStatus.IN_PROGRESS,
-        payment_status=s.enums.PaymentStatus.UNPAID,
-        commission_status=s.enums.CommissionStatus.UNPAID,
+        payment_status=job.payment_status,
+        commission_status=job.commission_status,
     )
     user = job.owner
 
@@ -387,8 +413,8 @@ def test_patch_job(
     request_data: s.JobPatch = s.JobPatch(
         customer_last_name=NEW_NAME + "1",
         status=s.enums.JobStatus.JOB_IS_FINISHED,
-        payment_status=s.enums.PaymentStatus.UNPAID,
-        commission_status=s.enums.CommissionStatus.UNPAID,
+        payment_status=job.payment_status,
+        commission_status=job.commission_status,
     )
     response = client.patch(
         f"api/job/{job.uuid}",

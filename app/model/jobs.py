@@ -3,11 +3,12 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 
 from app.database import db
+from app.exceptions import ValueDownGradeForbidden
 from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
 from app.model.applications import Application
-from .platform_payment import PlatformPayment
+from .platform_comission import PlatformComission
 
 
 class Job(db.Model):
@@ -76,8 +77,8 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
-    platform_payments: orm.Mapped[PlatformPayment] = orm.relationship(
-        "PlatformPayment", backref="job"
+    platform_comissions: orm.Mapped[PlatformComission] = orm.relationship(
+        "PlatformComission", backref="job"
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
@@ -110,3 +111,25 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
+
+    @orm.validates("payment_status")
+    def validate_commission_status(self, key, value):
+        if (
+            self.payment_status == s.enums.PaymentStatus.PAID
+            and value != s.enums.PaymentStatus.PAID
+        ):
+            raise ValueDownGradeForbidden(
+                "Payment status can only be PAID if payment status is PAID"
+            )
+        return value
+
+    @orm.validates("commission_status")
+    def validate_payment_status(self, key, value):
+        if (
+            self.commission_status == s.enums.CommissionStatus.PAID
+            and value != s.enums.CommissionStatus.PAID
+        ):
+            raise ValueDownGradeForbidden(
+                "Commission status can only be PAID if commission status is PAID"
+            )
+        return value

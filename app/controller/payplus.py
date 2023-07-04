@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import httpx
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -8,8 +10,6 @@ from app import schema as s
 from app.config import Settings
 from app.utility import pay_plus_headers
 from app.logger import log
-
-from datetime import datetime
 
 
 def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> None:
@@ -160,3 +160,25 @@ def create_payplus_token(
         "User [%s] payplus card uid created and stored",
         user.id,
     )
+
+
+def payplus_periodic_charge(
+    charge_data: s.PayPlusCharge,
+    settings: Settings,
+):
+    try:
+        httpx.post(
+            f"{settings.PAY_PLUS_API_URL}/Transactions/Charge",
+            headers=pay_plus_headers(settings),
+            json=charge_data.dict(),
+        )
+    except httpx.RequestError as e:
+        log(
+            log.ERROR,
+            "Error occured while charging for comissions:\n%s",
+            e,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error occured while charging comission",
+        )

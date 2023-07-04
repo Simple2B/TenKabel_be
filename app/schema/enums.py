@@ -1,5 +1,5 @@
 import enum
-from app.utility import IndexableStringEnum
+from app.utility.enum_mixin import IndexableStringEnum
 
 
 class JobStatus(IndexableStringEnum):
@@ -15,6 +15,7 @@ class NotificationType(IndexableStringEnum):
     JOB_DONE = "JOB_DONE"
     JOB_CANCELED = "JOB_CANCELED"
     JOB_PAID = "JOB_PAID"
+    COMMISSION_REQUESTED = "COMMISSION_REQUESTED"
     COMMISSION_PAID = "COMMISSION_PAID"
 
     MAX_JOB_TYPE = "MAX_JOB_TYPE"
@@ -26,12 +27,7 @@ class NotificationType(IndexableStringEnum):
     MAX_APPLICATION_TYPE = "MAX_APPLICATION_TYPE"
 
 
-class PlatformPaymentStatus(IndexableStringEnum):
-    IDLE = "IDLE"
-    PENDING = "PENDING"
-    PAID = "PAID"
-
-
+# Job
 class PaymentStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
@@ -40,3 +36,12 @@ class PaymentStatus(enum.Enum):
 class CommissionStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
+    REQUESTED = "requested"
+
+
+# Payplus
+class PlatformPaymentStatus(enum.Enum):
+    PAID = "PAID"
+    UNPAID = "UNPAID"
+    REJECTED = "REJECTED"
+    PROGRESS = "PROGRESS"

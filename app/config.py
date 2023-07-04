@@ -18,10 +18,14 @@ class Settings(BaseSettings):
     PAY_PLUS_TERMINAL_ID: str = ""
     PAY_PLUS_CASHIERS_ID: str = ""
     PAY_PLUS_PAYMENT_PAGE_ID: str = ""
+    PAYPLUS_CURRENCY_CODE: str = "ILS"
 
     # GOOGLE
     GOOGLE_BUCKET_NAME: str = "tenkabel"
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
+
+    VAT_COEFFICIENT: float = 1.17
+    COMISSION_COEFFICIENT: float = 0.009
 
     class Config:
         env_file = "project.env", ".env"
