@@ -147,15 +147,15 @@ def test_application_methods(
     )
 
     assert db.scalar(
-        select(m.PlatformComission).where(
-            m.PlatformComission.user_id == accepted_application.owner_id,
-            m.PlatformComission.job_id == accepted_application.job_id,
+        select(m.PlatformCommission).where(
+            m.PlatformCommission.user_id == accepted_application.owner_id,
+            m.PlatformCommission.job_id == accepted_application.job_id,
         )
     )
     assert db.scalar(
-        select(m.PlatformComission).where(
-            m.PlatformComission.user_id == accepted_application.worker_id,
-            m.PlatformComission.job_id == accepted_application.job_id,
+        select(m.PlatformCommission).where(
+            m.PlatformCommission.user_id == accepted_application.worker_id,
+            m.PlatformCommission.job_id == accepted_application.job_id,
         )
     )
 

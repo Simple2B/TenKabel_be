@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
 
     VAT_COEFFICIENT: float = 1.17
-    COMISSION_COEFFICIENT: float = 0.009
+    COMMISSION_COEFFICIENT: float = 0.009
 
     class Config:
         env_file = "project.env", ".env"

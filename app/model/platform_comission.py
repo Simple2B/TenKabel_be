@@ -8,8 +8,8 @@ from app import model as m
 from .platform_payment import PlatformPayment
 
 
-class PlatformComission(db.Model):
-    __tablename__ = "platform_comissions"
+class PlatformCommission(db.Model):
+    __tablename__ = "platform_commissions"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
@@ -36,7 +36,7 @@ class PlatformComission(db.Model):
     platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(
         "PlatformPayment",
         foreign_keys=[platform_payment_id],
-        backref="platform_comissions",
+        backref="platform_commissions",
         viewonly=True,
         uselist=False,
     )
