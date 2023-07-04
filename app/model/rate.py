@@ -31,7 +31,7 @@ class Rate(db.Model):
         "User", foreign_keys=[owner_id], viewonly=True, backref="owned_rates"
     )
     job: orm.Mapped[m.Job] = orm.relationship(
-        "Job", foreign_keys=[job_id], viewonly=True
+        "Job", foreign_keys=[job_id], viewonly=True, backref="rates"
     )
 
     def __repr__(self):

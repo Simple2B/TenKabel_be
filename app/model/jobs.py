@@ -83,6 +83,14 @@ class Job(db.Model):
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
     @property
+    def rated_by_owner(self) -> bool:
+        return self.owner_id in [rate.worker_id for rate in self.rates]
+
+    @property
+    def rated_by_worker(self) -> bool:
+        return self.worker_id in [rate.worker_id for rate in self.rates]
+
+    @property
     def time(self) -> str:
         return self.formatted_time
 

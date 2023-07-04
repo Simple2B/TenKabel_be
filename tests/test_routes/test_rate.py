@@ -28,6 +28,8 @@ def test_rate_methods(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
     create_jobs_for_user(db, user.id)
+    create_rates(db)
+
     job: m.Job = db.scalar(
         select(m.Job).where(
             and_(
@@ -47,8 +49,9 @@ def test_rate_methods(
         )
         job.status = s.enums.JobStatus.JOB_IS_FINISHED
         db.commit()
-
-    create_rates(db)
+    for rate in job.rates:
+        db.delete(rate)
+    db.commit()
     count_rates_before = user.positive_rates_count
 
     request_data = s.BaseRate(
@@ -66,6 +69,8 @@ def test_rate_methods(
     assert response.status_code == status.HTTP_201_CREATED
 
     assert user.positive_rates_count == count_rates_before + 1
+    assert job.rated_by_worker and not job.rated_by_owner
+
     rate: m.Rate = db.scalar(
         select(m.Rate).where(
             and_(
