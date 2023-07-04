@@ -40,3 +40,4 @@ class PaymentStatus(enum.Enum):
 class CommissionStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
+    REQUESTED = "requested"
