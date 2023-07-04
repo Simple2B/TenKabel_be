@@ -31,7 +31,7 @@ class Settings(BaseSettings):
     DAILY_REPORT_MINUTES: int = 0
 
     VAT_COEFFICIENT: float = 1.17
-    COMISSION_COEFFICIENT: float = 0.009
+    COMMISSION_COEFFICIENT: float = 0.009
 
     class Config:
         env_file = "project.env", ".env"
