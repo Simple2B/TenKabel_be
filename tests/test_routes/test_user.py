@@ -153,11 +153,11 @@ def test_signup(
     response = client.post("api/auth/sign-up", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
 
-    user: m.User = db.scalar(
-        select(m.User).where(m.User.phone == test_data.test_user.phone)
-    )
+    # checking if the user has created
+    user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
     assert user
-    # assert user.payplus_customer_uid
+    assert user.payplus_customer_uid
+
     assert user.professions[0].id == request_data.profession_id
     assert [location.id for location in user.locations] == request_data.locations
 
