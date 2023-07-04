@@ -7,10 +7,10 @@ from app.logger import log
 
 def create_pending_platform_payment(db: Session, user: m.User, job: m.Job):
     db.add(
-        m.PlatformPayment(
+        m.PlatformComission(
             user_id=user.id,
             job_id=job.id,
-            status=s.enums.PlatformPaymentStatus.PENDING,
+            status=s.enums.PlatformComissionStatus.PENDING,
         )
     )
     db.commit()
