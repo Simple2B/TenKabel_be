@@ -8,7 +8,7 @@ import app.schema as s
 from app.logger import log
 from app.database import get_db
 from app.dependency import get_current_user, get_payplus_verified_user
-from app.controller import PushHandler
+from app.controller import PushHandler, create_application_payments
 from app.utility.notification import get_notification_payload
 
 
@@ -24,6 +24,7 @@ def update_application(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
+    # PUT in case if application has been ACCEPTED
     application: m.Application | None = db.scalar(
         select(m.Application).where(
             and_(
@@ -80,15 +81,9 @@ def update_application(
 
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
+        create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
-        db.add(
-            m.PlatformPayment(
-                user_id=current_user.id,
-                job_id=job.id,
-                status=s.enums.PlatformPaymentStatus.PENDING,
-            )
-        )
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
@@ -100,7 +95,6 @@ def update_application(
             type=notification_type,
         )
         db.add(notification)
-
         push_handler = PushHandler()
         push_handler.send_notification(
             s.PushNotificationMessage(
@@ -132,6 +126,7 @@ def patch_application(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
+    # PATCH in case if application has been DECLINED
     application: m.Application | None = db.scalar(
         select(m.Application).where(
             and_(
@@ -195,6 +190,7 @@ def patch_application(
 
         job.worker_id = application.worker_id
         job.status = s.enums.JobStatus.IN_PROGRESS
+        create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
     else:

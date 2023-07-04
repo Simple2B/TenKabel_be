@@ -1,8 +1,8 @@
-from app.logger import log
-
-from functools import wraps
-import time
 import sys
+import time
+from functools import wraps
+
+from app.logger import log
 
 
 def time_measurement(func):

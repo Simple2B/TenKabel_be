@@ -27,7 +27,12 @@ from .application import (
     ApplicationPatch,
 )
 from .who_am_i import WhoAmIOut
-from .enums import JobStatus, NotificationType, PaymentStatus, CommissionStatus
+from .enums import (
+    JobStatus,
+    NotificationType,
+    PaymentStatus,
+    CommissionStatus,
+)
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
 from .auth import LogoutIn
@@ -46,4 +51,4 @@ from .platform_payment import (
 )
 
 from .card import CardIn
-from .payplus import PayplusCardIn, PayplusCustomerIn
+from .payplus import PayplusCardIn, PayplusCustomerIn, PayPlusCharge

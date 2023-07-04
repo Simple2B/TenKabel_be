@@ -25,7 +25,6 @@ def test_application_methods(
     fill_test_data(db)
     create_professions(db)
     create_jobs(db)
-    # create_applications(db)
 
     job_id: int | None = db.scalar(
         select(m.Job.id).where((m.Job.status == s.enums.JobStatus.PENDING))
@@ -94,7 +93,6 @@ def test_application_methods(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
-
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(application)
     assert application.status == s.BaseApplication.ApplicationStatus.DECLINED
@@ -109,11 +107,6 @@ def test_application_methods(
     application.status = s.BaseApplication.ApplicationStatus.PENDING
     db.commit()
 
-    # application = db.scalar(
-    #     select(m.Application).where(
-    #         m.Application.status == s.BaseApplication.ApplicationStatus.PENDING
-    #     )
-    # )
     response = client.put(
         f"api/application/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
@@ -129,11 +122,47 @@ def test_application_methods(
     applications = db.scalars(
         select(m.Application).where((m.Application.job_id == application.job_id))
     ).all()
+    accepted_application = [
+        application
+        for application in applications
+        if application.status == s.BaseApplication.ApplicationStatus.ACCEPTED
+    ][0]
+    assert accepted_application.id == application.id
+
+    # check for payment commission for both of users
+    # create test assertion
+    # for each user in job we have to check if platform payment and platform_comission exists
+
+    assert db.scalar(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.user_id == accepted_application.owner_id,
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+        )
+    )
+    assert db.scalar(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.user_id == accepted_application.worker_id,
+            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+        )
+    )
+
+    assert db.scalar(
+        select(m.PlatformComission).where(
+            m.PlatformComission.user_id == accepted_application.owner_id,
+            m.PlatformComission.job_id == accepted_application.job_id,
+        )
+    )
+    assert db.scalar(
+        select(m.PlatformComission).where(
+            m.PlatformComission.user_id == accepted_application.worker_id,
+            m.PlatformComission.job_id == accepted_application.job_id,
+        )
+    )
 
     assert db.scalar(
         select(m.Notification).where(
             and_(
-                m.Notification.entity_id == application.id,
+                m.Notification.entity_id == accepted_application.id,
                 m.Notification.type == s.NotificationType.APPLICATION_ACCEPTED,
             )
         )
@@ -144,3 +173,6 @@ def test_application_methods(
             assert (
                 exist_application.status == s.BaseApplication.ApplicationStatus.DECLINED
             )
+
+
+# TODO test create coule platform payments and then check

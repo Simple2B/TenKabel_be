@@ -11,7 +11,7 @@ from app.config import get_settings, Settings
 settings: Settings = get_settings()
 
 
-db = Alchemical(settings.DATABASE_URI)
+db = Alchemical(settings.DATABASE_URI, session_options={"autoflush": False})
 
 
 @lru_cache

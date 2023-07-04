@@ -36,7 +36,7 @@ class Job(BaseJob):
     status: JobStatus
     payment_status: PaymentStatus
     commission_status: CommissionStatus
-    platform_payments: list[PlatformPayment]
+    platform_comissions: list[PlatformPayment]
     who_pays: WhoPays
     is_deleted: bool
     owner: User
