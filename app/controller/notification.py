@@ -83,3 +83,112 @@ def job_created_notify(job: m.Job, db: Session):
 
     log(log.INFO, "[%d] notifications created", len(users))
     log(log.INFO, "[%d] notifications sended", len(devices))
+
+
+def handle_job_status_update_notification(
+    current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
+):
+    if initial_job.status == job.status:
+        log(log.DEBUG, "Job [%i] status not changed", job.id)
+        return
+    notification_type = None
+    if job.status == s.enums.JobStatus.APPROVED:
+        notification_type = s.NotificationType.JOB_STARTED
+
+    if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+        notification_type = s.NotificationType.JOB_DONE
+
+    user = job.worker if current_user == job.owner else job.owner
+
+    if notification_type and user:
+        notification: m.Notification = m.Notification(
+            user_id=user.id,
+            entity_id=job.id,
+            type=notification_type,
+        )
+        db.add(notification)
+
+        if user.notification_job_status:
+            push_handler = PushHandler()
+            push_handler.send_notification(
+                s.PushNotificationMessage(
+                    device_tokens=[device.push_token for device in user.devices],
+                    payload=get_notification_payload(
+                        notification_type=notification.type, job=job
+                    ),
+                )
+            )
+
+
+def handle_job_payment_notification(
+    current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
+):
+    if initial_job.payment_status == job.payment_status:
+        log(log.DEBUG, "Job [%i] payment status not changed", job.id)
+        return
+
+    user = job.worker if current_user == job.owner else job.owner
+
+    if not user or job.payment_status != s.enums.PaymentStatus.PAID:
+        return
+
+    notification: m.Notification = m.Notification(
+        user_id=user.id,
+        entity_id=job.id,
+        type=s.NotificationType.JOB_PAID,
+    )
+    db.add(notification)
+
+    if user.notification_job_status:
+        push_handler = PushHandler()
+        push_handler.send_notification(
+            s.PushNotificationMessage(
+                device_tokens=[device.push_token for device in user.devices],
+                payload=get_notification_payload(
+                    notification_type=notification.type, job=job
+                ),
+            )
+        )
+
+
+def handle_job_commission_notification(
+    current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
+):
+    if initial_job.commission_status == job.commission_status:
+        log(log.DEBUG, "Job [%i] commission status not changed", job.id)
+        return
+
+    user = job.worker if current_user == job.owner else job.owner
+
+    if not user:
+        return
+
+    notification_type = None
+    if job.commission_status == s.enums.CommissionStatus.PAID:
+        notification_type = s.NotificationType.COMMISSION_PAID
+
+    if job.commission_status == s.enums.CommissionStatus.REQUESTED:
+        notification_type = s.NotificationType.COMMISSION_REQUESTED
+
+    if not notification_type:
+        return
+
+    notification: m.Notification = m.Notification(
+        user_id=user.id,
+        entity_id=job.id,
+        type=notification_type,
+    )
+    db.add(notification)
+
+    if not user.notification_job_status:
+        return
+
+    push_handler = PushHandler()
+    push_handler.send_notification(
+        s.PushNotificationMessage(
+            device_tokens=[device.push_token for device in user.devices],
+            payload=get_notification_payload(
+                notification_type=notification.type, job=job
+            ),
+        )
+    )

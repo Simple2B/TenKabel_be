@@ -4,6 +4,11 @@ from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from app.controller.notification import (
+    handle_job_commission_notification,
+    handle_job_payment_notification,
+    handle_job_status_update_notification,
+)
 
 from app.dependency import (
     get_current_user,
@@ -166,6 +171,7 @@ def patch_job(
     current_user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),
 ):
+    initial_job = s.Job.from_orm(job)
     try:
         if job_data.profession_id:
             job.profession_id = job_data.profession_id
@@ -195,35 +201,18 @@ def patch_job(
             status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
         )
 
-    user = job.worker if current_user == job.owner else job.owner
     job.status = s.enums.JobStatus(job_data.status)
     job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
     job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
 
-    if job_data.status and user:
-        if job.status == s.enums.JobStatus.APPROVED:
-            notification_type = s.NotificationType.JOB_STARTED
+    if job_data.status:
+        handle_job_status_update_notification(current_user, job, db, initial_job)
 
-        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-            notification_type = s.NotificationType.JOB_DONE
+    if job_data.payment_status:
+        handle_job_payment_notification(current_user, job, db, initial_job)
 
-        notification: m.Notification = m.Notification(
-            user_id=user.id,
-            entity_id=job.id,
-            type=notification_type,
-        )
-        db.add(notification)
-
-        if user.notification_job_status:
-            push_handler = PushHandler()
-            push_handler.send_notification(
-                s.PushNotificationMessage(
-                    device_tokens=[device.push_token for device in user.devices],
-                    payload=get_notification_payload(
-                        notification_type=notification_type, job=job
-                    ),
-                )
-            )
+    if job_data.commission_status:
+        handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()
@@ -244,6 +233,7 @@ def update_job(
     job: m.Job = Depends(get_job_by_uuid),
     db: Session = Depends(get_db),
 ):
+    initial_job = s.Job.from_orm(job)
     try:
         job.profession_id = job_data.profession_id
         job.city = job_data.city
@@ -265,33 +255,9 @@ def update_job(
             status_code=status.HTTP_409_CONFLICT, detail="Error updating job"
         )
 
-    notification_type = None
-    if job.status == s.enums.JobStatus.APPROVED:
-        notification_type = s.NotificationType.JOB_STARTED
-
-    if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
-        notification_type = s.NotificationType.JOB_DONE
-
-    user = job.worker if current_user == job.owner else job.owner
-
-    if notification_type and user:
-        notification: m.Notification = m.Notification(
-            user_id=user.id,
-            entity_id=job.id,
-            type=notification_type,
-        )
-        db.add(notification)
-
-        if user.notification_job_status:
-            push_handler = PushHandler()
-            push_handler.send_notification(
-                s.PushNotificationMessage(
-                    device_tokens=[device.push_token for device in user.devices],
-                    payload=get_notification_payload(
-                        notification_type=notification.type, job=job
-                    ),
-                )
-            )
+    handle_job_status_update_notification(current_user, job, db, initial_job)
+    handle_job_payment_notification(current_user, job, db, initial_job)
+    handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()
