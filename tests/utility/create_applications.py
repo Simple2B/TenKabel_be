@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select, and_
 from faker import Faker
 
+from app.controller.platform_payment import create_application_payments
 from app import model as m
 from app import schema as s
 from app.logger import log
@@ -36,6 +37,9 @@ def create_applications(db: Session):
                 ),
             )
             db.add(application)
+            db.flush()
+            db.refresh(application)
+            create_application_payments(db, application)
     db.commit()
 
     log(log.INFO, "Applications created - %s", db.query(m.Application).count())
@@ -66,6 +70,9 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
                 status=s.BaseApplication.ApplicationStatus.PENDING,
             )
             db.add(application)
+            db.flush()
+            db.refresh(application)
+            create_application_payments(db, application)
             applications_count += 1
 
         log(
@@ -87,6 +94,9 @@ def create_applications_for_user(db: Session, user_id: int) -> None:
             status=s.BaseApplication.ApplicationStatus.PENDING,
         )
         db.add(application)
+        db.flush()
+        db.refresh(application)
+        create_application_payments(db, application)
         worker_jobs_count += 1
 
     log(

@@ -52,3 +52,4 @@ from .platform_payment import (
 
 from .card import CardIn
 from .payplus import PayplusCardIn, PayplusCustomerIn, PayPlusCharge
+from .platform_commission import PlatformCommission
