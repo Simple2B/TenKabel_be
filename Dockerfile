@@ -32,3 +32,5 @@ COPY pyproject.toml .
 RUN POETRY_VIRTUALENVS_CREATE=false poetry install --no-dev --no-interaction --no-ansi
 
 COPY . .
+
+RUN chmod +x ./start_worker.sh

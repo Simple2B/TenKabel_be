@@ -6,7 +6,7 @@ import pytest
 
 import app.schema as s
 import app.model as m
-from app.controller import collect_fee
+from app.controller.platform_payment import collect_fee
 from app.config import Settings, get_settings
 
 from tests.fixture import TestData
