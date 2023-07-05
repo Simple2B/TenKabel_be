@@ -8,7 +8,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.config import Settings
 from .payplus import payplus_periodic_charge
 
 
