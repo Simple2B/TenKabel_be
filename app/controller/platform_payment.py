@@ -8,7 +8,6 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.config import Settings
 from .payplus import payplus_periodic_charge
 
 
@@ -101,10 +100,14 @@ def create_application_payments(db: Session, application: m.Application):
     )
 
 
-def collect_fee(
-    db: Session,
-    settings: Settings,
-):
+def collect_fee():
+    from app.database import get_db
+    from app.config import get_settings
+
+    settings = get_settings()
+    db = get_db().__next__()
+    log(log.INFO, "Collecting fee")
+
     platform_payments: list[m.PlatformPayment] = db.scalars(
         select(m.PlatformPayment).where(
             m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID
@@ -112,6 +115,7 @@ def collect_fee(
     ).all()
 
     for platform_payment in platform_payments:
+        log(log.INFO, "Collecting fee for platform payment - [%s]", platform_payment.id)
         commission_amount: list = []  # list of commission amounts
         platform_payment.status = (
             s.enums.PlatformPaymentStatus.PROGRESS
@@ -138,3 +142,5 @@ def collect_fee(
             more_info_1=json.dumps({"platform_payment_uuid": platform_payment.uuid}),
         )
         payplus_periodic_charge(payplus_charge_data, settings)
+
+    log(log.INFO, "Fee collected successfully")

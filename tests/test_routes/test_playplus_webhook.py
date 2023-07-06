@@ -6,7 +6,7 @@ import pytest
 
 import app.schema as s
 import app.model as m
-from app.controller import collect_fee
+from app.controller.platform_payment import collect_fee
 from app.config import Settings, get_settings
 
 from tests.fixture import TestData
@@ -118,4 +118,4 @@ def test_payment_flow(
     assert response.status_code == status.HTTP_201_CREATED
 
     # testing collect_fee() method
-    collect_fee(db, settings)
+    collect_fee()
