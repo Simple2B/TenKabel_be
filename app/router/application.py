@@ -24,7 +24,6 @@ def update_application(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    # PUT in case if application has been ACCEPTED
     application: m.Application | None = db.scalar(
         select(m.Application).where(
             and_(
@@ -126,7 +125,6 @@ def patch_application(
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
-    # PATCH in case if application has been DECLINED
     application: m.Application | None = db.scalar(
         select(m.Application).where(
             and_(
@@ -299,7 +297,9 @@ def create_application(
             s.PushNotificationMessage(
                 device_tokens=[device.push_token for device in user.devices],
                 payload=get_notification_payload(
-                    notification_type=notification.type, job=job
+                    notification_type=notification.type,
+                    job=job,
+                    application=application,
                 ),
             )
         )

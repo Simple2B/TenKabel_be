@@ -69,7 +69,7 @@ class JobIn(BaseModel):
     city: str
     payment: int
     commission: int
-    who_pays: Job.WhoPays
+    who_pays: Job.WhoPays | None
     name: str
     description: str
     time: str

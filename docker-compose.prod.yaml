@@ -44,10 +44,10 @@ services:
 
   worker:
     build: .
+    image: simple2b/tenkabel-be:latest
+    restart: always
     networks:
       - ten_kabel_network
-    image: simple2b/tenkabel:latest
-    restart: always
     env_file:
       - .env
     command: bash ./start_worker.sh
