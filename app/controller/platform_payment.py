@@ -162,4 +162,4 @@ def collect_fee():
                 settings,
             )
 
-        log(log.INFO, "Fee collected successfully")
+    log(log.INFO, "Collecting fee ended")
