@@ -1,7 +1,7 @@
 import json
 
 from fastapi import status, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -105,42 +105,61 @@ def collect_fee():
     from app.config import get_settings
 
     settings = get_settings()
-    db = get_db().__next__()
-    log(log.INFO, "Collecting fee")
+    with get_db().__next__() as db:
+        log(log.INFO, "Collecting fee")
 
-    platform_payments: list[m.PlatformPayment] = db.scalars(
-        select(m.PlatformPayment).where(
-            m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID
-        )
-    ).all()
-
-    for platform_payment in platform_payments:
-        log(log.INFO, "Collecting fee for platform payment - [%s]", platform_payment.id)
-        commission_amount: list = []  # list of commission amounts
-        platform_payment.status = (
-            s.enums.PlatformPaymentStatus.PROGRESS
-        )  # settings status to progress
-        platform_commissions: list[m.PlatformCommission] = db.scalars(
-            select(m.PlatformCommission).where(
-                m.PlatformCommission.platform_payment_id == platform_payment.id,
+        platform_payments: list[m.PlatformPayment] = db.scalars(
+            select(m.PlatformPayment).where(
+                or_(
+                    m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+                    m.PlatformPayment.status == s.enums.PlatformPaymentStatus.REJECTED,
+                )
             )
-        ).all()  # getting all platform comissions for this platform payment
-        for pc in platform_commissions:
-            commission_amount.append(
-                pc.job.payment
-                * settings.VAT_COEFFICIENT
-                * settings.COMMISSION_COEFFICIENT
-            )  # calculating commission amount
+        ).all()
+        if not platform_payments:
+            log(log.INFO, "No fee to collect")
+            return
 
-        payplus_charge_data: s.PayPlusCharge = s.PayPlusCharge(
-            terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
-            cashier_uid=settings.PAY_PLUS_CASHIERS_ID,
-            amount=sum(commission_amount),
-            currency_code=settings.PAYPLUS_CURRENCY_CODE,
-            use_token=True,
-            token=platform_payment.user.payplus_card_uid,
-            more_info_1=json.dumps({"platform_payment_uuid": platform_payment.uuid}),
-        )
-        payplus_periodic_charge(payplus_charge_data, settings)
+        for platform_payment in platform_payments:
+            log(
+                log.INFO,
+                "Collecting fee for platform payment - [%s]",
+                platform_payment.id,
+            )
+            commission_amount: list = []  # list of commission amounts
+            platform_payment.status = (
+                s.enums.PlatformPaymentStatus.PROGRESS
+            )  # settings status to progress
+            platform_commissions: list[m.PlatformCommission] = db.scalars(
+                select(m.PlatformCommission).where(
+                    m.PlatformCommission.platform_payment_id == platform_payment.id,
+                )
+            ).all()  # getting all platform comissions for this platform payment
+            for pc in platform_commissions:
+                commission_amount.append(
+                    pc.job.payment
+                    * settings.VAT_COEFFICIENT
+                    * settings.COMMISSION_COEFFICIENT
+                )  # calculating commission amount
 
-    log(log.INFO, "Fee collected successfully")
+            payplus_charge_data: s.PayPlusCharge = s.PayPlusCharge(
+                terminal_uid=settings.PAY_PLUS_TERMINAL_ID,
+                cashier_uid=settings.PAY_PLUS_CASHIERS_ID,
+                amount=sum(commission_amount),
+                currency_code=settings.PAYPLUS_CURRENCY_CODE,
+                use_token=True,
+                token=platform_payment.user.payplus_card_uid,
+                more_info_1=json.dumps(
+                    {"platform_payment_uuid": platform_payment.uuid}
+                ),
+                customer_uid=platform_payment.user.payplus_customer_uid,
+            )
+
+            payplus_periodic_charge(
+                payplus_charge_data,
+                platform_payment.uuid,
+                db,
+                settings,
+            )
+
+        log(log.INFO, "Fee collected successfully")

@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 
 class PayplusCardIn(BaseModel):
@@ -21,8 +21,14 @@ class PayplusToken(BaseModel):
 class PayPlusCharge(BaseModel):
     terminal_uid: str
     cashier_uid: str
-    amount: int
+    amount: float
     currency_code: str | None
     use_token: bool = True
     token: str
     more_info_1: str | None
+    credit_terms: int | None = 8
+    customer_uid: str | None = None
+
+    @validator("amount")
+    def round_amount(cls, value) -> float:
+        return round(value, 2)

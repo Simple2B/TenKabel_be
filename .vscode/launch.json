@@ -62,6 +62,14 @@
       "module": "invoke",
       "args": ["patch-job-status"],
       "justMyCode": true
+    },
+    {
+      "name": "collect-fee",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["collecting-fee"],
+      "justMyCode": true
     }
   ]
 }

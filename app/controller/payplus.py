@@ -2,6 +2,7 @@ from datetime import datetime
 
 import httpx
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -86,6 +87,12 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
 def create_payplus_token(
     card_data: s.CardIn, user: m.User, settings: Settings, db: Session
 ) -> None:
+    if user.is_payment_method_invalid:
+        log(log.INFO, "User [%s] has 1 or more rejected payments", user.id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Rejected payments exist"
+        )
+
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         log(log.INFO, "Continuing as card update")
@@ -162,16 +169,48 @@ def create_payplus_token(
     )
 
 
+def validate_charge_response(
+    response,
+    platform_payment_uuid: str,
+    db: Session,
+):
+    if response.status_code != status.HTTP_200_OK:
+        log(log.ERROR, "Error sending request - status code %s", response.status_code)
+
+    response_data = response.json()
+    platform_payment = db.scalar(
+        select(m.PlatformPayment).where(m.PlatformPayment.uuid == platform_payment_uuid)
+    )
+    if response_data.get("results", {}).get("status") == "error":
+        log(
+            log.ERROR,
+            "Error collecting fee - %s",
+            response_data["results"]["description"],
+        )
+
+        platform_payment.status = s.enums.PlatformPaymentStatus.REJECTED
+        db.commit()
+
+    if response_data.get("results", {}).get("status") == "success":
+        platform_payment.status = s.enums.PlatformPaymentStatus.PAID
+        db.commit()
+        log(log.INFO, "Fee collected successfully")
+
+
 def payplus_periodic_charge(
     charge_data: s.PayPlusCharge,
+    platform_payment_uuid: str,
+    db: Session,
     settings: Settings,
-):
+) -> None:
     try:
-        httpx.post(
+        response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/Transactions/Charge",
             headers=pay_plus_headers(settings),
             json=charge_data.dict(),
         )
+        log(log.INFO, "Payplus charge response: %s", response.json())
+        validate_charge_response(response, platform_payment_uuid, db)
     except httpx.RequestError as e:
         log(
             log.ERROR,

@@ -59,6 +59,15 @@ class User(db.Model, BaseUser):
 
     card_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
 
+    @property
+    def is_payment_method_invalid(self) -> bool:
+        return any(
+            [
+                pp.status == s.enums.PlatformPaymentStatus.REJECTED
+                for pp in self.platform_payments
+            ]
+        )
+
     @classmethod
     def authenticate_with_phone(
         cls,

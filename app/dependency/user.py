@@ -44,7 +44,7 @@ def get_payplus_verified_user(
     db: Session = Depends(get_db), current_user: m.User = Depends(get_current_user)
 ) -> m.User:
     """Raises an exception if the current user is not authenticated in payplus"""
-    if not current_user.payplus_card_uid:
+    if not current_user.payplus_card_uid or current_user.is_payment_method_invalid:
         log(log.INFO, "User [%s] doesn`t have payplus customer uid", current_user.id)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
