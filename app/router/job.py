@@ -148,6 +148,10 @@ def create_job(
         customer_phone=data.customer_phone,
         customer_street_address=data.customer_street_address,
     )
+
+    if new_job.who_pays == s.Job.WhoPays.ME:
+        new_job.commission_status = s.enums.CommissionStatus.PAID
+
     db.add(new_job)
 
     try:
