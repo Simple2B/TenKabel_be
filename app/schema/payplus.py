@@ -26,3 +26,5 @@ class PayPlusCharge(BaseModel):
     use_token: bool = True
     token: str
     more_info_1: str | None
+    credit_terms: int | None = 8
+    customer_uid: str | None = None

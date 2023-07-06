@@ -86,6 +86,12 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
 def create_payplus_token(
     card_data: s.CardIn, user: m.User, settings: Settings, db: Session
 ) -> None:
+    if user.is_payment_method_invalid:
+        log(log.INFO, "User [%s] has 1 or more rejected payments", user.id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Rejected payments exist"
+        )
+
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         log(log.INFO, "Continuing as card update")
@@ -167,11 +173,12 @@ def payplus_periodic_charge(
     settings: Settings,
 ):
     try:
-        httpx.post(
+        response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/Transactions/Charge",
             headers=pay_plus_headers(settings),
             json=charge_data.dict(),
         )
+        log(log.INFO, "Payplus charge response: %s", response.json())
     except httpx.RequestError as e:
         log(
             log.ERROR,

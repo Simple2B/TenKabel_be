@@ -10,3 +10,4 @@ from .job import (
     patch_job_status,
 )
 from .application import create_application, create_application_for_notification
+from .collect_fee import collecting_fee
