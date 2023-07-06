@@ -148,6 +148,12 @@ def collect_fee():
                 ),
                 customer_uid=platform_payment.user.payplus_customer_uid,
             )
-            payplus_periodic_charge(payplus_charge_data, settings)
+
+            payplus_periodic_charge(
+                payplus_charge_data,
+                platform_payment.uuid,
+                db,
+                settings,
+            )
 
         log(log.INFO, "Fee collected successfully")

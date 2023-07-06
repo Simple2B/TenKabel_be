@@ -2,6 +2,7 @@ from datetime import datetime
 
 import httpx
 from fastapi import HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -168,10 +169,37 @@ def create_payplus_token(
     )
 
 
+def validate_charge_response(
+    response,
+    platform_payment_uuid: str,
+    db: Session,
+):
+    if response.status_code != status.HTTP_200_OK:
+        log(log.ERROR, "Error sending request - status code %s", response.status_code)
+
+    response_data = response.json()
+
+    if response_data.get("results", {}).get("status") == "error":
+        log(
+            log.ERROR,
+            "Error collecting fee - %s",
+            response_data["results"]["description"],
+        )
+        platform_payment = db.scalar(
+            select(m.PlatformPayment).where(
+                m.PlatformPayment.platform_payment_uuid == platform_payment_uuid
+            )
+        )
+        platform_payment.status = s.enums.PlatformPaymentStatus.REJECTED
+        db.commit()
+
+
 def payplus_periodic_charge(
     charge_data: s.PayPlusCharge,
+    platform_payment_uuid: str,
+    db: Session,
     settings: Settings,
-):
+) -> None:
     try:
         response = httpx.post(
             f"{settings.PAY_PLUS_API_URL}/Transactions/Charge",
@@ -179,6 +207,7 @@ def payplus_periodic_charge(
             json=charge_data.dict(),
         )
         log(log.INFO, "Payplus charge response: %s", response.json())
+        validate_charge_response(response, platform_payment_uuid, db)
     except httpx.RequestError as e:
         log(
             log.ERROR,

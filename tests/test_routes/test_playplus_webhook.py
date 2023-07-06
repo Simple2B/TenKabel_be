@@ -85,6 +85,10 @@ def test_payment_flow(
             def json(self):  # noqa: F811
                 return {"some": "message"}
 
+            @property
+            def status_code(self):
+                return status.HTTP_200_OK
+
         return MockResponse()
 
     monkeypatch.setattr(httpx, "post", mock_post)
