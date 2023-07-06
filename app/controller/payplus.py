@@ -179,9 +179,7 @@ def validate_charge_response(
 
     response_data = response.json()
     platform_payment = db.scalar(
-        select(m.PlatformPayment).where(
-            m.PlatformPayment.platform_payment_uuid == platform_payment_uuid
-        )
+        select(m.PlatformPayment).where(m.PlatformPayment.uuid == platform_payment_uuid)
     )
     if response_data.get("results", {}).get("status") == "error":
         log(
