@@ -69,7 +69,7 @@ def test_rate_methods(
     assert response.status_code == status.HTTP_201_CREATED
 
     assert user.positive_rates_count == count_rates_before + 1
-    assert job.rated_by_worker and not job.rated_by_owner
+    assert job.worker_rate_uuid is not None and job.owner_rate_uuid is None
 
     rate: m.Rate = db.scalar(
         select(m.Rate).where(
