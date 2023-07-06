@@ -1,7 +1,7 @@
 import json
 
 from fastapi import status, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -110,9 +110,15 @@ def collect_fee():
 
         platform_payments: list[m.PlatformPayment] = db.scalars(
             select(m.PlatformPayment).where(
-                m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID
+                or_(
+                    m.PlatformPayment.status == s.enums.PlatformPaymentStatus.UNPAID,
+                    m.PlatformPayment.status == s.enums.PlatformPaymentStatus.REJECTED,
+                )
             )
         ).all()
+        if not platform_payments:
+            log(log.INFO, "No fee to collect")
+            return
 
         for platform_payment in platform_payments:
             log(

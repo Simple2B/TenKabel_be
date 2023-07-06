@@ -178,20 +178,25 @@ def validate_charge_response(
         log(log.ERROR, "Error sending request - status code %s", response.status_code)
 
     response_data = response.json()
-
+    platform_payment = db.scalar(
+        select(m.PlatformPayment).where(
+            m.PlatformPayment.platform_payment_uuid == platform_payment_uuid
+        )
+    )
     if response_data.get("results", {}).get("status") == "error":
         log(
             log.ERROR,
             "Error collecting fee - %s",
             response_data["results"]["description"],
         )
-        platform_payment = db.scalar(
-            select(m.PlatformPayment).where(
-                m.PlatformPayment.platform_payment_uuid == platform_payment_uuid
-            )
-        )
+
         platform_payment.status = s.enums.PlatformPaymentStatus.REJECTED
         db.commit()
+
+    if response_data.get("results", {}).get("status") == "success":
+        platform_payment.status = s.enums.PlatformPaymentStatus.PAID
+        db.commit()
+        log(log.INFO, "Fee collected successfully")
 
 
 def payplus_periodic_charge(
