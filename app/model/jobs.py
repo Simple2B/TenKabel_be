@@ -50,7 +50,7 @@ class Job(db.Model):
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
-    formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+    time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 
     payment_status: orm.Mapped[s.enums.PaymentStatus] = orm.mapped_column(
         sa.Enum(s.enums.PaymentStatus), default=s.enums.PaymentStatus.UNPAID
@@ -63,7 +63,7 @@ class Job(db.Model):
         sa.Enum(s.Job.WhoPays), default=s.Job.WhoPays.ME
     )
 
-    created_at: orm.Mapped[datetime] = orm.mapped_column(
+    created_at_formated: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
 
@@ -94,27 +94,9 @@ class Job(db.Model):
         rates = [rate for rate in self.rates if rate.worker_id == self.worker_id]
         return rates[0].uuid if rates else None
 
-    # @property
-    # def rated_by_owner(self) -> bool:
-    #     return self.owner_id in [rate.worker_id for rate in self.rates]
-
-    # @property
-    # def rated_by_worker(self) -> bool:
-    #     return self.worker_id in [rate.worker_id for rate in self.rates]
-
     @property
-    def time(self) -> str:
-        return self.formatted_time
-
-    @time.setter
-    def time(self, value: str):
-        # TODO: refactor !!!
-        try:
-            self.formatted_time = datetime.strptime(
-                str(value), "%Y-%m-%d %H:%M"
-            ).strftime("%Y-%m-%d %H:%M")
-        except ValueError:
-            self.formatted_time = value
+    def created_at(self) -> datetime:
+        return self.created_at_formated.strftime("%Y-%m-%d %H:%M:%S")
 
     @property
     def application_worker_ids(self):

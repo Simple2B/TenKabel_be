@@ -89,8 +89,8 @@ def test_unauth_user_jobs(client: TestClient, db: Session):
     # get locations
     create_locations(db)
     # create jobs
-    create_jobs(db, NUM_TEST_JOBS)
     fill_test_data(db)
+    create_jobs(db, NUM_TEST_JOBS)
 
     # check jobs are created
     response = client.get("api/job/jobs")
