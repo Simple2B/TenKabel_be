@@ -63,7 +63,7 @@ class Job(db.Model):
         sa.Enum(s.Job.WhoPays), default=s.Job.WhoPays.ME
     )
 
-    created_at_formated: orm.Mapped[datetime] = orm.mapped_column(
+    created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
 
@@ -95,8 +95,8 @@ class Job(db.Model):
         return rates[0].uuid if rates else None
 
     @property
-    def created_at(self) -> datetime:
-        return self.created_at_formated.strftime("%Y-%m-%d %H:%M:%S")
+    def created_at_formated(self) -> datetime:
+        return self.created_at.strftime("%Y-%m-%d %H:%M:%S")
 
     @property
     def application_worker_ids(self):
