@@ -1,5 +1,3 @@
-import re
-
 from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
