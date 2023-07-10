@@ -68,7 +68,7 @@ def get_jobs(
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if city:
-            city = re.sub(r"[^a-zA-Z0-9]", "", city)
+            # city = re.sub(r"[^a-zA-Z0-9]", "", city)
             query = query.where(m.Job.city.ilike(f"%{city}%"))
         if min_price:
             query = query.where(m.Job.payment >= min_price)
