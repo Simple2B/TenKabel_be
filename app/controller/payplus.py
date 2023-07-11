@@ -146,8 +146,7 @@ def create_payplus_token(
         )
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail="Error creating payplus card - %s"
-            % response_data["results"]["description"],
+            detail="%s" % response_data["results"]["description"],
         )
 
     user.payplus_card_uid = response_data["data"]["card_uid"]
