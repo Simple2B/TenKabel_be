@@ -87,6 +87,7 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
 def create_payplus_token(
     card_data: s.CardIn, user: m.User, settings: Settings, db: Session
 ) -> None:
+    method = s.enums.PaymentMethod.ADD
     if user.is_payment_method_invalid:
         log(log.INFO, "User [%s] has 1 or more rejected payments", user.id)
         raise HTTPException(
@@ -96,7 +97,8 @@ def create_payplus_token(
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         log(log.INFO, "Continuing as card update")
-        # return
+        method = s.enums.PaymentMethod.UPDATE.value + "/" + user.payplus_card_uid
+
     if type(card_data.card_date_mmyy) is datetime:
         iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
     else:
@@ -110,7 +112,7 @@ def create_payplus_token(
 
     try:
         response = httpx.post(
-            f"{settings.PAY_PLUS_API_URL}/Token/Add",
+            f"{settings.PAY_PLUS_API_URL}/Token/{method}",
             headers=pay_plus_headers(settings),
             json=request_data.dict(),
         )
