@@ -412,7 +412,14 @@ def patch_user_notification_settings(
 
 
 @user_router.post(
-    "/payplus-token", status_code=status.HTTP_200_OK, response_model=s.User
+    "/payplus-token",
+    status_code=status.HTTP_200_OK,
+    response_model=s.User,
+    openapi_extra={
+        "responses": {
+            status.HTTP_409_CONFLICT: {},
+        }
+    },
 )
 def post_user_payplus_token(
     card_data: s.CardIn,
