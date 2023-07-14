@@ -33,11 +33,6 @@ class PaymentStatus(enum.Enum):
     UNPAID = "unpaid"
 
 
-class PaymentMethod(enum.Enum):
-    ADD = "Add"
-    UPDATE = "Update"
-
-
 class CommissionStatus(enum.Enum):
     PAID = "paid"
     UNPAID = "unpaid"
