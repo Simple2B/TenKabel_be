@@ -97,7 +97,7 @@ def create_payplus_token(
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
         log(log.INFO, "Continuing as card update")
-        method = s.enums.PaymentMethod.UPDATE
+        method = s.enums.PaymentMethod.UPDATE.value + "/" + user.payplus_card_uid
 
     if type(card_data.card_date_mmyy) is datetime:
         iso_card_date: str = datetime.strftime(card_data.card_date_mmyy, "%m/%y")
