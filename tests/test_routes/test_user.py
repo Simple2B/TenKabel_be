@@ -579,9 +579,9 @@ def test_passwords(
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
 ):
-    fill_test_data(db)
     create_professions(db)
     create_jobs(db)
+    fill_test_data(db)
 
     user: m.User = db.scalar(
         select(m.User).where(
@@ -618,6 +618,45 @@ def test_passwords(
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(user)
     assert hash_verify(TEST_NEW_FORGOT_PASSWORD, user.password)
+
+
+def test_delete_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+):
+    create_professions(db)
+    create_jobs(db)
+    fill_test_data(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+
+    uuid = generate_uuid()
+    push_token = "test_token"
+    request_data = s.DeviceIn(uuid=uuid, push_token=push_token)
+
+    response = client.post(
+        "api/device",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        json=request_data.dict(),
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    request_data = s.LogoutIn(device_uuid=push_token)
+    response = client.request(
+        "DELETE",
+        "api/user",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        content=request_data.json(),
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert user.is_deleted
 
 
 # def test_upload_avatar(

@@ -12,7 +12,7 @@ import app.model as m
 import app.schema as s
 from app.oauth2 import create_access_token
 from app.logger import log
-from app.controller import create_payplus_customer
+from app.controller import create_payplus_customer, delete_device
 from app.config import get_settings, Settings
 
 auth_router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -217,15 +217,4 @@ def logout(
     device: s.LogoutIn,
     db: Session = Depends(get_db),
 ):
-    device_from_db: m.Device | None = db.scalar(
-        select(m.Device).where(m.Device.uuid == device.device_uuid)
-    )
-
-    if not device_from_db:
-        log(log.ERROR, "Device [%s] was not found", device.device_uuid)
-        return
-
-    db.delete(device_from_db)
-    db.commit()
-
-    log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)
+    delete_device(device, db)

@@ -8,7 +8,7 @@ from .notification import (
     handle_job_payment_notification,
     handle_job_commission_notification,
 )
-from .user import manage_tab_controller
+from .user import manage_tab_controller, delete_device
 from .rate import create_rate_controller
 from .payplus import (
     create_payplus_customer,

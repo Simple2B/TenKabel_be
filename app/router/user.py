@@ -12,7 +12,7 @@ from app.config import get_settings, Settings
 from app.dependency import get_current_user
 from app.database import get_db
 from app.hash_utils import hash_verify
-from app.controller import manage_tab_controller, create_payplus_token
+from app.controller import manage_tab_controller, create_payplus_token, delete_device
 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
@@ -139,18 +139,14 @@ def delete_user(
     current_user: m.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    device_from_db: m.Device | None = db.scalar(
-        select(m.Device).where(m.Device.uuid == device.device_uuid)
-    )
-
-    if not device_from_db:
-        log(log.ERROR, "Device [%s] was not found", device.device_uuid)
-        return
-
-    db.delete(device_from_db)
-
-    log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)
+    delete_device(device, db)
     current_user.is_deleted = True
+    current_user.email += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+    current_user.phone += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+
+    # for job in current_user.jobs_owned:
+    #     job.is_deleted = True
+    #     job.title += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
 
     try:
         db.commit()

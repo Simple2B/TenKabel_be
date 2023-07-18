@@ -68,3 +68,21 @@ def manage_tab_controller(
         log(log.INFO, "Jobs filtered by status: %s", manage_tab)
 
     return query
+
+
+def delete_device(
+    device: s.LogoutIn,
+    db: Session,
+):
+    device_from_db: m.Device | None = db.scalar(
+        select(m.Device).where(m.Device.uuid == device.device_uuid)
+    )
+
+    if not device_from_db:
+        log(log.ERROR, "Device [%s] was not found", device.device_uuid)
+        return
+
+    db.delete(device_from_db)
+    db.commit()
+
+    log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)

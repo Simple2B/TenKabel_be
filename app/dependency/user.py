@@ -43,7 +43,9 @@ def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
             auth_header.split(" ")[1], INVALID_CREDENTIALS_EXCEPTION
         )
         user = db.scalar(
-            select(m.User).where(m.User.id == token.user_id, m.User.is_deleted == False)
+            select(m.User).where(
+                m.User.id == token.user_id, m.User.is_deleted == False  # noqa E712
+            )
         )
         return user
 
