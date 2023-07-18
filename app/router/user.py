@@ -133,6 +133,36 @@ def patch_user(
     return current_user
 
 
+@user_router.delete("", status_code=status.HTTP_200_OK, response_model=s.User)
+def delete_user(
+    device: s.LogoutIn,
+    current_user: m.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    device_from_db: m.Device | None = db.scalar(
+        select(m.Device).where(m.Device.uuid == device.device_uuid)
+    )
+
+    if not device_from_db:
+        log(log.ERROR, "Device [%s] was not found", device.device_uuid)
+        return
+
+    db.delete(device_from_db)
+
+    log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)
+    current_user.is_deleted = True
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while deleting user [%s] - %s", current_user.id, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error deleting user"
+        )
+    log(log.INFO, "User [%s] deleted successfully", current_user.id)
+    return current_user
+
+
 @user_router.post(
     "/check-password", status_code=status.HTTP_200_OK, response_model=s.PasswordStatus
 )

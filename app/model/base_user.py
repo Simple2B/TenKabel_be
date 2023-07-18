@@ -6,6 +6,7 @@ from sqlalchemy import orm
 
 from app.hash_utils import make_hash, hash_verify
 from app.utility import generate_uuid, get_default_avatar
+from app.logger import log
 
 
 class BaseUser:
@@ -24,6 +25,7 @@ class BaseUser:
     )
     country_code: orm.Mapped[str] = orm.mapped_column(sa.String(32))
     is_verified: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=True)
+    is_deleted: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
 
     @property
     def is_auth_by_google(self):
@@ -49,6 +51,11 @@ class BaseUser:
             )
             .first()
         )
+
+        if user.is_deleted:
+            log(log.INFO, "User is deleted")
+            return None
+
         if user is not None and (
             hash_verify(password, user.password) or password == user.password
         ):
