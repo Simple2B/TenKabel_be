@@ -87,7 +87,7 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
 def create_payplus_token(
     card_data: s.CardIn, user: m.User, settings: Settings, db: Session
 ) -> None:
-    method = s.enums.PaymentMethod.ADD
+    method = s.enums.PaymentMethod.ADD.value
     if user.is_payment_method_invalid:
         log(log.INFO, "User [%s] has 1 or more rejected payments", user.id)
         raise HTTPException(
