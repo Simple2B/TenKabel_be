@@ -3,6 +3,7 @@ from .user import (
     BaseUser,
     User,
     GoogleAuthUser,
+    AppleAuthUser,
     UserSignUp,
     AuthUser,
     UserUpdate,

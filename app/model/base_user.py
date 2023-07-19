@@ -17,6 +17,7 @@ class BaseUser:
     )
     username: orm.Mapped[str] = orm.mapped_column(sa.String(128), default="")
     google_openid_key: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
+    apple_uid: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
     picture: orm.Mapped[str] = orm.mapped_column(sa.Text, default=get_default_avatar())
 
     password_hash: orm.Mapped[str] = orm.mapped_column(sa.String(128), nullable=True)

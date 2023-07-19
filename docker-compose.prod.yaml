@@ -41,7 +41,7 @@ services:
 
   worker:
     build: .
-    image: simple2b/tenkabel-be:latest
+    image: simple2b/tenkabel:latest
     restart: always
     env_file:
       - .env

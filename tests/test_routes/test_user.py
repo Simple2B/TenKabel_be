@@ -250,6 +250,82 @@ def test_google_auth(
     assert response.status_code == status.HTTP_200_OK
 
 
+def test_apple_auth(
+    client: TestClient, db: Session, monkeypatch, test_data: TestData
+) -> None:
+    import httpx
+
+    payplus_response = {
+        "results": {
+            "status": "success",
+            "code": 0,
+            "description": "operation has been success",
+        },
+        "data": {"customer_uid": generate_uuid()},
+    }
+
+    def mock_post(*args, **kwargs):
+        class MockResponse:
+            def json(self):
+                return payplus_response
+
+            @property
+            def status_code(self):
+                return status.HTTP_200_OK
+
+        return MockResponse()
+
+    monkeypatch.setattr(httpx, "post", mock_post)
+
+    TEST_APPLE_MAIL = "somemail@gmail.com"
+    request_data = s.AppleAuthUser(
+        email=TEST_APPLE_MAIL,
+        phone="6635798512",
+        uid="some-rand-uid",
+        display_name="John Doe",
+    ).dict()
+
+    response = client.post("api/auth/apple", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    user: m.User = db.query(m.User).filter_by(email=TEST_APPLE_MAIL).first()
+    assert user
+
+    # test sign in
+    request_data = s.AppleAuthUser(
+        email=user.email,
+    ).dict()
+    response = client.post("api/auth/apple", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.Token = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    # checking non existing user
+    user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
+    assert not user
+
+    request_data = s.AppleAuthUser(
+        email=test_data.test_user.email,
+        display_name=test_data.test_user.username,
+        uid=test_data.test_user.google_openid_key,
+    ).dict()
+
+    response = client.post("api/auth/apple", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.Token.parse_obj(response.json())
+    assert resp_obj.access_token
+
+    # checking if the user has created
+    user = db.query(m.User).filter_by(email=test_data.test_user.email).first()
+    assert user
+    assert user.payplus_customer_uid
+
+    response = client.post("api/auth/apple", json=request_data)
+    assert response.status_code == status.HTTP_200_OK
+
+
 def test_get_user_profile(
     client: TestClient,
     db: Session,

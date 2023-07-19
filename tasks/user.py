@@ -10,6 +10,9 @@ from app.model import (
     Location,
     UserLocation,
     UserProfession,
+    UserNotificationLocation,
+    UserNotificationsProfessions,
+    PlatformCommission,
 )
 from app.logger import log
 
@@ -150,12 +153,24 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         log(log.WARNING, "User not found")
         return
 
+    for pp in user.platform_payments:
+        db.delete(pp)
+        log(log.INFO, "Platform payment deleted")
+
     for job in user.jobs_to_do:
         for application in job.applications:
             log(log.INFO, "Application deleted [%s]", application.job.name)
             db.delete(application)
             db.commit()
-
+        pps = db.scalars(
+            select(PlatformCommission).where(PlatformCommission.job_id == job.id)
+        ).all()
+        for pp in pps:
+            db.delete(pp)
+            log(log.INFO, "Platform commission deleted")
+        for rate in job.rates:
+            db.delete(rate)
+            log(log.INFO, "Rate deleted")
         log(log.INFO, "Job deleted [%s]", job.name)
         db.delete(job)
 
@@ -164,6 +179,16 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
             log(log.INFO, "Application deleted [%s]", application.job.name)
             db.delete(application)
             db.commit()
+
+        pps = db.scalars(
+            select(PlatformCommission).where(PlatformCommission.job_id == job.id)
+        ).all()
+        for pp in pps:
+            db.delete(pp)
+            log(log.INFO, "Platform commission deleted")
+        for rate in job.rates:
+            db.delete(rate)
+            log(log.INFO, "Rate deleted")
 
         log(log.INFO, "Job deleted [%s]", job.name)
         db.delete(job)
@@ -191,6 +216,35 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
                     and_(
                         UserLocation.location_id == location.id,
                         UserLocation.user_id == user.id,
+                    )
+                )
+            )
+        )
+        db.flush()
+
+    for location in user.notification_locations:
+        log(log.INFO, "User location deleted [%s]", location.name_en)
+        db.delete(
+            db.scalar(
+                select(UserNotificationLocation).where(
+                    and_(
+                        UserNotificationLocation.location_id == location.id,
+                        UserNotificationLocation.user_id == user.id,
+                    )
+                )
+            )
+        )
+        db.flush()
+
+    for profession in user.notification_profession:
+        log(log.INFO, "User profession deleted [%s]", profession.name_en)
+
+        db.delete(
+            db.scalar(
+                select(UserNotificationsProfessions).where(
+                    and_(
+                        UserNotificationsProfessions.profession_id == profession.id,
+                        UserNotificationsProfessions.user_id == user.id,
                     )
                 )
             )
