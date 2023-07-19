@@ -57,6 +57,9 @@ def job_created_notify(job: m.Job, db: Session):
 
     devices: list[str] = list()
     for user in users:
+        if user.is_deleted:
+            continue
+
         notification: m.Notification = m.Notification(
             user_id=user.id,
             entity_id=job.id,
@@ -100,7 +103,7 @@ def handle_job_status_update_notification(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    if notification_type and user:
+    if notification_type and user and not user.is_deleted:
         notification: m.Notification = m.Notification(
             user_id=user.id,
             entity_id=job.id,
@@ -129,7 +132,7 @@ def handle_job_payment_notification(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    if not user or job.payment_status != s.enums.PaymentStatus.PAID:
+    if not user or job.payment_status != s.enums.PaymentStatus.PAID or user.is_deleted:
         return
 
     notification: m.Notification = m.Notification(
@@ -160,7 +163,7 @@ def handle_job_commission_notification(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    if not user:
+    if not user or user.is_deleted:
         return
 
     notification_type = None

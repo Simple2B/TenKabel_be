@@ -627,8 +627,7 @@ def test_delete_user(
     authorized_users_tokens: list[s.Token],
 ):
     create_professions(db)
-    create_jobs(db)
-    fill_test_data(db)
+    create_locations(db)
 
     user: m.User = db.scalar(
         select(m.User).where(
@@ -657,6 +656,21 @@ def test_delete_user(
 
     assert response.status_code == status.HTTP_200_OK
     assert user.is_deleted
+
+    # check for negative case
+    user.is_deleted = False
+    db.commit()
+    create_jobs_for_user(db, user.id)
+
+    response = client.request(
+        "DELETE",
+        "api/user",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        content=request_data.json(),
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+    assert not user.is_deleted
 
 
 # def test_upload_avatar(

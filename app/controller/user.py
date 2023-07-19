@@ -1,5 +1,8 @@
+import datetime
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, or_, and_
 
 from app.logger import log
@@ -86,3 +89,63 @@ def delete_device(
     db.commit()
 
     log(log.INFO, "Device [%s] was deleted", device_from_db.uuid)
+
+
+def validate_user(user: m.User):
+    errors = []
+    for job in user.jobs_owned + user.jobs_to_do:
+        if job.status == s.enums.JobStatus.IN_PROGRESS:
+            errors.append("Job [%s] is in progress" % job.id)
+        if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
+            if (
+                job.payment_status == s.enums.PaymentStatus.UNPAID
+                or job.commission_status == s.enums.CommissionStatus.UNPAID
+            ):
+                errors.append("Job [%s] is finished but not paid" % job.id)
+    for platform_payment in user.platform_payments:
+        if platform_payment.status != s.enums.PlatformPaymentStatus.PAID:
+            errors.append("Payment platform [%s] not paid" % platform_payment.id)
+    if errors:
+        log(log.ERROR, "User [%s] can't be deleted - %s", user.id, errors)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"User can't be deleted - {errors}",
+        )
+
+
+def delete_user_view(device: s.LogoutIn, current_user: m.User, db: Session):
+    validate_user(current_user)
+
+    delete_device(device, db)
+    current_user.is_deleted = True
+    current_user.email += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+    current_user.phone += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+
+    for job in current_user.jobs_owned + current_user.jobs_to_do:
+        job.is_deleted = True
+        job.title += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+
+    applications = db.scalars(
+        select(m.Application).where(
+            and_(
+                or_(
+                    m.Application.worker_id == current_user.id,
+                    m.Application.owner_id == current_user.id,
+                ),
+                m.Application.status == s.BaseApplication.ApplicationStatus.PENDING,
+            )
+        )
+    ).all()
+
+    for application in applications:
+        application.status = s.BaseApplication.ApplicationStatus.DECLINED
+
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while deleting user [%s] - %s", current_user.id, e)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Error deleting user"
+        )
+    log(log.INFO, "User [%s] deleted successfully", current_user.id)
+    return current_user

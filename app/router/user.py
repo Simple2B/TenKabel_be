@@ -12,7 +12,11 @@ from app.config import get_settings, Settings
 from app.dependency import get_current_user
 from app.database import get_db
 from app.hash_utils import hash_verify
-from app.controller import manage_tab_controller, create_payplus_token, delete_device
+from app.controller import (
+    manage_tab_controller,
+    create_payplus_token,
+    delete_user_view,
+)
 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
@@ -139,23 +143,7 @@ def delete_user(
     current_user: m.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    delete_device(device, db)
-    current_user.is_deleted = True
-    current_user.email += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
-    current_user.phone += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
-
-    # for job in current_user.jobs_owned:
-    #     job.is_deleted = True
-    #     job.title += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
-
-    try:
-        db.commit()
-    except SQLAlchemyError as e:
-        log(log.INFO, "Error while deleting user [%s] - %s", current_user.id, e)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Error deleting user"
-        )
-    log(log.INFO, "User [%s] deleted successfully", current_user.id)
+    delete_user_view(device, current_user, db)
     return current_user
 
 
@@ -185,7 +173,7 @@ def forgot_password(
             and_(m.User.phone == data.phone, m.User.country_code == data.country_code)
         )
     )
-    if not user:
+    if not user or user.is_deleted:
         log(log.INFO, "User doesn't exist - %s %s", data.country_code, data.phone)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User does not exist"
@@ -344,7 +332,7 @@ def get_user_profile(
     db: Session = Depends(get_db),
 ):
     user: m.User = db.scalars(select(m.User).where(m.User.uuid == user_uuid)).first()
-    if not user:
+    if not user or user.is_deleted:
         log(
             log.ERROR,
             "User %s not found",

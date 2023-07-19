@@ -20,7 +20,7 @@ def get_job_by_uuid(
     db: Session = Depends(get_db),
 ) -> m.Job:
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if not job:
+    if not job or job.is_deleted:
         log(log.INFO, "Job [%s] wasn`t found", job_uuid)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -46,5 +46,5 @@ def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
             auth_header.split(" ")[1], INVALID_CREDENTIALS_EXCEPTION
         )
         user = db.query(m.User).filter_by(id=token.user_id).first()
-        return user
-    return None
+        if user and not user.is_deleted:
+            return user

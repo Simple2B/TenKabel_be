@@ -45,6 +45,26 @@ def update_rate(
             detail="Rate not found",
         )
 
+    owner: m.User | None = db.scalar(
+        select(m.User).where(m.User.id == rate_data.owner_id)
+    )
+    if not owner or owner.is_deleted:
+        log(log.INFO, "Owner [%s] wasn`t found ", rate_data.owner_id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Owner not found",
+        )
+
+    worker: m.User | None = db.scalar(
+        select(m.User).where(m.User.id == rate_data.worker_id)
+    )
+    if not worker or worker.is_deleted:
+        log(log.INFO, "Worker [%s] wasn`t found ", rate_data.worker_id)
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Worker not found",
+        )
+
     rate.owner_id = rate_data.owner_id
     rate.worker_id = rate_data.worker_id
     rate.rate = s.BaseRate.RateStatus(rate_data.rate)
@@ -78,9 +98,29 @@ def patch_rate(
         )
 
     if rate_data.owner_id:
+        owner: m.User | None = db.scalar(
+            select(m.User).where(m.User.id == rate_data.owner_id)
+        )
+        if not owner or owner.is_deleted:
+            log(log.INFO, "Owner [%s] wasn`t found ", rate_data.owner_id)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Owner not found",
+            )
+
         rate.owner_id = rate_data.owner_id
     if rate_data.worker_id:
+        worker: m.User | None = db.scalar(
+            select(m.User).where(m.User.id == rate_data.worker_id)
+        )
+        if not worker or worker.is_deleted:
+            log(log.INFO, "Worker [%s] wasn`t found ", rate_data.worker_id)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Worker not found",
+            )
         rate.worker_id = rate_data.worker_id
+
     if rate_data.rate:
         rate.rate = s.BaseRate.RateStatus(rate_data.rate)
 
