@@ -12,7 +12,11 @@ from app.config import get_settings, Settings
 from app.dependency import get_current_user
 from app.database import get_db
 from app.hash_utils import hash_verify
-from app.controller import manage_tab_controller, create_payplus_token
+from app.controller import (
+    manage_tab_controller,
+    create_payplus_token,
+    delete_user_view,
+)
 
 
 user_router = APIRouter(prefix="/user", tags=["Users"])
@@ -133,6 +137,16 @@ def patch_user(
     return current_user
 
 
+@user_router.delete("", status_code=status.HTTP_200_OK, response_model=s.User)
+def delete_user(
+    device: s.LogoutIn,
+    current_user: m.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    delete_user_view(device, current_user, db)
+    return current_user
+
+
 @user_router.post(
     "/check-password", status_code=status.HTTP_200_OK, response_model=s.PasswordStatus
 )
@@ -159,7 +173,7 @@ def forgot_password(
             and_(m.User.phone == data.phone, m.User.country_code == data.country_code)
         )
     )
-    if not user:
+    if not user or user.is_deleted:
         log(log.INFO, "User doesn't exist - %s %s", data.country_code, data.phone)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User does not exist"
@@ -318,7 +332,7 @@ def get_user_profile(
     db: Session = Depends(get_db),
 ):
     user: m.User = db.scalars(select(m.User).where(m.User.uuid == user_uuid)).first()
-    if not user:
+    if not user or user.is_deleted:
         log(
             log.ERROR,
             "User %s not found",

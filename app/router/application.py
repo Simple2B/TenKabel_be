@@ -45,7 +45,7 @@ def update_application(
         )
 
     worker: m.User = db.scalar(select(m.User).where(m.User.id == application.worker_id))
-    if not worker:
+    if not worker or worker.is_deleted:
         log(log.INFO, "User with id [%s] wasn`t found", application.worker_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -53,7 +53,7 @@ def update_application(
         )
 
     owner: m.User = db.scalar(select(m.User).where(m.User.id == application.owner_id))
-    if not owner:
+    if not owner or owner.is_deleted:
         log(log.INFO, "User with id [%s] wasn`t found", application.owner_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -146,7 +146,7 @@ def patch_application(
         )
 
     worker: m.User = db.scalar(select(m.User).where(m.User.id == application.worker_id))
-    if not worker:
+    if not worker or worker.is_deleted:
         log(log.INFO, "User with id [%s] wasn`t found", application.worker_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -154,7 +154,7 @@ def patch_application(
         )
 
     owner: m.User = db.scalar(select(m.User).where(m.User.id == application.owner_id))
-    if not owner:
+    if not owner or owner.is_deleted:
         log(log.INFO, "User with id [%s] wasn`t found", application.owner_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -242,7 +242,7 @@ def create_application(
             )
         )
     )
-    if not job:
+    if not job or job.is_deleted:
         log(log.INFO, "Job wasn`t found [%s]", application_data.job_id)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

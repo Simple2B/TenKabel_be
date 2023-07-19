@@ -9,7 +9,7 @@ from fastapi import status, HTTPException
 
 def create_rate_controller(rate_data: s.BaseRate, db: Session):
     job: m.Job | None = db.scalar(select(m.Job).where(m.Job.id == rate_data.job_id))
-    if not job:
+    if not job or job.is_deleted:
         log(log.INFO, "Job [%s] wasn`t found ", rate_data.job_id)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -18,7 +18,7 @@ def create_rate_controller(rate_data: s.BaseRate, db: Session):
     owner: m.User | None = db.scalar(
         select(m.User).where(m.User.id == rate_data.owner_id)
     )
-    if not owner:
+    if not owner or owner.is_deleted:
         log(log.INFO, "User [%s] wasn`t found ", rate_data.owner_id)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User not found"
@@ -26,7 +26,7 @@ def create_rate_controller(rate_data: s.BaseRate, db: Session):
     worker: m.User | None = db.scalar(
         select(m.User).where(m.User.id == rate_data.worker_id)
     )
-    if not worker:
+    if not worker or worker.is_deleted:
         log(log.INFO, "User [%s] wasn`t found ", rate_data.worker_id)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="User not found"

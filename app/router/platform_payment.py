@@ -23,7 +23,6 @@ payment_router = APIRouter(prefix="/payment", tags=["Payment"])
     response_model=s.PlatformPaymentLinkOut,
 )
 def get_url(
-    db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
     user: m.User = Depends(get_current_user),
     job: m.Job = Depends(get_job_by_uuid),

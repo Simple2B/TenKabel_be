@@ -2,6 +2,7 @@ from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 
 from app.oauth2 import verify_access_token, INVALID_CREDENTIALS_EXCEPTION
 from app.database import get_db
@@ -24,6 +25,12 @@ def get_current_user(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User wasn`t authtorized",
         )
+    if user.is_deleted:
+        log(log.INFO, "User wasn't found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User wasn't found",
+        )
     return user
 
 
@@ -35,9 +42,12 @@ def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
         token: s.TokenData = verify_access_token(
             auth_header.split(" ")[1], INVALID_CREDENTIALS_EXCEPTION
         )
-        user = db.query(m.User).filter_by(id=token.user_id).first()
+        user = db.scalar(
+            select(m.User).where(
+                m.User.id == token.user_id, m.User.is_deleted == False  # noqa E712
+            )
+        )
         return user
-    return None
 
 
 def get_payplus_verified_user(

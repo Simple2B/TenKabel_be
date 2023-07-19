@@ -12,6 +12,7 @@ from .base_user import BaseUser
 from .profession import Profession
 from .location import Location
 from app import schema as s
+from app.logger import log
 
 
 class User(db.Model, BaseUser):
@@ -95,6 +96,11 @@ class User(db.Model, BaseUser):
             )
             .first()
         )
+
+        if user and user.is_deleted:
+            log(log.INFO, "User is deleted")
+            return None
+
         if user is not None and hash_verify(password, user.password):
             return user
 
