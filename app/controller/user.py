@@ -95,21 +95,21 @@ def validate_user(user: m.User):
     errors = []
     for job in user.jobs_owned + user.jobs_to_do:
         if job.status == s.enums.JobStatus.IN_PROGRESS:
-            errors.append("Job [%s] is in progress" % job.id)
+            errors.append("Job [%s] is in progress" % job.name)
         if job.status == s.enums.JobStatus.JOB_IS_FINISHED:
             if (
                 job.payment_status == s.enums.PaymentStatus.UNPAID
                 or job.commission_status == s.enums.CommissionStatus.UNPAID
             ):
-                errors.append("Job [%s] is finished but not paid" % job.id)
+                errors.append("Job [%s] is finished but not paid" % job.name)
     for platform_payment in user.platform_payments:
         if platform_payment.status != s.enums.PlatformPaymentStatus.PAID:
-            errors.append("Payment platform [%s] not paid" % platform_payment.id)
+            errors.append("\n Payment platform not paid. Wait for processing")
     if errors:
         log(log.ERROR, "User [%s] can't be deleted - %s", user.id, errors)
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"User can't be deleted - {errors}",
+            detail=f"User can't be deleted: {', '.join(errors)}",
         )
 
 

@@ -97,7 +97,7 @@ class User(db.Model, BaseUser):
             .first()
         )
 
-        if user.is_deleted:
+        if user and user.is_deleted:
             log(log.INFO, "User is deleted")
             return None
 
