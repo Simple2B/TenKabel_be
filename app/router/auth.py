@@ -136,6 +136,81 @@ def verify(
     return current_user
 
 
+@auth_router.post("/apple", status_code=status.HTTP_200_OK, response_model=s.Token)
+def apple_auth(
+    data: s.AppleAuthUser,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+):
+    user: m.User | None = (
+        db.query(m.User)
+        .filter(sa.func.lower(m.User.email) == sa.func.lower(data.email))
+        .first()
+    )
+
+    password = "*"
+    country_code = "IL"
+
+    if not user:
+        if not data.display_name:
+            first_name = data.email.split("@")[0] if data.email else ""
+            last_name = ""
+
+        else:
+            names = data.display_name.split(" ")
+            if len(names) > 1:
+                first_name, last_name = names[0], " ".join(names[1:])
+            else:
+                first_name, last_name = names[0], ""
+
+        user: m.User = m.User(
+            email=data.email,
+            first_name=first_name,
+            last_name=last_name,
+            username=data.email,
+            apple_uid=data.uid,
+            password=password,
+            is_verified=True,
+            country_code=country_code,
+        )
+        db.add(user)
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            log(log.INFO, "Error - [%s]", e)
+            raise HTTPException(
+                status=status.HTTP_409_CONFLICT,
+                detail="Error while saving user via Apple",
+            )
+
+        log(
+            log.INFO,
+            "User [%s] has been created (via Apple account))",
+            user.email,
+        )
+
+    user: m.User = m.User.authenticate(
+        db,
+        user.email,
+        user.password,
+    )
+
+    if not user:
+        log(log.ERROR, "User [%s] was not authenticated", data.email)
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Invalid credentials"
+        )
+
+    create_payplus_customer(user, settings, db)
+
+    access_token: str = create_access_token(data={"user_id": user.id})
+    log(log.INFO, "Access token for User [%s] generated", user.email)
+    return s.Token(
+        access_token=access_token,
+        token_type="Bearer",
+    )
+
+
 @auth_router.post("/google", status_code=status.HTTP_200_OK, response_model=s.Token)
 def google_auth(
     data: s.GoogleAuthUser,

@@ -35,6 +35,13 @@ class GoogleAuthUser(BaseModel):
     display_name: str | None
 
 
+class AppleAuthUser(BaseModel):
+    email: EmailStr
+    uid: str | None
+    display_name: str | None
+    phone: str | None
+
+
 class BaseUser(BaseModel):
     email: str | None
     username: str
