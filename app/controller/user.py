@@ -125,7 +125,8 @@ def delete_user_view(device: s.LogoutIn, current_user: m.User, db: Session):
 
     for job in current_user.jobs_owned + current_user.jobs_to_do:
         job.is_deleted = True
-        job.title += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+        if job.title:
+            job.title += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
 
     applications = db.scalars(
         select(m.Application).where(
