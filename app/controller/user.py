@@ -118,8 +118,10 @@ def delete_user_view(device: s.LogoutIn, current_user: m.User, db: Session):
 
     delete_device(device, db)
     current_user.is_deleted = True
+    current_user.username += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
     current_user.email += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
-    current_user.phone += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
+    if current_user.phone:
+        current_user.phone += f'%{datetime.datetime.now().strftime("%Y%m%d%H%M%S")}'
 
     for job in current_user.jobs_owned + current_user.jobs_to_do:
         job.is_deleted = True

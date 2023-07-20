@@ -153,6 +153,10 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         log(log.WARNING, "User not found")
         return
 
+    for pc in user.platform_commissions:
+        db.delete(pc)
+        log(log.INFO, "Platform payment deleted")
+
     for pp in user.platform_payments:
         db.delete(pp)
         log(log.INFO, "Platform payment deleted")

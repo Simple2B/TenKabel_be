@@ -46,7 +46,7 @@ class BaseUser:
             db.query(cls)
             .filter(
                 sa.or_(
-                    sa.func.lower(cls.username) == sa.func.lower(user_id),
+                    sa.func.lower(cls.phone) == sa.func.lower(user_id),
                     sa.func.lower(cls.email) == sa.func.lower(user_id),
                 )
             )
