@@ -31,6 +31,7 @@ class PlatformCommission(db.Model):
         "User",
         foreign_keys=[user_id],
         viewonly=True,
+        backref="platform_commissions",
         uselist=False,
     )
     platform_payment: orm.Mapped[PlatformPayment] = orm.relationship(

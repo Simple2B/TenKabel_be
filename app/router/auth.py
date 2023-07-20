@@ -142,6 +142,12 @@ def apple_auth(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
 ):
+    if not data.email:
+        log(log.INFO, "Email is required")
+        raise HTTPException(
+            status=status.HTTP_409_CONFLICT,
+            detail="Email is required",
+        )
     user: m.User | None = (
         db.query(m.User)
         .filter(sa.func.lower(m.User.email) == sa.func.lower(data.email))
