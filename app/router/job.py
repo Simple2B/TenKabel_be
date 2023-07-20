@@ -111,7 +111,7 @@ def get_job(
     db: Session = Depends(get_db),
 ) -> s.Job:
     job: m.Job | None = db.scalars(select(m.Job).where(m.Job.uuid == job_uuid)).first()
-    if (not job) or job.is_deleted:
+    if not job:
         log(log.INFO, "Job wasn`t found [%s]", job_uuid)
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
