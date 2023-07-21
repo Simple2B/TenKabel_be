@@ -53,7 +53,7 @@ def get_jobs(
             or_(
                 m.Job.name.icontains(f"%{q}%"),
                 m.Job.description.icontains(f"%{q}%"),
-                m.Job.city.icontains(f"%{q}%"),
+                m.Job.region.icontains(f"%{q}%"),
             )
         )
         log(log.INFO, "Job filtered by [%s] containing", q)
@@ -67,7 +67,7 @@ def get_jobs(
             query = query.where(m.Job.profession_id == profession_id)
         if city:
             # city = re.sub(r"[^a-zA-Z0-9]", "", city)
-            query = query.where(m.Job.city.ilike(f"%{city}%"))
+            query = query.where(m.Job.region.ilike(f"%{city}%"))
         if min_price:
             query = query.where(m.Job.payment >= min_price)
         if max_price:
@@ -90,7 +90,7 @@ def get_jobs(
         if cities_names:
             filter_conditions = []
             for location in cities_names:
-                filter_conditions.append(m.Job.city.ilike(location))
+                filter_conditions.append(m.Job.region.ilike(location))
             query = query.filter(or_(*filter_conditions))
             log(
                 log.INFO,
@@ -140,6 +140,7 @@ def create_job(
         commission=data.commission,
         who_pays=who_pays,
         city=data.city,
+        region=data.region,
         time=data.time,
         customer_first_name=data.customer_first_name,
         customer_last_name=data.customer_last_name,
@@ -178,7 +179,9 @@ def patch_job(
         if job_data.profession_id:
             job.profession_id = job_data.profession_id
         if job_data.city:
-            job.city = job_data.city
+            job.region = job_data.city
+        if job_data.region:
+            job.region = job_data.region
         if job_data.payment:
             job.payment = job_data.payment
         if job_data.commission:
@@ -238,6 +241,7 @@ def update_job(
     initial_job = s.Job.from_orm(job)
     try:
         job.profession_id = job_data.profession_id
+        job.region = job_data.region
         job.city = job_data.city
         job.payment = job_data.payment
         job.commission = job_data.commission
