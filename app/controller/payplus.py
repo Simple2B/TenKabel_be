@@ -27,9 +27,6 @@ def create_payplus_customer(user: m.User, settings: Settings, db: Session) -> No
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT, detail="Please,provide email"
         )
-    if not (user.first_name or user.last_name):
-        log(log.ERROR, "User [%s] has no name", user.id)
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT)
 
     request_data = s.PayplusCustomerIn(
         customer_name=user.first_name + (user.last_name if user.last_name else ""),

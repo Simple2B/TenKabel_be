@@ -30,7 +30,7 @@ class UserSignUp(AuthUser):
 
 class GoogleAuthUser(BaseModel):
     email: EmailStr
-    photo_url: AnyHttpUrl | None
+    photo_url: AnyHttpUrl | str | None
     uid: str | None
     display_name: str | None
 
