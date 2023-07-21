@@ -88,11 +88,6 @@ def create_payplus_token(
     card_data: s.CardIn, user: m.User, settings: Settings, db: Session
 ) -> None:
     method = s.enums.PaymentMethod.ADD.value
-    if user.is_payment_method_invalid:
-        log(log.INFO, "User [%s] has 1 or more rejected payments", user.id)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT, detail="Rejected payments exist"
-        )
 
     if user.payplus_card_uid:
         log(log.INFO, "User [%s] payplus card already exist", user.id)
