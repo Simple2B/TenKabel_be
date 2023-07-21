@@ -232,11 +232,15 @@ def google_auth(
     password = "*"
     country_code = "IL"
 
+    if not data.display_name:
+        first_name = data.first_name
+        last_name = data.last_name
+
     if not user:
-        if not data.display_name:
-            first_name = ""
-            last_name = ""
-        else:
+        first_name, last_name = data.first_name, data.last_name
+        if not first_name:
+            if not data.display_name:
+                data.display_name = data.email.split("@")[0]
             names = data.display_name.split(" ")
             if len(names) > 1:
                 first_name, last_name = names[0], " ".join(names[1:])
