@@ -8,10 +8,10 @@ from app.utility.notification import get_notification_payload
 from app.logger import log
 
 
-def check_location_notification(city: m.Location, user: m.User):
+def check_location_notification(region: m.Location, user: m.User):
     return user.notification_locations_flag and (
-        (city in user.notification_locations)
-        or (not user.notification_locations and city in user.locations)
+        (region in user.notification_locations)
+        or (not user.notification_locations and region in user.locations)
     )
 
 
@@ -24,8 +24,8 @@ def check_profession_notification(profession: m.Profession, user: m.User):
 
 def job_created_notify(job: m.Job, db: Session):
     db.refresh(job)
-    city: m.Location = db.scalar(
-        select(m.Location).where(m.Location.name_en == job.city)
+    regions: m.Location = db.scalar(
+        select(m.Location).where(m.Location.name_en == job.region)
     )
     profession: m.Profession = db.scalar(
         select(m.Profession).where(m.Profession.id == job.profession_id)
@@ -33,7 +33,7 @@ def job_created_notify(job: m.Job, db: Session):
     users: list[m.User] = db.scalars(
         select(m.User).where(
             and_(
-                m.User.locations.contains(city),
+                m.User.locations.contains(regions),
                 m.User.professions.contains(profession),
             )
         )
@@ -41,7 +41,7 @@ def job_created_notify(job: m.Job, db: Session):
     users += db.scalars(
         select(m.User).where(
             and_(
-                m.User.locations.contains(city),
+                m.User.locations.contains(regions),
                 ~m.User.professions.any(),
             )
         )
@@ -67,7 +67,7 @@ def job_created_notify(job: m.Job, db: Session):
         )
         db.add(notification)
         if (check_profession_notification(profession, user)) or (
-            check_location_notification(city, user)
+            check_location_notification(regions, user)
         ):
             for device in user.devices:
                 devices.append(device.push_token)

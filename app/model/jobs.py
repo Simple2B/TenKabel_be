@@ -49,6 +49,7 @@ class Job(db.Model):
     payment: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 
+    region: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 

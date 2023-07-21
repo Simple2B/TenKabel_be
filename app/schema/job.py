@@ -47,6 +47,7 @@ class Job(BaseJob):
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
+    region: str
     city: str
     time: str
     applications: list[ApplicationOut]
@@ -67,6 +68,7 @@ class ListJob(BaseModel):
 class JobIn(BaseModel):
     profession_id: int
     city: str
+    region: str
     payment: int
     commission: int
     who_pays: Job.WhoPays | None
@@ -91,6 +93,7 @@ class JobUpdate(JobIn):
 
 class JobPatch(BaseModel):
     profession_id: int | None
+    region: str | None
     city: str | None
     payment: int | None
     commission: int | None

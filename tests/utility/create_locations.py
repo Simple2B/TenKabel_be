@@ -80,10 +80,141 @@ LOCATIONS = [
     {"en": "Yokneam", "hebrew": "יקנעם"},
 ]
 
+REGIONS = [
+    {"en": "Goosh Dan, Sharon", "hebrew": "גוש דן, שרון"},
+    {"en": "Binyamin, Shomron", "hebrew": "בנימין, שומרון"},
+    {"en": "Etzion", "hebrew": "אציון"},
+    {"en": "Haifa", "hebrew": "חיפה"},
+    {"en": "Kiryat Shmona", "hebrew": "קרית שמונה"},
+    {"en": "Jerusalem", "hebrew": "ירושלים"},
+]
+
+REGIONS_CITIES = {
+    "Goosh Dan, Sharon": [
+        "Tel Aviv",
+        "Bat Yam",
+        "Holon",
+        "Ramat Gan",
+        "Givatayim",
+        "Bnei Brak",
+        "Azor",
+    ],
+    "Binyamin, Shomron": [
+        "Alley-Zagav",
+        "Avnei Hefetz",
+        "Barkan",
+        "Bruhin",
+        "Einav",
+        "Elon More",
+        "Etz Ephraim",
+        "Gar-Bracha",
+        "Hermesh",
+        "Hynanite",
+        "Itamar",
+        "Kfar Tapuah",
+        "Kiryat Netafim",
+        "Maale Shomron",
+        "Mevo-Dotan",
+        "Myodalim",
+        "Nophim",
+        "Peduel",
+        "Rehelim",
+        "Reyhan",
+        "Revava",
+        "Salit",
+        "Shaked",
+        "Shavei Shomron",
+        "Tel Menashe",
+        "Tsofim",
+        "Anchor",
+        "Yitzhar",
+    ],
+    "Etzion": ["test_city_1"],
+    "Haifa": ["test_city_2"],
+    "Kiryat Shmona": [
+        "Afula",
+        "Akko",
+        "Beit Shean",
+        "Yokneam",
+        "Karmiel",
+        "Kiryat Shmona",
+        " Maalot Tarshiha",
+        "Migdal ha Emek",
+        "Nahariya",
+        "Nazareth",
+        "Nazareth Illit",
+        "Sakhnin",
+        "Tamra",
+        "Tiberias",
+        "Safed",
+        "Shagor",
+        "Shfaram",
+    ],
+    "Jerusalem": ["test_city_3"],
+}
+
+CITIES_TO_REGIONS = [
+    {"Tel Aviv": "Goosh Dan, Sharon"},
+    {"Bat Yam": "Goosh Dan, Sharon"},
+    {"Holon": "Goosh Dan, Sharon"},
+    {"Ramat Gan": "Goosh Dan, Sharon"},
+    {"Givatayim": "Goosh Dan, Sharon"},
+    {"Bnei Brak": "Goosh Dan, Sharon"},
+    {"Azor": "Goosh Dan, Sharon"},
+    {"Alley-Zagav": "Binyamin, Shomron"},
+    {"Avnei Hefetz": "Binyamin, Shomron"},
+    {"Barkan": "Binyamin, Shomron"},
+    {"Bruhin": "Binyamin, Shomron"},
+    {"Einav": "Binyamin, Shomron"},
+    {"Elon More": "Binyamin, Shomron"},
+    {"Etz Ephraim": "Binyamin, Shomron"},
+    {"Gar-Bracha": "Binyamin, Shomron"},
+    {"Hermesh": "Binyamin, Shomron"},
+    {"Hynanite": "Binyamin, Shomron"},
+    {"Itamar": "Binyamin, Shomron"},
+    {"Kfar Tapuah": "Binyamin, Shomron"},
+    {"Kiryat Netafim": "Binyamin, Shomron"},
+    {"Maale Shomron": "Binyamin, Shomron"},
+    {"Mevo-Dotan": "Binyamin, Shomron"},
+    {"Myodalim": "Binyamin, Shomron"},
+    {"Nophim": "Binyamin, Shomron"},
+    {"Peduel": "Binyamin, Shomron"},
+    {"Rehelim": "Binyamin, Shomron"},
+    {"Reyhan": "Binyamin, Shomron"},
+    {"Revava": "Binyamin, Shomron"},
+    {"Salit": "Binyamin, Shomron"},
+    {"Shaked": "Binyamin, Shomron"},
+    {"Shavei Shomron": "Binyamin, Shomron"},
+    {"Tel Menashe": "Binyamin, Shomron"},
+    {"Tsofim": "Binyamin, Shomron"},
+    {"Anchor": "Binyamin, Shomron"},
+    {"Yitzhar": "Binyamin, Shomron"},
+    {"test_city_1": "Etzion"},
+    {"test_city_2": "Haifa"},
+    {"Afula": "Kiryat Shmona"},
+    {"Akko": "Kiryat Shmona"},
+    {"Beit Shean": "Kiryat Shmona"},
+    {"Yokneam": "Kiryat Shmona"},
+    {"Karmiel": "Kiryat Shmona"},
+    {"Kiryat Shmona": "Kiryat Shmona"},
+    {" Maalot Tarshiha": "Kiryat Shmona"},
+    {"Migdal ha Emek": "Kiryat Shmona"},
+    {"Nahariya": "Kiryat Shmona"},
+    {"Nazareth": "Kiryat Shmona"},
+    {"Nazareth Illit": "Kiryat Shmona"},
+    {"Sakhnin": "Kiryat Shmona"},
+    {"Tamra": "Kiryat Shmona"},
+    {"Tiberias": "Kiryat Shmona"},
+    {"Safed": "Kiryat Shmona"},
+    {"Shagor": "Kiryat Shmona"},
+    {"Shfaram": "Kiryat Shmona"},
+    {"test_city_3": "Jerusalem"},
+]
+
 
 def create_locations(db: Session):
     """Create locations"""
-    for name in LOCATIONS:
+    for name in REGIONS:
         location = db.scalar(select(m.Location).where(m.Location.name_en == name["en"]))
         if not location:
             location = m.Location(
@@ -92,4 +223,4 @@ def create_locations(db: Session):
             )
             db.add(location)
     db.commit()
-    log(log.INFO, "Locations [%d] were created", len(LOCATIONS))
+    log(log.INFO, "Locations [%d] were created", len(REGIONS))
