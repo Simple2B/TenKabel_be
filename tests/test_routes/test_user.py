@@ -204,6 +204,8 @@ def test_google_auth(
     TEST_GOOGLE_MAIL = "somemail@gmail.com"
     request_data = s.GoogleAuthUser(
         email=TEST_GOOGLE_MAIL,
+        first_name="John",
+        last_name="Doe",
         photo_url="https://link_to_file/file.jpeg",
         uid="some-rand-uid",
         display_name="John Doe",

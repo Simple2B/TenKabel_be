@@ -30,8 +30,8 @@ class UserSignUp(AuthUser):
 
 class GoogleAuthUser(BaseModel):
     email: EmailStr
-    first_name: str
-    last_name: str
+    first_name: str = ""
+    last_name: str = ""
     photo_url: AnyHttpUrl | str | None
     uid: str | None
     display_name: str | None
