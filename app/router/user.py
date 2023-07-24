@@ -73,7 +73,7 @@ def patch_user(
         current_user.country_code = data.country_code
         log(log.INFO, "User [%s] phone updated - [%s]", current_user.id, data.phone)
 
-    if data.professions:
+    if data.professions != current_user.professions:
         for profession in current_user.professions:
             profession_obj: m.UserProfession = db.scalar(
                 select(m.UserProfession).where(
@@ -98,7 +98,7 @@ def patch_user(
                 )
                 db.flush()
 
-    if data.locations:
+    if data.locations != current_user.locations:
         for location in current_user.locations:
             location_obj: m.UserLocation = db.scalar(
                 select(m.UserLocation).where(
