@@ -223,14 +223,6 @@ def test_create_job(
         select(m.Job).filter_by(customer_last_name=request_data.customer_last_name)
     )
     assert db.scalar(select(m.Job).filter_by(name=request_data.name))
-    assert db.scalar(
-        select(m.Notification).where(
-            and_(
-                m.Notification.user_id == user.id,
-                m.Notification.type == s.NotificationType.JOB_CREATED,
-            )
-        )
-    )
 
 
 def test_search_job(

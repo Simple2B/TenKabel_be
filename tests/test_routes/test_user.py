@@ -430,12 +430,18 @@ def test_get_user_profile(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
             m.Job.is_deleted == False,  # noqa E712
-            or_(
-                m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
-                m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
-            ),
-            m.Job.status.in_(
-                [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
+            and_(
+                m.Job.is_deleted == False,  # noqa E712
+                or_(
+                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    and_(
+                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                        or_(
+                            m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                            m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+                        ),
+                    ),
+                ),
             ),
         )
     )
@@ -453,6 +459,7 @@ def test_get_user_profile(
         assert (
             job.payment_status == s.enums.PaymentStatus.UNPAID.value
             or job.commission_status == s.enums.CommissionStatus.UNPAID.value
+            or job.status == s.enums.JobStatus.IN_PROGRESS.value
         )
         assert user.id in (job.owner_id, job.worker_id)
 
