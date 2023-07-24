@@ -33,24 +33,24 @@ def job_created_notify(job: m.Job, db: Session):
     users: list[m.User] = db.scalars(
         select(m.User).where(
             and_(
-                m.User.locations.contains(regions),
-                m.User.professions.contains(profession),
+                m.User.notification_locations.contains(regions),
+                m.User.notification_profession.contains(profession),
             )
         )
     ).all()
     users += db.scalars(
         select(m.User).where(
             and_(
-                m.User.locations.contains(regions),
-                ~m.User.professions.any(),
+                m.User.notification_locations.contains(regions),
+                ~m.User.notification_profession.any(),
             )
         )
     ).all()
     users += db.scalars(
         select(m.User).where(
             and_(
-                ~m.User.locations.any(),
-                m.User.professions.contains(profession),
+                ~m.User.notification_locations.any(),
+                m.User.notification_profession.contains(profession),
             )
         )
     ).all()

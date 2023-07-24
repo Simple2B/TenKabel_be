@@ -47,11 +47,14 @@ def manage_tab_controller(
             and_(
                 m.Job.is_deleted == False,  # noqa E712
                 or_(
-                    m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
-                    m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
-                ),
-                m.Job.status.in_(
-                    [s.enums.JobStatus.IN_PROGRESS, s.enums.JobStatus.JOB_IS_FINISHED]
+                    m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    and_(
+                        m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
+                        or_(
+                            m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
+                            m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+                        ),
+                    ),
                 ),
             )
         )
