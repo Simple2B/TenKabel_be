@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
+from sqlalchemy import select
 
 import app.model as m
 import app.schema as s
