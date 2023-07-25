@@ -206,17 +206,16 @@ def patch_job(
             status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
         )
 
-    job.status = s.enums.JobStatus(job_data.status)
-    job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
-    job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
-
-    if job_data.status:
+    if job_data.status != job.status:
+        job.status = s.enums.JobStatus(job_data.status)
         handle_job_status_update_notification(current_user, job, db, initial_job)
 
-    if job_data.payment_status:
+    if job_data.payment_status != job.payment_status:
+        job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
         handle_job_payment_notification(current_user, job, db, initial_job)
 
-    if job_data.commission_status:
+    if job_data.commission_status != job.commission_status:
+        job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
         handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:

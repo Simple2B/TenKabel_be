@@ -91,7 +91,7 @@ def job_created_notify(job: m.Job, db: Session):
 def handle_job_status_update_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
 ):
-    if initial_job.status == job.status:
+    if initial_job.status == job.status.value:
         log(log.DEBUG, "Job [%i] status not changed", job.id)
         return
     notification_type = None
@@ -126,7 +126,7 @@ def handle_job_status_update_notification(
 def handle_job_payment_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
 ):
-    if initial_job.payment_status == job.payment_status:
+    if initial_job.payment_status == job.payment_status.value:
         log(log.DEBUG, "Job [%i] payment status not changed", job.id)
         return
 
@@ -157,7 +157,7 @@ def handle_job_payment_notification(
 def handle_job_commission_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
 ):
-    if initial_job.commission_status == job.commission_status:
+    if initial_job.commission_status == job.commission_status.value:
         log(log.DEBUG, "Job [%i] commission status not changed", job.id)
         return
 
