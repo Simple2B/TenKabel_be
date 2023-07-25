@@ -6,3 +6,5 @@ class WhoAmIOut(BaseModel):
     has_payplus_car_uid: bool
     card_name: str
     is_payment_method_invalid: bool
+    is_auth_by_google: bool
+    is_auth_by_apple: bool
