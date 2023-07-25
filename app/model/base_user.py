@@ -33,6 +33,10 @@ class BaseUser:
         return bool(self.google_openid_key)
 
     @property
+    def is_auth_by_apple(self):
+        return bool(self.apple_uid)
+
+    @property
     def password(self):
         return self.password_hash
 

@@ -23,4 +23,6 @@ def whoami(
         has_payplus_car_uid=bool(current_user.payplus_card_uid),
         card_name=current_user.card_name or "",
         is_payment_method_invalid=current_user.is_payment_method_invalid,
+        is_auth_by_google=current_user.is_auth_by_google,
+        is_auth_by_apple=current_user.is_auth_by_apple,
     )
