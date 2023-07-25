@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     VAT_COEFFICIENT: float = 1.17
     COMMISSION_COEFFICIENT: float = 0.009
 
+    MINIMUM_MOBILE_APP_VERSION: str
+
     class Config:
         env_file = "project.env", ".env"
 
