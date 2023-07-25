@@ -5,7 +5,7 @@ settings = get_settings()
 
 
 class Token(BaseModel):
-    mobile_app_version: str = settings.MINIMUM_MOBILE_APP_VERSION
+    minumum_mobile_app_version: str = settings.MINIMUM_MOBILE_APP_VERSION
     access_token: str
     token_type: str
 

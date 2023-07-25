@@ -214,7 +214,7 @@ def test_google_auth(
     response = client.post("api/auth/google", json=request_data)
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Token.parse_obj(response.json())
-    assert resp_obj.access_token and resp_obj.mobile_app_version
+    assert resp_obj.access_token and resp_obj.minumum_mobile_app_version
 
     user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
     assert user
