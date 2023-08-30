@@ -1,10 +1,12 @@
-name: Ten Kabel CI/CD
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Update Prod machine
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
-    branches: [develop]
+    tags:
+      - "v*"
 
 jobs:
   tests:
@@ -36,46 +38,37 @@ jobs:
       - name: Run pytest
         run: |
           poetry run pytest
+
   build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [Linux]
+    runs-on: ${{ matrix.os }}
     needs: tests
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    runs-on: "Linux"
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Docker image
+      - name: Build and push
         uses: docker/build-push-action@v4
         with:
           push: true
           tags: simple2b/tenkabel:latest
-
-  deploy_stage:
-    runs-on: Linux
-    needs: build
-    steps:
-      - name: Deploy api.tenkabel.simple2b.net
-        uses: appleboy/ssh-action@master
+      - name: Deploy
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.SSH_HOST_IP_DEV }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          port: ${{ secrets.STAGE_PORT }}
           script: |
-            cd ten_kabel; ./up
-      - name: send telegram message on push and pull
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            ${{ github.actor }} updated api.tenkabel.simple2b.net
-            Changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
+            cd /home/runner/tenkabel
+            docker compose pull
+            docker compose up -d --force-recreate
