@@ -82,7 +82,11 @@ def test_auth_user_jobs(
         assert job.owner_id != user.id
 
 
-def test_unauth_user_jobs(client: TestClient, db: Session):
+def test_unauth_user_jobs(
+    client: TestClient,
+    db: Session,
+    faker,
+):
     # create users
     # create professions
     create_professions(db)
@@ -156,6 +160,7 @@ def test_create_job(
     db: Session,
     authorized_users_tokens: list[s.Token],
     test_data: TestData,
+    faker,
 ):
     create_professions(db)
     create_locations(db)
@@ -228,6 +233,7 @@ def test_create_job(
 def test_search_job(
     client: TestClient,
     db: Session,
+    faker,
 ):
     create_professions(db)
     create_jobs(db)
@@ -271,6 +277,7 @@ def test_search_job(
 def test_update_job(
     client: TestClient,
     db: Session,
+    faker,
 ):
     create_professions(db)
     create_jobs(db)
@@ -373,6 +380,7 @@ def test_update_job(
 def test_patch_job(
     client: TestClient,
     db: Session,
+    faker,
 ):
     create_professions(db)
     create_jobs(db)
@@ -428,6 +436,7 @@ def test_patch_job(
 def test_delete_job(
     client: TestClient,
     db: Session,
+    faker,
 ):
     create_professions(db)
     create_jobs(db)

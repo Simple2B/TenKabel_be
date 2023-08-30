@@ -19,6 +19,7 @@ def test_notification_get_list(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     create_professions(db)
     fill_test_data(db)

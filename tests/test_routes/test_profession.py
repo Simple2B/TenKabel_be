@@ -6,7 +6,11 @@ from tests.utility import create_professions, fill_test_data
 import app.schema as s
 
 
-def test_get_professions(client: TestClient, db: Session):
+def test_get_professions(
+    client: TestClient,
+    db: Session,
+    faker,
+):
     create_professions(db)
     fill_test_data(db)
 

@@ -9,7 +9,12 @@ import app.model as m
 from tests.fixture.test_data import TestData
 
 
-def test_add_device_to_user(client: TestClient, db: Session, test_data: TestData):
+def test_add_device_to_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    faker,
+):
     test_uuid = generate_uuid()
     test_push_token = "test_push_token"
 

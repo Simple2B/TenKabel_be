@@ -4,7 +4,12 @@ from sqlalchemy.orm import Session
 from tests.fixture import TestData
 
 
-def test_admin_auth(client: TestClient, db: Session, test_data: TestData):
+def test_admin_auth(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    faker,
+):
     # login by email and password
     su_data = {
         "email": test_data.test_superuser.email,

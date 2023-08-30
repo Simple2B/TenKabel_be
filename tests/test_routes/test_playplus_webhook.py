@@ -27,6 +27,7 @@ def test_payplus_form_url(
     monkeypatch,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     import httpx
 
@@ -75,6 +76,7 @@ def test_payment_flow(
     monkeypatch,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
     settings: Settings = get_settings(),
 ):
     import httpx
