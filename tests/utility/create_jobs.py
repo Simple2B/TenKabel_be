@@ -124,7 +124,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             worker_id=random.choice(worker_ids),
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
-            description=fake.sentence(),
+            description=fake.unique.sentence(),
             status=random.choice(statuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
@@ -136,7 +136,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             who_pays=random.choice([e for e in s.Job.WhoPays]),
             customer_first_name=fake.first_name(),
             customer_last_name=fake.last_name(),
-            customer_phone=fake.phone_number(),
+            customer_phone=fake.unique.phone_number(),
             customer_street_address=fake.address(),
         )
 
@@ -213,9 +213,9 @@ def create_jobs_for_user(
             payment_status=random.choice([e for e in s.enums.PaymentStatus]),
             commission_status=random.choice([e for e in s.enums.CommissionStatus]),
             who_pays=random.choice([e for e in s.Job.WhoPays]),
-            customer_first_name=fake.first_name(),
-            customer_last_name=fake.last_name(),
-            customer_phone=fake.phone_number(),
+            customer_first_name=fake.unique.first_name(),
+            customer_last_name=fake.unique.last_name(),
+            customer_phone=fake.unique.phone_number(),
             customer_street_address=fake.address(),
         )
         db.add(job2)
