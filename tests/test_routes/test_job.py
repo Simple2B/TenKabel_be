@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select
+from sqlalchemy import select, and_
 
 import app.model as m
 import app.schema as s
@@ -376,6 +376,33 @@ def test_update_job(
 
     assert response.status_code == status.HTTP_409_CONFLICT
 
+    request_data: s.JobUpdate = s.JobUpdate(
+        profession_id=job.profession_id,
+        city=job.city,
+        region=job.region,
+        payment=job.payment,
+        commission=job.commission,
+        payment_status=job.payment_status,
+        commission_status=s.enums.CommissionStatus.UNPAID,
+        name=job.name,
+        who_pays=job.who_pays,
+        description=job.description,
+        time=job.time,
+        customer_first_name=job.customer_first_name,
+        customer_last_name=job.customer_last_name,
+        customer_phone=job.customer_phone,
+        customer_street_address=job.customer_street_address,
+        status=job.status,
+    )
+
+    response = client.put(
+        f"api/jobs/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_409_CONFLICT
+
 
 def test_patch_job(
     client: TestClient,
@@ -388,8 +415,17 @@ def test_patch_job(
 
     NEW_NAME = "TESTNAME JOBNAME"
     job: m.Job = db.scalar(
-        select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
+        select(m.Job).where(
+            and_(
+                m.Job.status == s.enums.JobStatus.PENDING,
+                m.Job.is_deleted == False,  # noqa E712
+                m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+            )
+        )
     )
+    job.commission_status = s.enums.CommissionStatus.REQUESTED
+    db.commit()
+
     request_data: s.JobPatch = s.JobPatch(
         name=NEW_NAME,
         status=s.enums.JobStatus.IN_PROGRESS,
@@ -418,7 +454,7 @@ def test_patch_job(
         customer_last_name=NEW_NAME + "1",
         status=s.enums.JobStatus.JOB_IS_FINISHED,
         payment_status=job.payment_status,
-        commission_status=job.commission_status,
+        commission_status=s.enums.CommissionStatus.CONFIRM,
     )
     response = client.patch(
         f"api/jobs/{job.uuid}",
@@ -431,6 +467,20 @@ def test_patch_job(
     assert response.status_code == status.HTTP_200_OK
     assert job.customer_last_name == NEW_NAME + "1"
     assert job.status.value == request_data.status
+    assert job.commission_status.value == request_data.commission_status
+
+    request_data: s.JobPatch = s.JobPatch(
+        customer_last_name=NEW_NAME + "1",
+        status=s.enums.JobStatus.JOB_IS_FINISHED,
+        payment_status=job.payment_status,
+        commission_status=s.enums.CommissionStatus.REQUESTED,
+    )
+    response = client.patch(
+        f"api/jobs/{job.uuid}",
+        json=request_data.dict(),
+        headers={"Authorization": f"Bearer {token.access_token}"},
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
 
 
 def test_delete_job(

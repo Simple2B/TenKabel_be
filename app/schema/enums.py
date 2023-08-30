@@ -38,10 +38,12 @@ class PaymentMethod(enum.Enum):
     UPDATE = "Update"
 
 
-class CommissionStatus(enum.Enum):
-    PAID = "paid"
-    UNPAID = "unpaid"
+class CommissionStatus(IndexableStringEnum):
     REQUESTED = "requested"
+    UNPAID = "unpaid"
+    DENY = "Deny"
+    CONFIRM = "Confirm"
+    PAID = "paid"
 
 
 # Payplus
