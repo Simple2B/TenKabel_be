@@ -36,7 +36,7 @@ def manage_tab_controller(
             and_(
                 or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == current_user.id),
                 m.Job.status == s.enums.JobStatus.PENDING,
-                m.Job.is_deleted == False,  # noqa E712
+                m.Job.is_deleted.is_(False),
             )
         )
 
@@ -45,7 +45,7 @@ def manage_tab_controller(
     if manage_tab == s.Job.TabFilter.ACTIVE:
         query = query.where(
             and_(
-                m.Job.is_deleted == False,  # noqa E712
+                m.Job.is_deleted.is_(False),
                 or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                     and_(
@@ -63,7 +63,7 @@ def manage_tab_controller(
     if manage_tab == s.Job.TabFilter.ARCHIVE:
         query = query.filter(
             or_(
-                m.Job.is_deleted == True,  # noqa E712
+                m.Job.is_deleted.is_(True),
                 and_(
                     m.Job.payment_status == s.enums.PaymentStatus.PAID,
                     m.Job.commission_status == s.enums.CommissionStatus.PAID,

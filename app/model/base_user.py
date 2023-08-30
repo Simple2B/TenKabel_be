@@ -11,9 +11,16 @@ from app.logger import log
 
 class BaseUser:
     id: orm.Mapped[int] = orm.mapped_column(primary_key=True)
-    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+    uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36),
+        unique=True,
+        default=generate_uuid,
+    )
     email: orm.Mapped[str] = orm.mapped_column(
-        sa.String(128), nullable=True, unique=True
+        sa.String(128),
+        nullable=True,
+        index=True,
+        unique=True,
     )
     username: orm.Mapped[str] = orm.mapped_column(sa.String(128), default="")
     google_openid_key: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
@@ -29,11 +36,11 @@ class BaseUser:
     is_deleted: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
 
     @property
-    def is_auth_by_google(self):
+    def is_auth_by_google(self) -> bool:
         return bool(self.google_openid_key)
 
     @property
-    def is_auth_by_apple(self):
+    def is_auth_by_apple(self) -> bool:
         return bool(self.apple_uid)
 
     @property

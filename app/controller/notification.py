@@ -8,21 +8,21 @@ from app.utility.notification import get_notification_payload
 from app.logger import log
 
 
-def check_location_notification(region: m.Location, user: m.User):
+def check_location_notification(region: m.Location, user: m.User) -> bool:
     return user.notification_locations_flag and (
         (region in user.notification_locations)
         or (not user.notification_locations and region in user.locations)
     )
 
 
-def check_profession_notification(profession: m.Profession, user: m.User):
+def check_profession_notification(profession: m.Profession, user: m.User) -> bool:
     return user.notification_profession_flag and (
         (profession in user.notification_profession)
         or (not user.notification_profession and profession in user.professions)
     )
 
 
-def job_created_notify(job: m.Job, db: Session):
+def job_created_notify(job: m.Job, db: Session) -> None:
     db.refresh(job)
     regions: m.Location = db.scalar(
         select(m.Location).where(m.Location.name_en == job.region)
@@ -90,7 +90,7 @@ def job_created_notify(job: m.Job, db: Session):
 
 def handle_job_status_update_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
-):
+) -> None:
     if initial_job.status == job.status.value:
         log(log.DEBUG, "Job [%i] status not changed", job.id)
         return
@@ -125,7 +125,7 @@ def handle_job_status_update_notification(
 
 def handle_job_payment_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
-):
+) -> None:
     if initial_job.payment_status == job.payment_status.value:
         log(log.DEBUG, "Job [%i] payment status not changed", job.id)
         return
@@ -156,7 +156,7 @@ def handle_job_payment_notification(
 
 def handle_job_commission_notification(
     current_user: m.User, job: m.Job, db: Session, initial_job: s.Job
-):
+) -> None:
     if initial_job.commission_status == job.commission_status.value:
         log(log.DEBUG, "Job [%i] commission status not changed", job.id)
         return

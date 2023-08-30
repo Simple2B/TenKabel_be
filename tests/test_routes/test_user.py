@@ -419,7 +419,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
             m.Job.status == s.enums.JobStatus.PENDING,
-            m.Job.is_deleted == False,  # noqa E712
+            m.Job.is_deleted.is_(False),
         )
     )
     jobs = db.scalars(query).all()
@@ -444,9 +444,9 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.is_deleted == False,  # noqa E712
+            m.Job.is_deleted.is_(False),
             and_(
-                m.Job.is_deleted == False,  # noqa E712
+                m.Job.is_deleted.is_(False),
                 or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                     and_(
@@ -490,7 +490,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
             or_(
-                m.Job.is_deleted == True,  # noqa E712
+                m.Job.is_deleted.is_(True),
                 and_(
                     m.Job.payment_status == s.enums.PaymentStatus.PAID,
                     m.Job.commission_status == s.enums.CommissionStatus.PAID,

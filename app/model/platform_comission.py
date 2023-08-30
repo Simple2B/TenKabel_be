@@ -12,7 +12,11 @@ class PlatformCommission(db.Model):
     __tablename__ = "platform_commissions"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
-    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+    uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36),
+        unique=True,
+        default=generate_uuid,
+    )
 
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
