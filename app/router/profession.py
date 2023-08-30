@@ -8,11 +8,11 @@ import app.schema as s
 from app.logger import log
 from app.database import get_db
 
-profession_router = APIRouter(prefix="/profession", tags=["Jobs"])
+profession_router = APIRouter(prefix="/professions", tags=["Jobs"])
 
 
 @profession_router.get(
-    "/professions", status_code=status.HTTP_200_OK, response_model=s.ProfessionList
+    "", status_code=status.HTTP_200_OK, response_model=s.ProfessionList
 )
 def get_professions(db: Session = Depends(get_db)):
     professions: list[m.Profession] = db.scalars(

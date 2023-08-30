@@ -69,7 +69,7 @@ def test_auth_user_jobs(
 
     # check jobs are created
     response = client.get(
-        "api/job/jobs",
+        "api/jobs",
         headers={
             "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
         },
@@ -97,13 +97,13 @@ def test_unauth_user_jobs(
     fill_test_data(db)
 
     # check jobs are created
-    response = client.get("api/job/jobs")
+    response = client.get("api/jobs")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     assert len(resp_obj.jobs) > 0
 
     # filtering jobs with profession_id=1
-    response = client.get("api/job/jobs?profession_id=1")
+    response = client.get("api/jobs?profession_id=1")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
@@ -112,28 +112,28 @@ def test_unauth_user_jobs(
     # filtering jobs with profession_id=1
     test_location = db.query(m.Location).first()
     assert test_location
-    response = client.get(f"api/job/jobs?city={test_location.name_en}")
+    response = client.get(f"api/jobs?city={test_location.name_en}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.region == test_location.name_en
 
     # regex checking
-    response = client.get(f"api/job/jobs?city=  ){test_location.name_en} & && !*?'  ")
+    response = client.get(f"api/jobs?city=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.region == test_location.name_en
 
     # filtering jobs by min price
-    response = client.get(f"api/job/jobs?min_price={TEST_MIN_PRICE}")
+    response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.payment >= TEST_MIN_PRICE
 
     # filtering jobs by max price
-    response = client.get(f"api/job/jobs?max_price={TEST_MAX_PRICE}")
+    response = client.get(f"api/jobs?max_price={TEST_MAX_PRICE}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
@@ -143,7 +143,7 @@ def test_unauth_user_jobs(
     job: m.Job = db.query(m.Job).first()
     assert job
 
-    response = client.get(f"api/job/{job.uuid}/")
+    response = client.get(f"api/jobs/{job.uuid}/")
     assert response.status_code == status.HTTP_200_OK
 
     resp_obj = s.Job.parse_obj(response.json())
@@ -151,7 +151,7 @@ def test_unauth_user_jobs(
     user: m.User = db.scalar(select(m.User).where(m.User.id == resp_obj.owner_id))
     assert user.jobs_posted_count
 
-    response = client.get("api/job/status_list")
+    response = client.get("api/jobs/status_list")
     assert response.status_code == 200 and response.content
 
 
@@ -204,7 +204,7 @@ def test_create_job(
         customer_street_address="test_location",
     )
     response = client.post(
-        "api/job",
+        "api/jobs",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -218,7 +218,7 @@ def test_create_job(
     generate_customer_uid(owner_user, db)
     generate_card_token(owner_user, db)
     response = client.post(
-        "api/job",
+        "api/jobs",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -239,7 +239,7 @@ def test_search_job(
     create_jobs(db)
     fill_test_data(db)
 
-    response = client.get("api/job/jobs")
+    response = client.get("api/jobs")
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
@@ -252,23 +252,23 @@ def test_search_job(
     )
     assert job
 
-    response = client.get("api/job/jobs", params={"q": f"{job.region}"})
+    response = client.get("api/jobs", params={"q": f"{job.region}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
     assert all([resp_job.region == job.region for resp_job in response_jobs_list.jobs])
 
-    response = client.get("api/job/jobs", params={"q": f"{job.name}"})
+    response = client.get("api/jobs", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    response = client.get("api/job/jobs", params={"q": f"{job.description}"})
+    response = client.get("api/jobs", params={"q": f"{job.description}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
 
-    response = client.get("api/job/jobs", params={"q": "non_existin_city_for_sure_123"})
+    response = client.get("api/jobs", params={"q": "non_existing_city_for_sure_123"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
@@ -311,7 +311,7 @@ def test_update_job(
         status=s.enums.JobStatus.JOB_IS_FINISHED,
     )
     response = client.put(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
@@ -339,7 +339,7 @@ def test_update_job(
         status=job.status,
     )
     response = client.put(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
@@ -369,7 +369,7 @@ def test_update_job(
     )
 
     response = client.put(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
@@ -405,7 +405,7 @@ def test_patch_job(
     )
 
     response = client.patch(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
@@ -421,7 +421,7 @@ def test_patch_job(
         commission_status=job.commission_status,
     )
     response = client.patch(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
@@ -453,7 +453,7 @@ def test_delete_job(
     )
 
     response = client.delete(
-        f"api/job/{job.uuid}",
+        f"api/jobs/{job.uuid}",
         headers={"Authorization": f"Bearer {token.access_token}"},
     )
     job: m.Job = db.scalar(select(m.Job).where(m.Job.uuid == job.uuid))

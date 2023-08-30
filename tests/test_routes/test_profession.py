@@ -14,7 +14,7 @@ def test_get_professions(
     create_professions(db)
     fill_test_data(db)
 
-    response = client.get("api/profession/professions")
+    response = client.get("api/professions")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ProfessionList.parse_obj(response.json())
     assert len(resp_obj.professions) > 0

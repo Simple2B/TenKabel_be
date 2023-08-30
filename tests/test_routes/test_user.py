@@ -391,7 +391,7 @@ def test_get_user_profile(
     create_rates(db)
 
     response = client.get(
-        "api/user/jobs",
+        "api/users/jobs",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -401,7 +401,7 @@ def test_get_user_profile(
         assert user.id in (job.worker_id, job.owner_id)
 
     response = client.get(
-        "api/user/jobs",
+        "api/users/jobs",
         params={"manage_tab": s.Job.TabFilter.PENDING.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -419,7 +419,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.id.in_(jobs_ids), m.Job.owner_id == user.id),
             m.Job.status == s.enums.JobStatus.PENDING,
-            m.Job.is_deleted == False,  # noqa E712
+            m.Job.is_deleted.is_(False),
         )
     )
     jobs = db.scalars(query).all()
@@ -434,7 +434,7 @@ def test_get_user_profile(
             ]
 
     response = client.get(
-        "api/user/jobs",
+        "api/users/jobs",
         params={"manage_tab": s.Job.TabFilter.ACTIVE.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -444,9 +444,9 @@ def test_get_user_profile(
     query = select(m.Job).filter(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
-            m.Job.is_deleted == False,  # noqa E712
+            m.Job.is_deleted.is_(False),
             and_(
-                m.Job.is_deleted == False,  # noqa E712
+                m.Job.is_deleted.is_(False),
                 or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
                     and_(
@@ -479,7 +479,7 @@ def test_get_user_profile(
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
-        "api/user/jobs",
+        "api/users/jobs",
         params={"manage_tab": s.Job.TabFilter.ARCHIVE.value},
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -490,7 +490,7 @@ def test_get_user_profile(
         and_(
             or_(m.Job.worker_id == user.id, m.Job.owner_id == user.id),
             or_(
-                m.Job.is_deleted == True,  # noqa E712
+                m.Job.is_deleted.is_(True),
                 and_(
                     m.Job.payment_status == s.enums.PaymentStatus.PAID,
                     m.Job.commission_status == s.enums.CommissionStatus.PAID,
@@ -510,7 +510,7 @@ def test_get_user_profile(
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
-        "api/user",
+        "api/users",
         headers={
             "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
         },
@@ -525,7 +525,7 @@ def test_get_user_profile(
     assert user.picture == resp_obj.picture
     # get current jobs where user is owner
     response = client.get(
-        "api/user/postings",
+        "api/users/postings",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -536,7 +536,7 @@ def test_get_user_profile(
 
     # get user by uuid
     response = client.get(
-        f"api/user/{user.uuid}",
+        f"api/users/{user.uuid}",
     )
     assert response.status_code == status.HTTP_200_OK
     resp_obj: s.User = s.User.parse_obj(response.json())
@@ -544,7 +544,7 @@ def test_get_user_profile(
     assert resp_obj.positive_rates_count == user.positive_rates_count
 
     response = client.get(
-        "api/user/rates",
+        "api/users/rates",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
@@ -554,7 +554,7 @@ def test_get_user_profile(
         assert rate.owner_id == user.id
 
     response = client.get(
-        "api/user/applications?type=owner",
+        "api/users/applications?type=owner",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
@@ -572,7 +572,7 @@ def test_get_user_profile(
     generate_customer_uid(user, db)
 
     response = client.post(
-        "api/user/payplus-token",
+        "api/users/payplus-token",
         json=jsonable_encoder(card_data),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -619,7 +619,7 @@ def test_update_user(
     )
 
     response = client.patch(
-        "api/user",
+        "api/users",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -658,7 +658,7 @@ def test_notifications_user(
         notification_job_status=False,
     )
     response = client.patch(
-        "api/user/notification-settings",
+        "api/users/notification-settings",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -699,7 +699,7 @@ def test_passwords(
         new_password=TEST_NEW_PASSWORD, phone=user.phone, country_code="IL"
     )
     response = client.post(
-        "api/user/forgot-password",
+        "api/users/forgot-password",
         json=request_data.dict(),
     )
 
@@ -713,7 +713,7 @@ def test_passwords(
         new_password=TEST_NEW_FORGOT_PASSWORD,
     )
     response = client.post(
-        "api/user/change-password",
+        "api/users/change-password",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -744,7 +744,7 @@ def test_delete_user(
     request_data = s.DeviceIn(uuid=uuid, push_token=push_token)
 
     response = client.post(
-        "api/device",
+        "api/devices",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -753,7 +753,7 @@ def test_delete_user(
     request_data = s.LogoutIn(device_uuid=push_token)
     response = client.request(
         "DELETE",
-        "api/user",
+        "api/users",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         content=request_data.json(),
     )
@@ -768,7 +768,7 @@ def test_delete_user(
 
     response = client.request(
         "DELETE",
-        "api/user",
+        "api/users",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         content=request_data.json(),
     )

@@ -7,7 +7,10 @@ settings: Settings = get_settings()
 
 
 def create_pagination(
-    total: int, query: list[BaseModel], page_size: int = 0, page: int = 1
+    total: int,
+    query: list[BaseModel],
+    page_size: int = 0,
+    page: int = 1,
 ) -> s.Pagination:
     """create instance Pagination for current request"""
     page_size = page_size or settings.DEFAULT_PAGE_SIZE

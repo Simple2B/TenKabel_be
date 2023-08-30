@@ -30,7 +30,7 @@ def test_notification_get_list(
         select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
     response = client.get(
-        "api/notification/notifications",
+        "api/notifications",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 

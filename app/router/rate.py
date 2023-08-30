@@ -11,7 +11,7 @@ from app.controller import create_rate_controller
 from app.dependency import get_current_user
 
 
-rate_router = APIRouter(prefix="/rate", tags=["Rate"])
+rate_router = APIRouter(prefix="/rates", tags=["Rate"])
 
 
 @rate_router.get("/{rate_uuid}", status_code=status.HTTP_200_OK, response_model=s.Rate)
@@ -28,6 +28,16 @@ def get_rate(
         )
 
     log(log.INFO, "Rate [%s] info", rate_uuid)
+    return rate
+
+
+@rate_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Rate)
+def create_rate(
+    rate_data: s.BaseRate,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    rate = create_rate_controller(rate_data, db)
     return rate
 
 
@@ -133,14 +143,4 @@ def patch_rate(
         )
 
     log(log.INFO, "Rate [%s] patched successfully", rate.id)
-    return rate
-
-
-@rate_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Rate)
-def create_rate(
-    rate_data: s.BaseRate,
-    db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
-):
-    rate = create_rate_controller(rate_data, db)
     return rate

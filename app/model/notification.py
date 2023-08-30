@@ -13,7 +13,11 @@ class Notification(db.Model):
     __tablename__ = "notifications"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
-    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+    uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36),
+        unique=True,
+        default=generate_uuid,
+    )
     type: orm.Mapped[s.NotificationType] = orm.mapped_column(
         sa.Enum(s.NotificationType), nullable=False
     )
@@ -26,6 +30,9 @@ class Notification(db.Model):
     )
 
     user = orm.relationship("User", backref="notifications")
+
+    def __repr__(self):
+        return f"<Notification {self.id} - Type [{self.type}]>"
 
     def create_schema(
         self, session: orm.Session

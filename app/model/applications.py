@@ -12,7 +12,12 @@ class Application(db.Model):
     __tablename__ = "applications"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
-    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+    uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36),
+        unique=True,
+        index=True,
+        default=generate_uuid,
+    )
 
     job_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("jobs.id"), nullable=False
@@ -45,11 +50,11 @@ class Application(db.Model):
     )
 
     @property
-    def job_uuid(self):
+    def job_uuid(self) -> str:
         return self.job.uuid
 
     @property
-    def job_name(self):
+    def job_name(self) -> str:
         return self.job.name
 
     @property

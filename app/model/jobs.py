@@ -15,7 +15,12 @@ class Job(db.Model):
     __tablename__ = "jobs"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
-    uuid: orm.Mapped[str] = orm.mapped_column(sa.String(36), default=generate_uuid)
+    uuid: orm.Mapped[str] = orm.mapped_column(
+        sa.String(36),
+        unique=True,
+        index=True,
+        default=generate_uuid,
+    )
 
     owner_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("users.id"), nullable=False
@@ -84,24 +89,18 @@ class Job(db.Model):
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
 
+    def __repr__(self):
+        return f"<{self.id}: {self.name}>"
+
     @property
     def owner_rate_uuid(self) -> str | None:
         rates = [rate for rate in self.rates if rate.worker_id == self.owner_id]
-        # rate = self.rates.filter_by(worker_id=self.owner_id).first()
         return rates[0].uuid if rates else None
 
     @property
     def worker_rate_uuid(self) -> str | None:
         rates = [rate for rate in self.rates if rate.worker_id == self.worker_id]
         return rates[0].uuid if rates else None
-
-    # @property
-    # def rated_by_owner(self) -> bool:
-    #     return self.owner_id in [rate.worker_id for rate in self.rates]
-
-    # @property
-    # def rated_by_worker(self) -> bool:
-    #     return self.worker_id in [rate.worker_id for rate in self.rates]
 
     @property
     def time(self) -> str:
@@ -120,9 +119,6 @@ class Job(db.Model):
     @property
     def application_worker_ids(self):
         return [application.worker_id for application in self.applications]
-
-    def __repr__(self):
-        return f"<{self.id}: {self.name}>"
 
     @orm.validates("payment_status")
     def validate_commission_status(self, key, value):

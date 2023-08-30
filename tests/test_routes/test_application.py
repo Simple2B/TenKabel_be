@@ -37,7 +37,7 @@ def test_application_methods(
     request_data: s.ApplicationIn = s.ApplicationIn(job_id=job_id)
 
     response = client.post(
-        "api/application",
+        "api/applications",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -47,7 +47,7 @@ def test_application_methods(
     generate_card_token(auth_user, db)
 
     response = client.post(
-        "api/application",
+        "api/applications",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -70,7 +70,7 @@ def test_application_methods(
     )
 
     response = client.post(
-        "api/application",
+        "api/applications",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -79,7 +79,7 @@ def test_application_methods(
     non_exist_job_id = 321312
     request_data: s.ApplicationIn = s.ApplicationIn(job_id=non_exist_job_id)
     response = client.post(
-        "api/application",
+        "api/applications",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -90,7 +90,7 @@ def test_application_methods(
     )
 
     response = client.patch(
-        f"api/application/{application.uuid}",
+        f"api/applications/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )
@@ -109,7 +109,7 @@ def test_application_methods(
     db.commit()
 
     response = client.put(
-        f"api/application/{application.uuid}",
+        f"api/applications/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )

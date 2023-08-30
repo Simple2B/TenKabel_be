@@ -25,7 +25,7 @@ from app.controller import PushHandler, job_created_notify
 from app.utility.notification import get_notification_payload
 
 
-job_router = APIRouter(prefix="/job", tags=["Jobs"])
+job_router = APIRouter(prefix="/jobs", tags=["Jobs"])
 
 
 @job_router.get(
@@ -35,7 +35,7 @@ def get_status_list():
     return [e.value for e in s.enums.JobStatus]
 
 
-@job_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
+@job_router.get("", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 @time_measurement
 def get_jobs(
     profession_id: int = None,

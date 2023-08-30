@@ -19,7 +19,7 @@ from app.controller import (
 )
 
 
-user_router = APIRouter(prefix="/user", tags=["Users"])
+user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @user_router.get("", status_code=status.HTTP_200_OK, response_model=s.User)

@@ -63,7 +63,7 @@ def test_rate_methods(
     )
 
     response = client.post(
-        "api/rate",
+        "api/rates",
         json=request_data.dict(),
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
@@ -92,7 +92,7 @@ def test_rate_methods(
         job_id=job.id,
     )
 
-    response = client.put(f"api/rate/{rate.uuid}", json=request_data.dict())
+    response = client.put(f"api/rates/{rate.uuid}", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(rate)
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
@@ -101,13 +101,13 @@ def test_rate_methods(
         rate=s.BaseRate.RateStatus.POSITIVE,
     )
 
-    response = client.patch(f"api/rate/{rate.uuid}", json=request_data.dict())
+    response = client.patch(f"api/rates/{rate.uuid}", json=request_data.dict())
     assert response.status_code == status.HTTP_201_CREATED
     db.refresh(rate)
     assert rate.rate == s.BaseRate.RateStatus(request_data.rate)
 
     rate: m.Rate = db.scalar(select(m.Rate))
-    response = client.get(f"api/rate/{rate.uuid}")
+    response = client.get(f"api/rates/{rate.uuid}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.Rate.parse_obj(response.json())
     assert resp_obj.id == rate.id
