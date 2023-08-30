@@ -3,12 +3,14 @@ services:
   redis:
     restart: always
     image: "redis:alpine"
+    env_file:
+      - project.env
     ports:
       - 127.0.0.1:${REDIS_PORT:-6385}:6379
     environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD:-redis_pass}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-password}
     command: >
-      --requirepass ${REDIS_PASSWORD:-redis_pass}
+      --requirepass ${REDIS_PASSWORD:-password}
 
   db:
     image: postgres:14
