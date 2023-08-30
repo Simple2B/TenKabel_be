@@ -215,8 +215,20 @@ def patch_job(
         handle_job_payment_notification(current_user, job, db, initial_job)
 
     if job_data.commission_status != job.commission_status:
-        job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
-        handle_job_commission_notification(current_user, job, db, initial_job)
+        try:
+            if s.enums.CommissionStatus.get_index(
+                job_data.commission_status
+            ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
+                raise ValueDownGradeForbidden(
+                    f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+                )
+            job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
+            handle_job_commission_notification(current_user, job, db, initial_job)
+        except ValueDownGradeForbidden as e:
+            log(log.ERROR, "Error while patching job [%i] - %s", job.id, e)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
+            )
 
     try:
         db.commit()
@@ -252,6 +264,14 @@ def update_job(
         job.customer_phone = job_data.customer_phone
         job.customer_street_address = job_data.customer_street_address
         job.status = s.enums.JobStatus(job_data.status)
+
+        if s.enums.CommissionStatus.get_index(
+            job_data.commission_status
+        ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
+            raise ValueDownGradeForbidden(
+                f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+            )
+
         job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
         job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
     except ValueDownGradeForbidden as e:
