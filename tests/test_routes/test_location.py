@@ -17,7 +17,7 @@ def test_get_locations(
     create_professions(db)
     create_locations(db)
     fill_test_data(db)
-    response = client.get("api/location/locations")
+    response = client.get("api/locations")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.LocationList.parse_obj(response.json())
     assert len(resp_obj.locations) > 0

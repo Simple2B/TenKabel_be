@@ -9,11 +9,11 @@ from app.logger import log
 from app.database import get_db
 
 
-notification_router = APIRouter(prefix="/notification", tags=["Notifications"])
+notification_router = APIRouter(prefix="/notifications", tags=["Notifications"])
 
 
 @notification_router.get(
-    "/notifications", status_code=status.HTTP_200_OK, response_model=s.NotificationList
+    "", status_code=status.HTTP_200_OK, response_model=s.NotificationList
 )
 def get_notifications(
     db: Session = Depends(get_db), user: m.User = Depends(get_current_user)

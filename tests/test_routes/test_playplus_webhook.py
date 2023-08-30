@@ -117,7 +117,7 @@ def test_payment_flow(
     )
     # first lets create platform payments and platform comissions
     response = client.put(
-        f"api/application/{application.uuid}",
+        f"api/applications/{application.uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
         json=request_data.dict(),
     )

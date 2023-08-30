@@ -9,7 +9,7 @@ from app.logger import log
 from app.database import get_db
 
 
-device_router = APIRouter(prefix="/device", tags=["Devices"])
+device_router = APIRouter(prefix="/devices", tags=["Devices"])
 
 
 @device_router.post("", status_code=status.HTTP_200_OK, response_model=None)

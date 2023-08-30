@@ -31,7 +31,7 @@ def test_add_device_to_user(
     assert token is not None
 
     device_response = client.post(
-        "api/device",
+        "api/devices",
         json={
             "uuid": test_uuid,
             "push_token": test_push_token,
@@ -55,7 +55,7 @@ def test_add_device_to_user(
     new_push_token = "new_push_token"
 
     new_device_response = client.post(
-        "api/device",
+        "api/devices",
         json={
             "uuid": test_uuid,
             "push_token": new_push_token,
