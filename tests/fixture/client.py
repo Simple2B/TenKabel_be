@@ -52,3 +52,8 @@ def authorized_users_tokens(
         token = s.Token.parse_obj(response.json())
         tokens += [token]
     yield tokens
+
+
+@pytest.fixture(scope="session", autouse=True)
+def faker_seed():
+    return "some-seed-tenkabel"

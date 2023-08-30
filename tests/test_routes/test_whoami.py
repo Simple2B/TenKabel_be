@@ -14,6 +14,7 @@ def test_who_am_i(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     user: m.User = db.scalar(
         select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)

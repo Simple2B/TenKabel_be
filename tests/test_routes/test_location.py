@@ -7,7 +7,11 @@ import app.schema as s
 from tests.utility import create_locations, fill_test_data, create_professions
 
 
-def test_get_locations(client: TestClient, db: Session):
+def test_get_locations(
+    client: TestClient,
+    db: Session,
+    faker,
+):
     # create users
     # create professions
     create_professions(db)

@@ -21,6 +21,7 @@ def test_application_methods(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     fill_test_data(db)
     create_professions(db)

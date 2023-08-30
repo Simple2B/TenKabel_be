@@ -27,7 +27,12 @@ from tests.utility import (
 )
 
 
-def test_auth(client: TestClient, db: Session, test_data: TestData):
+def test_auth(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    faker,
+):
     # login by username and password
 
     response = client.post(
@@ -60,6 +65,7 @@ def test_signup(
     monkeypatch,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     import httpx
 
@@ -175,7 +181,11 @@ def test_signup(
 
 
 def test_google_auth(
-    client: TestClient, db: Session, monkeypatch, test_data: TestData
+    client: TestClient,
+    db: Session,
+    monkeypatch,
+    test_data: TestData,
+    faker,
 ) -> None:
     import httpx
 
@@ -253,7 +263,11 @@ def test_google_auth(
 
 
 def test_apple_auth(
-    client: TestClient, db: Session, monkeypatch, test_data: TestData
+    client: TestClient,
+    db: Session,
+    monkeypatch,
+    test_data: TestData,
+    faker,
 ) -> None:
     import httpx
 
@@ -334,6 +348,7 @@ def test_get_user_profile(
     test_data: TestData,
     monkeypatch,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     import httpx
 
@@ -572,6 +587,7 @@ def test_update_user(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     fill_test_data(db)
     create_professions(db)
@@ -624,6 +640,7 @@ def test_notifications_user(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     fill_test_data(db)
     create_locations(db)
@@ -663,6 +680,7 @@ def test_passwords(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     create_professions(db)
     create_jobs(db)
@@ -710,6 +728,7 @@ def test_delete_user(
     db: Session,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
+    faker,
 ):
     create_professions(db)
     create_locations(db)
@@ -756,26 +775,3 @@ def test_delete_user(
 
     assert response.status_code == status.HTTP_409_CONFLICT
     assert not user.is_deleted
-
-
-# def test_upload_avatar(
-#     client: TestClient,
-#     db: Session,
-#     mock_google_cloud_storage,
-#     test_data: TestData,
-#     authorized_users_tokens: list,
-# ):
-#     # Create a mock client
-#     response = client.post(
-#         "api/user/upload-avatar",
-#         files={
-#             "profile_avatar": open("tests/test_image.png", "rb"),
-#         },
-#         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
-#     )
-#     assert response.status_code == status.HTTP_201_CREATED
-#     assert (
-#         db.query(m.User)
-#         .filter_by(email=test_data.test_authorized_users[0].email)
-#         .picture
-#     )
