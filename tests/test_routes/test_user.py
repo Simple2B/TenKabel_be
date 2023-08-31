@@ -195,6 +195,16 @@ def test_signup(
     )
     assert response.status_code == status.HTTP_200_OK
 
+    response = client.get(
+        "api/auth/user/pre-validate?field=phone&value=123456",
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    response = client.get(
+        "api/auth/user/pre-validate?field=SOME_BAD_FIELD&value=123456",
+    )
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
 
 def test_google_auth(
     client: TestClient,
