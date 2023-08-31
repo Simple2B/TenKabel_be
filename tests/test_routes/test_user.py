@@ -168,7 +168,6 @@ def test_signup(
     assert [location.id for location in user.locations] == request_data.locations
 
     # FINISH VERIFY
-
     response = client.put(
         "api/auth/verify",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
@@ -178,6 +177,23 @@ def test_signup(
         select(m.User).where(m.User.phone == test_data.test_authorized_users[0].phone)
     )
     assert user.is_verified
+
+    # pre-validating user exist
+    response = client.get(
+        f"api/auth/user/pre-validate?field=email&value={test_data.test_user.email}",
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+    # pre-validating user exist
+    response = client.get(
+        f"api/auth/user/pre-validate?field=phone&value={test_data.test_user.phone}",
+    )
+    assert response.status_code == status.HTTP_409_CONFLICT
+
+    # pre-validating user not exist
+    response = client.get(
+        "api/auth/user/pre-validate?field=phone&value=123456",
+    )
+    assert response.status_code == status.HTTP_200_OK
 
 
 def test_google_auth(

@@ -303,3 +303,25 @@ def logout(
     db: Session = Depends(get_db),
 ):
     delete_device(device, db)
+
+
+@auth_router.get(
+    "/user/pre-validate",
+    status_code=status.HTTP_200_OK,
+)
+def pre_validate_user(
+    field: str,
+    value: str,
+    db: Session = Depends(get_db),
+):
+    user = db.scalar(
+        select(m.User).where(
+            sa.func.lower(getattr(m.User, field)) == sa.func.lower(value)
+        )
+    )
+    if user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="User already exist",
+        )
+    return
