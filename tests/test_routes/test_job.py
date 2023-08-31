@@ -510,3 +510,17 @@ def test_delete_job(
     db.refresh(job)
     assert response.status_code == status.HTTP_200_OK
     assert job.is_deleted
+
+
+def test_create_jobs_options(
+    client: TestClient,
+    db: Session,
+    faker,
+):
+    create_professions(db)
+    create_jobs(db)
+    # getting mix or min job prices
+    response = client.get("api/options/price")
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+    assert resp_data.max_price > resp_data.min_price
