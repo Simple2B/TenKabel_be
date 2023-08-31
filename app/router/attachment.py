@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-
+from app.controller import upload_file_to_google_cloud_storage
 from app.dependency import get_current_user
 from app.database import get_db
 import app.model as m
@@ -35,20 +35,16 @@ def upload_attachment(
         elif extension in ["pdf", "doc", "docx"]:
             return s.enums.AttachmentType.DOCUMENT
 
-    def upload_file_to_google_cloud_storage(destination_filename: str):
-        bucket = google_storage_client.get_bucket(settings.GOOGLE_STORAGE_BUCKET_NAME)
-
-        blob = bucket.blob(attachment.filename)
-        blob = bucket.blob(destination_filename)
-        blob.upload_from_string(decoded_file)
-        return blob
-
     # uploading file to google cloud bucket
     decoded_file = base64.b64decode(attachment.file)
     destination_blob_name = f"attachments/{current_user.uuid}/{attachment.filename}"
     extension = attachment.filename.split(".")[-1]
     blob = upload_file_to_google_cloud_storage(
-        destination_filename=destination_blob_name
+        decoded_file=decoded_file,
+        filename=attachment.filename,
+        destination_filename=destination_blob_name,
+        google_storage_client=google_storage_client,
+        settings=settings,
     )
     # storing data to DB
     attachment = m.Attachment(
