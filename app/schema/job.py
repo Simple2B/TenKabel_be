@@ -6,6 +6,7 @@ from .profession import Profession
 from .application import ApplicationOut
 from .enums import JobStatus, PaymentStatus, CommissionStatus
 from .platform_commission import PlatformCommission
+from .attachment import AttachmentOut
 
 
 class BaseJob(BaseModel):
@@ -55,6 +56,7 @@ class Job(BaseJob):
     # rated_by_worker: bool
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
+    attachments: list[AttachmentOut]
 
     class Config:
         use_enum_values = True

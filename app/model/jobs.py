@@ -9,6 +9,7 @@ from app import schema as s
 from app import model as m
 from app.model.applications import Application
 from .platform_comission import PlatformCommission
+from .attachment import Attachment
 
 
 class Job(db.Model):
@@ -88,6 +89,9 @@ class Job(db.Model):
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
+    attachments: orm.Mapped[list[Attachment]] = orm.relationship(
+        "Attachment", backref="job"
+    )
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
