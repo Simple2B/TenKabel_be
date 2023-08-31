@@ -69,6 +69,8 @@ jobs:
           key: ${{ secrets.PROD_SSH_KEY }}
           port: ${{ secrets.PROD_PORT }}
           script: |
-            cd /home/runner/tenkabel
+            pwd
+            ls -la
+            cd tenkabel
             docker compose pull
             docker compose up -d --force-recreate
