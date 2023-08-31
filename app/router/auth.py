@@ -314,6 +314,12 @@ def pre_validate_user(
     value: str,
     db: Session = Depends(get_db),
 ):
+    if not hasattr(m.User, field):
+        log(log.INFO, "Invalid field [%s]", field)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid field",
+        )
     user = db.scalar(
         select(m.User).where(
             sa.func.lower(getattr(m.User, field)) == sa.func.lower(value)
