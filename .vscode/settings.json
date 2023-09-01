@@ -4,8 +4,10 @@
   "python.testing.pytestEnabled": true,
   "cSpell.words": [
     "backref",
+    "dotenv",
     "fastapi",
     "httpx",
+    "ilike",
     "mmyy",
     "payplus",
     "pydantic",

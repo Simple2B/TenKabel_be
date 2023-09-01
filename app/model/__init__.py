@@ -17,5 +17,6 @@ from .device import Device
 from .notification import Notification
 from .platform_comission import PlatformCommission
 from .platform_payment import PlatformPayment
+from .attachment import Attachment
 
 from app.database import db

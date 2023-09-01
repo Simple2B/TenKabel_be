@@ -1,7 +1,9 @@
 from typing import Generator
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
+from google.cloud import storage
 from sqlalchemy.orm import Session
 
 import app.schema as s
@@ -12,6 +14,20 @@ from .test_data import TestData
 @pytest.fixture
 def client(monkeypatch) -> Generator:
     from app.main import app
+    from app.controller.google import AttachmentController
+
+    def mock_google_account_json(**kwargs):
+        return True
+
+    class URLType:
+        public_url = f"https://storage.googleapis.com/tenkabel-dev/attachments/{str(uuid.uuid4())}"
+
+    class GoogleStorageMock:
+        def upload_file_to_google_cloud_storage(*args, **kwargs):
+            return URLType
+
+        def delete_file_from_google_cloud_storage(*args, **kwargs):
+            return
 
     class PushNotificationMock:
         _is_initialized = False
@@ -26,6 +42,19 @@ def client(monkeypatch) -> Generator:
         monkeypatch.setattr(PushHandler, "__init__", PushNotificationMock.__init__)
         monkeypatch.setattr(
             PushHandler, "send_notification", PushNotificationMock.send_notification
+        )
+        monkeypatch.setattr(
+            storage.Client, "from_service_account_json", mock_google_account_json
+        )
+        monkeypatch.setattr(
+            AttachmentController,
+            "upload_file_to_google_cloud_storage",
+            GoogleStorageMock.upload_file_to_google_cloud_storage,
+        )
+        monkeypatch.setattr(
+            AttachmentController,
+            "delete_file_from_google_cloud_storage",
+            GoogleStorageMock.delete_file_from_google_cloud_storage,
         )
 
         yield c

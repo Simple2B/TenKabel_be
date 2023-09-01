@@ -21,8 +21,8 @@ class Settings(BaseSettings):
     PAYPLUS_CURRENCY_CODE: str = "ILS"
 
     # GOOGLE
-    GOOGLE_BUCKET_NAME: str = "tenkabel"
-    GOOGLE_SERVICE_ACCOUNT_PATH: str = ""
+    GOOGLE_STORAGE_BUCKET_NAME: str = "tenkabel-dev"
+    GOOGLE_SERVICE_ACCOUNT_PATH: str = "./google_cloud_service_account.json"
 
     # REDIS
     REDIS_URL: str = "redis://:password@redis"

@@ -52,3 +52,8 @@ class PlatformPaymentStatus(enum.Enum):
     UNPAID = "UNPAID"
     REJECTED = "REJECTED"
     PROGRESS = "PROGRESS"
+
+
+class AttachmentType(enum.Enum):
+    IMAGE = "image"
+    DOCUMENT = "document"

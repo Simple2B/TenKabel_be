@@ -14,7 +14,7 @@ phone_field = constr(
 
 
 class AuthUser(BaseModel):
-    country_code: str
+    country_code: str = "IL"
     phone: phone_field
     password: constr(max_length=128, strip_whitespace=True)
 

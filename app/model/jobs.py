@@ -9,6 +9,7 @@ from app import schema as s
 from app import model as m
 from app.model.applications import Application
 from .platform_comission import PlatformCommission
+from .attachment import Attachment
 
 
 class Job(db.Model):
@@ -88,6 +89,9 @@ class Job(db.Model):
     )
 
     profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
+    attachments: orm.Mapped[list[Attachment]] = orm.relationship(
+        "Attachment", backref="job"
+    )
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
@@ -108,7 +112,6 @@ class Job(db.Model):
 
     @time.setter
     def time(self, value: str):
-        # TODO: refactor !!!
         try:
             self.formatted_time = datetime.strptime(
                 str(value), "%Y-%m-%d %H:%M"
@@ -141,3 +144,19 @@ class Job(db.Model):
                 "Commission status can only be PAID if commission status is PAID"
             )
         return value
+
+    @property
+    def owner_attachments(self) -> list[Attachment]:
+        result = []
+        for attachment in self.attachments:
+            if attachment.created_by_id == self.owner_id:
+                result.append(attachment)
+        return result
+
+    @property
+    def worker_attachments(self) -> list[Attachment]:
+        result = []
+        for attachment in self.attachments:
+            if attachment.created_by_id == self.worker_id:
+                result.append(attachment)
+        return result

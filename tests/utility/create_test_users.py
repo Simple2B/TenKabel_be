@@ -6,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from app import model as m
 from app.logger import log
+from app.utility import generate_uuid
 
 NUM_TEST_USERS = 100
 TEST_IMAGES = []
@@ -28,7 +29,7 @@ def fill_test_data(db: Session):
             first_name=f"Jack{uid_user}",
             last_name=f"London{uid_user}",
             password_hash=f"{uid_user}",
-            email=f"user{uid_user}@test.com",
+            email=f"user{uid_user}_{generate_uuid()}@test.com",
             phone=f"972 54 000 {uid_user+1:04}",
             country_code="IL",
             is_verified=True,

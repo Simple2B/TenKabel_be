@@ -6,6 +6,7 @@ from .profession import Profession
 from .application import ApplicationOut
 from .enums import JobStatus, PaymentStatus, CommissionStatus
 from .platform_commission import PlatformCommission
+from .attachment import AttachmentOut
 
 
 class BaseJob(BaseModel):
@@ -51,14 +52,15 @@ class Job(BaseJob):
     city: str
     time: str
     applications: list[ApplicationOut]
-    # rated_by_owner: bool
-    # rated_by_worker: bool
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
 
+    worker_attachments: list[AttachmentOut]
+    owner_attachments: list[AttachmentOut]
+
     class Config:
-        use_enum_values = True
         orm_mode = True
+        use_enum_values = True
 
 
 class ListJob(BaseModel):
@@ -79,6 +81,8 @@ class JobIn(BaseModel):
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
+
+    attachment_uuids: list[str] = []
 
     class Config:
         orm_mode = True
@@ -107,6 +111,7 @@ class JobPatch(BaseModel):
     customer_phone: str | None
     customer_street_address: str | None
     status: JobStatus | None
+    attachment_uuids: list[str] = []
 
     class Config:
         orm_mode = True

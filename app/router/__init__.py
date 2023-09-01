@@ -13,6 +13,7 @@ from .device import device_router
 from .notification import notification_router
 from .platform_payment import payment_router
 from .option import options_router
+from .attachment import attachment_router
 
 # from .notify import notification_test_router
 
@@ -31,6 +32,7 @@ router.include_router(device_router)
 router.include_router(notification_router)
 router.include_router(payment_router)
 router.include_router(options_router)
+router.include_router(attachment_router)
 
 
 @router.get("/list-endpoints/")

@@ -34,6 +34,7 @@ from .enums import (
     PaymentStatus,
     CommissionStatus,
     PaymentMethod,
+    AttachmentType,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
@@ -57,3 +58,5 @@ from .payplus import PayplusCardIn, PayplusCustomerIn, PayPlusCharge
 from .platform_commission import PlatformCommission
 
 from .option import PriceOption
+
+from .attachment import AttachmentIn, AttachmentOut
