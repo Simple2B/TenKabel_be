@@ -20,4 +20,7 @@ from .platform_payment import (
     create_platform_commission,
     create_application_payments,
 )
-from .google import upload_file_to_google_cloud_storage
+from .google import (
+    upload_file_to_google_cloud_storage,
+    delete_file_from_google_cloud_storage,
+)

@@ -14,7 +14,6 @@ class AttachmentIn(BaseAttachment):
 
 
 class AttachmentOut(BaseAttachment):
-    filename: str
     uuid: str
     job_id: int | None
     filename: str
@@ -26,3 +25,4 @@ class AttachmentOut(BaseAttachment):
 
     class Config:
         orm_mode = True
+        use_enum_values = True
