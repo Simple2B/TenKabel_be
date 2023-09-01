@@ -55,5 +55,5 @@ def test_create_attachment(
     assert response.status_code == status.HTTP_201_CREATED
 
     assert db.scalars(
-        select(m.Attachment).where(m.Attachment.filename == filename)
+        select(m.Attachment).where(m.Attachment.original_filename == filename)
     ).first()

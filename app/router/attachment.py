@@ -6,10 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
-from app.controller import (
-    upload_file_to_google_cloud_storage,
-    delete_file_from_google_cloud_storage,
-)
+from app.controller import AttachmentController
 from app.dependency import get_current_user
 from app.database import get_db
 import app.model as m
@@ -67,7 +64,7 @@ def upload_attachment(
     filename = f"{int(datetime.now().timestamp())}_{attachment.filename}"
     destination_blob_name = f"attachments/{current_user.uuid}/{attachment.filename}"
     extension = attachment.filename.split(".")[-1]
-    blob = upload_file_to_google_cloud_storage(
+    blob = AttachmentController.upload_file_to_google_cloud_storage(
         decoded_file=decoded_file,
         filename=attachment.filename,
         destination_filename=destination_blob_name,
@@ -109,13 +106,13 @@ def delete_attachment(
         select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
     ).first()
     if not attachment:
-        log(log.INFO, "Attachement not found")
+        log(log.INFO, "Attachment not found")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Attachment not found",
         )
     # deleting from bucket
-    delete_file_from_google_cloud_storage(
+    AttachmentController.delete_file_from_google_cloud_storage(
         filename=attachment.storage_path,
         google_storage_client=google_storage_client,
         settings=settings,
