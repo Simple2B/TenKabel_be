@@ -22,6 +22,28 @@ from app.config import get_settings, Settings
 attachment_router = APIRouter(prefix="/attachments", tags=["Attachments"])
 
 
+@attachment_router.get(
+    "/{attachment_uuid}",
+    response_model=s.AttachmentOut,
+    status_code=status.HTTP_200_OK,
+)
+def get_attachment(
+    attachment_uuid: str,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    attachment: m.Attachment = db.scalars(
+        select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+    ).first()
+    if not attachment:
+        log(log.INFO, "Attachment %s not found", attachment_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Attachment not found",
+        )
+    return attachment
+
+
 @attachment_router.post(
     "",
     response_model=s.AttachmentOut,

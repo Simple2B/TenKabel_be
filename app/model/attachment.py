@@ -29,7 +29,11 @@ class Attachment(db.Model):
     )
     storage_path: orm.Mapped[str] = orm.mapped_column(sa.String(512), nullable=True)
     extension: orm.Mapped[str] = orm.mapped_column(sa.String(32), nullable=False)
-    url: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False)
+    url: orm.Mapped[str] = orm.mapped_column(
+        sa.String(255),
+        unique=True,
+        nullable=False,
+    )
     type: orm.Mapped[s.enums.AttachmentType] = orm.mapped_column(
         sa.Enum(s.enums.AttachmentType),
         nullable=False,
