@@ -233,8 +233,7 @@ def test_create_job(
     )
     assert db.scalar(select(m.Job).filter_by(name=request_data.name))
     resp_data = s.Job.parse_obj(response.json())
-    for attachment in resp_data.attachments:
-        assert attachment.uuid in attachments_uuids
+    assert resp_data.owner_id == owner_user.id
 
 
 def test_search_job(

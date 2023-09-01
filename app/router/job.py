@@ -170,10 +170,10 @@ def create_job(
             ).first()
             if attachment:
                 attachment.job_id = new_job.id
-        db.commit()
+                db.commit()
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
-
+    db.refresh(new_job)
     return new_job
 
 

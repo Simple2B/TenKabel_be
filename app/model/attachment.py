@@ -23,6 +23,12 @@ class Attachment(db.Model):
         sa.ForeignKey("jobs.id"),
         nullable=True,
     )
+    created_by_id: orm.Mapped[int] = orm.mapped_column(
+        sa.Integer,
+        sa.ForeignKey("users.id"),
+        nullable=True,
+    )
+
     filename: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False)
     original_filename: orm.Mapped[str] = orm.mapped_column(
         sa.String(255), nullable=False

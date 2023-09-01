@@ -54,11 +54,13 @@ class Job(BaseJob):
     applications: list[ApplicationOut]
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
-    attachments: list[AttachmentOut]
+
+    worker_attachments: list[AttachmentOut]
+    owner_attachments: list[AttachmentOut]
 
     class Config:
-        use_enum_values = True
         orm_mode = True
+        use_enum_values = True
 
 
 class ListJob(BaseModel):

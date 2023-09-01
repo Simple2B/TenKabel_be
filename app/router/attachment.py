@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.controller import AttachmentController
-from app.dependency import get_current_user
+from app.dependency import get_current_user, get_current_attachment
 from app.database import get_db
 import app.model as m
 import app.schema as s
@@ -27,7 +27,7 @@ attachment_router = APIRouter(prefix="/attachments", tags=["Attachments"])
 def get_attachment(
     attachment_uuid: str,
     db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
+    attachment: m.Attachment = Depends(get_current_attachment),
 ):
     attachment: m.Attachment = db.scalars(
         select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
@@ -53,11 +53,6 @@ def upload_attachment(
     google_storage_client=Depends(get_google_storage_client),
     settings: Settings = Depends(get_settings),
 ):
-    def get_type_by_extension(extension: str) -> s.enums.AttachmentType:
-        if extension in ["jpg", "jpeg", "png", "svg", "webp", "tiff"]:
-            return s.enums.AttachmentType.IMAGE
-        return s.enums.AttachmentType.DOCUMENT
-
     # uploading file to google cloud bucket
     decoded_file = base64.b64decode(attachment.file)
     filename = f"{int(datetime.now().timestamp())}_{attachment.filename}"
@@ -76,8 +71,9 @@ def upload_attachment(
         original_filename=attachment.filename,
         filename=filename,
         extension=extension,
-        type=get_type_by_extension(extension),
+        type=AttachmentController.get_type_by_extension(extension),
         url=blob.public_url,
+        created_by_id=current_user.id,
     )
     db.add(attachment)
     try:
@@ -97,19 +93,10 @@ def upload_attachment(
 def delete_attachment(
     attachment_uuid: str,
     db: Session = Depends(get_db),
-    current_user: m.User = Depends(get_current_user),
     google_storage_client=Depends(get_google_storage_client),
     settings: Settings = Depends(get_settings),
+    attachment: m.Attachment = Depends(get_current_attachment),
 ):
-    attachment: m.Attachment = db.scalars(
-        select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
-    ).first()
-    if not attachment:
-        log(log.INFO, "Attachment not found")
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Attachment not found",
-        )
     # deleting from bucket
     AttachmentController.delete_file_from_google_cloud_storage(
         filename=attachment.storage_path,
@@ -117,7 +104,6 @@ def delete_attachment(
         settings=settings,
     )
     attachment.is_deleted = True
-    # TODO make some validations and restrictions about who can delete attachment
     try:
         db.commit()
     except SQLAlchemyError as e:

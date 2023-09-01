@@ -4,6 +4,9 @@ from sqlalchemy import orm
 from app.hash_utils import hash_verify
 
 from app.database import db
+from app import schema as s
+from app.logger import log
+
 from .user_profession import users_professions
 from .user_location import users_locations
 from .user_notifications_professions import users_notifications_professions
@@ -11,8 +14,7 @@ from .user_notifications_location import users_notifications_locations
 from .base_user import BaseUser
 from .profession import Profession
 from .location import Location
-from app import schema as s
-from app.logger import log
+from .attachment import Attachment
 
 
 class User(db.Model, BaseUser):
@@ -59,6 +61,9 @@ class User(db.Model, BaseUser):
     )
 
     card_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
+    attachments: orm.Mapped[Attachment] = orm.relationship(
+        "Attachment", backref="user", lazy="dynamic"
+    )
 
     @property
     def is_payment_method_invalid(self) -> bool:

@@ -4,9 +4,16 @@ from google.cloud import storage
 
 from app.config import Settings
 from app.logger import log
+import app.schema as s
 
 
 class AttachmentController:
+    @staticmethod
+    def get_type_by_extension(extension: str) -> s.enums.AttachmentType:
+        if extension in ["jpg", "jpeg", "png", "svg", "webp", "tiff"]:
+            return s.enums.AttachmentType.IMAGE
+        return s.enums.AttachmentType.DOCUMENT
+
     @staticmethod
     def upload_file_to_google_cloud_storage(
         decoded_file: bytes,
