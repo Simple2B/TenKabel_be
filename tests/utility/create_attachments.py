@@ -14,11 +14,14 @@ from . import create_jobs
 fake: Faker = Faker()
 
 
-def create_attachments(db: Session, num_test_attachments: int = 25):
+def create_attachments(
+    db: Session, num_test_attachments: int = 25, is_create_jobs: bool = True
+):
     create_professions(db)
     create_locations(db)
     fill_test_data(db)
-    create_jobs(db, 300)
+    if is_create_jobs:
+        create_jobs(db, 300)
     job_ids = [job.id for job in db.scalars(select(m.Job)).all()] + [None]
     for _ in range(num_test_attachments):
         filename = fake.unique.file_name(category="image")

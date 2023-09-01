@@ -10,7 +10,7 @@ class BaseAttachment(BaseModel):
 
 
 class AttachmentIn(BaseAttachment):
-    file: str
+    file: str  # base64 encoded file
 
 
 class AttachmentOut(BaseAttachment):

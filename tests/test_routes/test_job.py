@@ -17,6 +17,7 @@ from tests.utility import (
     create_jobs_for_user,
     generate_customer_uid,
     generate_card_token,
+    create_attachments,
 )
 
 
@@ -164,8 +165,7 @@ def test_create_job(
 ):
     create_professions(db)
     create_locations(db)
-    fill_test_data(db)
-
+    create_attachments(db, is_create_jobs=False)
     profession_id = db.scalar(select(m.Profession.id))
     city = db.scalar(select(m.Location))
     user = m.User(
@@ -187,7 +187,10 @@ def test_create_job(
     db.add(user_location)
     db.add(user_profession)
     db.commit()
-
+    attachments_uuids = [
+        attachment.uuid
+        for attachment in db.scalars(select(m.Attachment).limit(3)).all()
+    ]
     request_data: s.JobIn = s.JobIn(
         profession_id=profession_id,
         city=city.name_en,
@@ -202,6 +205,7 @@ def test_create_job(
         customer_last_name="test_last_name",
         customer_phone="+3800000000",
         customer_street_address="test_location",
+        attachment_uuids=attachments_uuids,
     )
     response = client.post(
         "api/jobs",
@@ -228,6 +232,9 @@ def test_create_job(
         select(m.Job).filter_by(customer_last_name=request_data.customer_last_name)
     )
     assert db.scalar(select(m.Job).filter_by(name=request_data.name))
+    resp_data = s.Job.parse_obj(response.json())
+    for attachment in resp_data.attachments:
+        assert attachment.uuid in attachments_uuids
 
 
 def test_search_job(
@@ -309,6 +316,7 @@ def test_update_job(
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
         status=s.enums.JobStatus.JOB_IS_FINISHED,
+        attachment_uuids=[],
     )
     response = client.put(
         f"api/jobs/{job.uuid}",

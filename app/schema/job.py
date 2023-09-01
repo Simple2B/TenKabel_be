@@ -52,8 +52,6 @@ class Job(BaseJob):
     city: str
     time: str
     applications: list[ApplicationOut]
-    # rated_by_owner: bool
-    # rated_by_worker: bool
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
     attachments: list[AttachmentOut]
@@ -82,6 +80,8 @@ class JobIn(BaseModel):
     customer_phone: str
     customer_street_address: str
 
+    attachment_uuids: list[str] = []
+
     class Config:
         orm_mode = True
         use_enum_values = True
@@ -109,6 +109,7 @@ class JobPatch(BaseModel):
     customer_phone: str | None
     customer_street_address: str | None
     status: JobStatus | None
+    attachment_uuids: list[str] = []
 
     class Config:
         orm_mode = True

@@ -162,6 +162,16 @@ def create_job(
         )
 
     job_created_notify(new_job, db)
+    # assigning attachments to job
+    if data.attachment_uuids:
+        for attachment_uuid in data.attachment_uuids:
+            attachment: m.Attachment = db.scalars(
+                select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+            ).first()
+            if attachment:
+                attachment.job_id = new_job.id
+        db.commit()
+
     log(log.INFO, "Job [%s] created successfully", new_job.id)
 
     return new_job
@@ -200,6 +210,13 @@ def patch_job(
             job.customer_phone = job_data.customer_phone
         if job_data.customer_street_address:
             job.customer_street_address = job_data.customer_street_address
+        if job_data.attachment_uuids:
+            for attachment_uuid in job_data.attachment_uuids:
+                attachment: m.Attachment = db.scalars(
+                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+                ).first()
+                if attachment:
+                    attachment.job_id = job.id
     except ValueDownGradeForbidden as e:
         log(log.ERROR, "Error while patching job - %s", e)
         raise HTTPException(
@@ -264,6 +281,13 @@ def update_job(
         job.customer_phone = job_data.customer_phone
         job.customer_street_address = job_data.customer_street_address
         job.status = s.enums.JobStatus(job_data.status)
+        if job_data.attachment_uuids:
+            for attachment_uuid in job_data.attachment_uuids:
+                attachment: m.Attachment = db.scalars(
+                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+                ).first()
+                if attachment:
+                    attachment.job_id = job.id
 
         if s.enums.CommissionStatus.get_index(
             job_data.commission_status
