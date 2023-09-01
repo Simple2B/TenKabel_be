@@ -57,7 +57,7 @@ def upload_attachment(
     settings: Settings = Depends(get_settings),
 ):
     def get_type_by_extension(extension: str) -> s.enums.AttachmentType:
-        if extension in ["jpg", "jpeg", "png", "png", "gif", "svg", "webp", "tiff"]:
+        if extension in ["jpg", "jpeg", "png", "gif", "svg", "webp", "tiff"]:
             return s.enums.AttachmentType.IMAGE
         elif extension in ["pdf", "doc", "docx"]:
             return s.enums.AttachmentType.DOCUMENT

@@ -2,6 +2,7 @@ from typing import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from google.cloud import storage
 from sqlalchemy.orm import Session
 
 import app.schema as s
@@ -12,6 +13,9 @@ from .test_data import TestData
 @pytest.fixture
 def client(monkeypatch) -> Generator:
     from app.main import app
+
+    def mock_google_account_json(**kwargs):
+        return True
 
     class PushNotificationMock:
         _is_initialized = False
@@ -27,7 +31,9 @@ def client(monkeypatch) -> Generator:
         monkeypatch.setattr(
             PushHandler, "send_notification", PushNotificationMock.send_notification
         )
-
+        monkeypatch.setattr(
+            storage.Client, "from_service_account_json", mock_google_account_json
+        )
         yield c
 
 
