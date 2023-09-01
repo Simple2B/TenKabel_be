@@ -163,6 +163,21 @@ def test_create_job(
     test_data: TestData,
     faker,
 ):
+    def get_current_user_attachments():
+        user = db.scalar(
+            select(m.User).where(
+                m.User.email == test_data.test_authorized_users[0].email
+            )
+        )
+        assert user
+        attachment_uuids = [
+            attachment.uuid
+            for attachment in db.scalars(
+                select(m.Attachment).where(m.Attachment.created_by_id == user.id)
+            ).all()
+        ]
+        return attachment_uuids
+
     create_professions(db)
     create_locations(db)
     create_attachments(db, is_create_jobs=False)
@@ -187,10 +202,8 @@ def test_create_job(
     db.add(user_location)
     db.add(user_profession)
     db.commit()
-    attachments_uuids = [
-        attachment.uuid
-        for attachment in db.scalars(select(m.Attachment).limit(3)).all()
-    ]
+
+    attachments_uuids = get_current_user_attachments()
     request_data: s.JobIn = s.JobIn(
         profession_id=profession_id,
         city=city.name_en,
