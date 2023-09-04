@@ -73,6 +73,7 @@ class User(BaseUser):
     phone: str | None
     jobs_posted_count: int
     jobs_completed_count: int
+    jobs_canceled_count: int
     positive_rates_count: int = 0
     negative_rates_count: int = 0
     neutral_rates_count: int = 0

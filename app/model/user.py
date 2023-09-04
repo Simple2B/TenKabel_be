@@ -120,6 +120,10 @@ class User(db.Model, BaseUser):
         )
 
     @property
+    def jobs_canceled_count(self) -> int:
+        return sum([job.is_deleted for job in self.jobs_to_do])
+
+    @property
     def positive_rates_count(self) -> int:
         return sum(
             [rate.rate == s.BaseRate.RateStatus.POSITIVE for rate in self.owned_rates]
