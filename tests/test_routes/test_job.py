@@ -328,6 +328,7 @@ def test_update_job(
         profession_id=job.profession_id,
         city=job.city,
         payment=job.payment,
+        regions=[job.regions[0].id],
         commission=job.commission,
         payment_status=job.payment_status,
         commission_status=job.commission_status,
