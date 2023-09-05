@@ -26,7 +26,7 @@ def get_notification_payload(
         job_name=job.name,
         job_price=job.payment,
         job_time=job.time,
-        job_area=job.region,
+        job_area=", ".join([location.name_en for location in job.regions]),
         job_commission=job.commission,
         worker_name=worker_name,
         owner_name=job.owner.first_name,

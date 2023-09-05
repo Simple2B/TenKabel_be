@@ -7,6 +7,7 @@ from .application import ApplicationOut
 from .enums import JobStatus, PaymentStatus, CommissionStatus
 from .platform_commission import PlatformCommission
 from .attachment import AttachmentOut
+from .location import Location
 
 
 class BaseJob(BaseModel):
@@ -48,7 +49,7 @@ class Job(BaseJob):
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
-    region: str
+    regions: list[Location]
     city: str
     time: str
     applications: list[ApplicationOut]
@@ -70,7 +71,7 @@ class ListJob(BaseModel):
 class JobIn(BaseModel):
     profession_id: int
     city: str
-    region: str
+    regions: list[int]
     payment: int
     commission: int
     who_pays: Job.WhoPays | None

@@ -7,6 +7,7 @@ from sqlalchemy import select, and_
 
 import app.model as m
 import app.schema as s
+from app.logger import log
 from app.oauth2 import create_access_token
 from tests.fixture import TestData
 from tests.utility import (
@@ -79,7 +80,13 @@ def test_auth_user_jobs(
     resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
-        assert job.city in [location.name_en for location in user.locations]
+        log(log.INFO, f"{user.locations} || {job.regions}")
+        assert any(
+            [
+                location.name_en in [region.name_en for region in job.regions]
+                for location in user.locations
+            ]
+        )
         assert job.owner_id != user.id
 
 
@@ -117,14 +124,14 @@ def test_unauth_user_jobs(
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.region == test_location.name_en
+        assert job.regions.contains(test_location)
 
     # regex checking
     response = client.get(f"api/jobs?city=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.region == test_location.name_en
+        assert job.regions.contains(test_location)
 
     # filtering jobs by min price
     response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
@@ -207,7 +214,7 @@ def test_create_job(
     request_data: s.JobIn = s.JobIn(
         profession_id=profession_id,
         city=city.name_en,
-        region=city.name_en,
+        regions=[city.id],
         payment=10000,
         commission=10000,
         who_pays=s.Job.WhoPays.ME,

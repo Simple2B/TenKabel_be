@@ -39,7 +39,7 @@ def get_status_list():
 @time_measurement
 def get_jobs(
     profession_id: int = None,
-    city: str = None,
+    cities: list[str] = None,
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
@@ -53,21 +53,22 @@ def get_jobs(
             or_(
                 m.Job.name.icontains(f"%{q}%"),
                 m.Job.description.icontains(f"%{q}%"),
-                m.Job.region.icontains(f"%{q}%"),
+                m.Job.city.icontains(f"%{q}%"),
             )
         )
         log(log.INFO, "Job filtered by [%s] containing", q)
 
     elif (
         user is None
-        or user.google_openid_key
-        or any([profession_id, city, min_price, max_price])
+        # or user.google_openid_key
+        # or user.apple_uid
+        or any([profession_id, cities, min_price, max_price])
     ):
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
-        if city:
+        if cities:
             # city = re.sub(r"[^a-zA-Z0-9]", "", city)
-            query = query.where(m.Job.region.ilike(f"%{city}%"))
+            query = query.where(m.Job.regions.any(m.Location.name_en.in_(cities)))
         if min_price:
             query = query.where(m.Job.payment >= min_price)
         if max_price:
@@ -76,21 +77,23 @@ def get_jobs(
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         cities_names: list[str] = [location.name_en for location in user.locations]
+        filter_conditions = []
         if profession_ids:
-            filter_conditions = []
             for prof_id in profession_ids:
                 filter_conditions.append(m.Job.profession_id == prof_id)
             query = query.filter(or_(*filter_conditions))
 
             log(
                 log.INFO,
-                "Job filtered by profession ids [%s] user interests",
+                "Job filtered by profession ids %s user interests",
                 profession_ids,
             )
         if cities_names:
-            filter_conditions = []
-            for location in cities_names:
-                filter_conditions.append(m.Job.region.ilike(location))
+            for city_name in cities_names:
+                filter_conditions.append(
+                    m.Job.regions.any(m.Location.name_en == city_name)
+                )
+
             query = query.filter(or_(*filter_conditions))
             log(
                 log.INFO,
@@ -140,7 +143,6 @@ def create_job(
         commission=data.commission,
         who_pays=who_pays,
         city=data.city,
-        region=data.region,
         time=data.time,
         customer_first_name=data.customer_first_name,
         customer_last_name=data.customer_last_name,
@@ -152,6 +154,16 @@ def create_job(
         new_job.commission_status = s.enums.CommissionStatus.PAID
 
     db.add(new_job)
+
+    job_locations: list[m.JobLocation] = [
+        location
+        for location in db.scalars(
+            select(m.Location).where(m.Location.id.in_(data.regions))
+        )
+    ]
+    for location in job_locations:
+        db.flush()
+        db.add(m.JobLocation(job_id=new_job.id, location_id=location.id))
 
     try:
         db.commit()

@@ -8,10 +8,13 @@ from app.utility.notification import get_notification_payload
 from app.logger import log
 
 
-def check_location_notification(region: m.Location, user: m.User) -> bool:
+def check_location_notification(regions: list[m.Location], user: m.User) -> bool:
     return user.notification_locations_flag and (
-        (region in user.notification_locations)
-        or (not user.notification_locations and region in user.locations)
+        (any(region in user.notification_locations for region in regions))
+        or (
+            not user.notification_locations
+            and any(region in user.locations for region in regions)
+        )
     )
 
 
@@ -24,16 +27,14 @@ def check_profession_notification(profession: m.Profession, user: m.User) -> boo
 
 def job_created_notify(job: m.Job, db: Session) -> None:
     db.refresh(job)
-    regions: m.Location = db.scalar(
-        select(m.Location).where(m.Location.name_en == job.region)
-    )
+    regions_ids: list[int] = [region.id for region in job.regions]
     profession: m.Profession = db.scalar(
         select(m.Profession).where(m.Profession.id == job.profession_id)
     )
     users: list[m.User] = db.scalars(
         select(m.User).where(
             and_(
-                m.User.notification_locations.contains(regions),
+                m.User.notification_locations.any(m.Location.id.in_(regions_ids)),
                 m.User.notification_profession.contains(profession),
             )
         )
@@ -41,7 +42,7 @@ def job_created_notify(job: m.Job, db: Session) -> None:
     users += db.scalars(
         select(m.User).where(
             and_(
-                m.User.notification_locations.contains(regions),
+                m.User.notification_locations.any(m.Location.id.in_(regions_ids)),
                 ~m.User.notification_profession.any(),
             )
         )
@@ -67,7 +68,7 @@ def job_created_notify(job: m.Job, db: Session) -> None:
         )
         db.add(notification)
         if (check_profession_notification(profession, user)) or (
-            check_location_notification(regions, user)
+            check_location_notification(regions_ids, user)
         ):
             for device in user.devices:
                 devices.append(device.push_token)
