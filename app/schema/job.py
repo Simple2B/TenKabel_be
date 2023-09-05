@@ -98,7 +98,7 @@ class JobUpdate(JobIn):
 
 class JobPatch(BaseModel):
     profession_id: int | None
-    region: str | None
+    regions: list[int] | None
     city: str | None
     payment: int | None
     commission: int | None

@@ -278,11 +278,17 @@ def test_search_job(
     )
     assert job
 
-    response = client.get("api/jobs", params={"q": f"{job.region}"})
+    response = client.get("api/jobs", params={"q": f"{job.regions[0].name_en}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
-    assert all([resp_job.region == job.region for resp_job in response_jobs_list.jobs])
+    assert all(
+        [
+            job.regions[0].name_en in [region.name_en for region in resp_job.regions]
+            or job.regions[0].name_en in resp_job.city
+            for resp_job in response_jobs_list.jobs
+        ]
+    )
 
     response = client.get("api/jobs", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
@@ -321,7 +327,6 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
         payment=job.payment,
         commission=job.commission,
         payment_status=job.payment_status,
@@ -349,8 +354,8 @@ def test_update_job(
 
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
-        city=job.region,
-        region=job.region,
+        city=job.regions[0].name_en,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=s.enums.PaymentStatus.PAID,
@@ -379,7 +384,7 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=s.enums.PaymentStatus.UNPAID,
@@ -406,7 +411,7 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=job.payment_status,

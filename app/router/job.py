@@ -54,6 +54,7 @@ def get_jobs(
                 m.Job.name.icontains(f"%{q}%"),
                 m.Job.description.icontains(f"%{q}%"),
                 m.Job.city.icontains(f"%{q}%"),
+                m.Job.regions.any(m.Location.name_en.icontains(f"%{q}%")),
             )
         )
         log(log.INFO, "Job filtered by [%s] containing", q)
@@ -201,9 +202,7 @@ def patch_job(
         if job_data.profession_id:
             job.profession_id = job_data.profession_id
         if job_data.city:
-            job.region = job_data.city
-        if job_data.region:
-            job.region = job_data.region
+            job.city = job_data.city
         if job_data.payment:
             job.payment = job_data.payment
         if job_data.commission:
@@ -229,6 +228,27 @@ def patch_job(
                 ).first()
                 if attachment:
                     attachment.job_id = job.id
+
+        if job_data.regions:
+            for location in job.regions:
+                location_obj: m.JobLocation = db.scalar(
+                    select(m.JobLocation).where(
+                        m.JobLocation.job_id == job.id,
+                        m.JobLocation.location_id == location.id,
+                    )
+                )
+                db.delete(location_obj)
+            for location_id in job_data.regions:
+                db.add(m.JobLocation(job_id=job.id, location_id=location_id))
+
+        if job_data.attachment_uuids:
+            for attachment_uuid in job_data.attachment_uuids:
+                attachment: m.Attachment = db.scalars(
+                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+                ).first()
+                if attachment:
+                    attachment.job_id = job.id
+
     except ValueDownGradeForbidden as e:
         log(log.ERROR, "Error while patching job - %s", e)
         raise HTTPException(
@@ -281,7 +301,6 @@ def update_job(
     initial_job = s.Job.from_orm(job)
     try:
         job.profession_id = job_data.profession_id
-        job.region = job_data.region
         job.city = job_data.city
         job.payment = job_data.payment
         job.commission = job_data.commission
@@ -300,6 +319,17 @@ def update_job(
                 ).first()
                 if attachment:
                     attachment.job_id = job.id
+
+        for location in job.regions:
+            location_obj: m.JobLocation = db.scalar(
+                select(m.JobLocation).where(
+                    m.JobLocation.job_id == job.id,
+                    m.JobLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        for location_id in job_data.regions:
+            db.add(m.JobLocation(job_id=job.id, location_id=location_id))
 
         if s.enums.CommissionStatus.get_index(
             job_data.commission_status
