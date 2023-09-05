@@ -7,7 +7,6 @@ from sqlalchemy import select, and_
 
 import app.model as m
 import app.schema as s
-from app.logger import log
 from app.oauth2 import create_access_token
 from tests.fixture import TestData
 from tests.utility import (
@@ -77,10 +76,10 @@ def test_auth_user_jobs(
         },
     )
     assert response.status_code == status.HTTP_200_OK
+
     resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
-        log(log.INFO, f"{user.locations} || {job.regions}")
         assert any(
             [
                 location.name_en in [region.name_en for region in job.regions]
@@ -120,18 +119,18 @@ def test_unauth_user_jobs(
     # filtering jobs with profession_id=1
     test_location = db.query(m.Location).first()
     assert test_location
-    response = client.get(f"api/jobs?city={test_location.name_en}")
+    response = client.get(f"api/jobs?cities={test_location.name_en}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.regions.contains(test_location)
+        assert test_location.id in [region.id for region in job.regions]
 
     # regex checking
-    response = client.get(f"api/jobs?city=  ){test_location.name_en} & && !*?'  ")
+    response = client.get(f"api/jobs?cities=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.regions.contains(test_location)
+        assert test_location.id in [region.id for region in job.regions]
 
     # filtering jobs by min price
     response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")

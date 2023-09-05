@@ -1,4 +1,7 @@
-from fastapi import Depends, APIRouter, status, HTTPException
+import re
+from typing import Annotated
+
+from fastapi import Depends, APIRouter, status, HTTPException, Query
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -39,7 +42,7 @@ def get_status_list():
 @time_measurement
 def get_jobs(
     profession_id: int = None,
-    cities: list[str] = None,
+    cities: Annotated[list[str] | None, Query()] = None,
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
@@ -68,8 +71,9 @@ def get_jobs(
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if cities:
-            # city = re.sub(r"[^a-zA-Z0-9]", "", city)
-            query = query.where(m.Job.regions.any(m.Location.name_en.in_(cities)))
+            for city in cities:
+                city = re.sub(r"[^a-zA-Z0-9]", "", city)
+                query = query.where(m.Job.regions.any(m.Location.name_en == city))
         if min_price:
             query = query.where(m.Job.payment >= min_price)
         if max_price:
@@ -82,7 +86,7 @@ def get_jobs(
         if profession_ids:
             for prof_id in profession_ids:
                 filter_conditions.append(m.Job.profession_id == prof_id)
-            query = query.filter(or_(*filter_conditions))
+            query = query.where(or_(*filter_conditions))
 
             log(
                 log.INFO,
@@ -95,7 +99,7 @@ def get_jobs(
                     m.Job.regions.any(m.Location.name_en == city_name)
                 )
 
-            query = query.filter(or_(*filter_conditions))
+            query = query.where(or_(*filter_conditions))
             log(
                 log.INFO,
                 "Job filtered by cities names [%s] user interests",

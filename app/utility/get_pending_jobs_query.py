@@ -13,11 +13,11 @@ def get_pending_jobs_query_for_user(db: Session, user: m.User):
         )
     )
     if user:
-        applications_ids = db.scalars(
-            select(m.Application.id).where(m.Application.worker_id == user.id)
-        ).all()
         query = query.where(
-            and_(m.Job.owner_id != user.id, m.Job.id.notin_(applications_ids))
+            and_(
+                m.Job.owner_id != user.id,
+                m.User.applications.any(m.Application.job_id == m.Job.id),
+            )
         )
 
     return query
