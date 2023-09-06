@@ -285,6 +285,8 @@ def test_search_job(
         [
             job.regions[0].name_en in [region.name_en for region in resp_job.regions]
             or job.regions[0].name_en in resp_job.city
+            or job.regions[0].name_en in resp_job.description
+            or job.regions[0].name_en in resp_job.name
             for resp_job in response_jobs_list.jobs
         ]
     )
@@ -550,9 +552,38 @@ def test_create_jobs_options(
     faker,
 ):
     create_professions(db)
+    create_locations(db)
     create_jobs(db)
     # getting mix or min job prices
     response = client.get("api/options/price")
     assert response.status_code == status.HTTP_200_OK
     resp_data = s.PriceOption.parse_obj(response.json())
-    assert resp_data.max_price > resp_data.min_price
+    assert resp_data.max_price >= resp_data.min_price
+
+    biggest_price_job: m.Job = db.scalar(select(m.Job).order_by(m.Job.payment.desc()))
+    assert biggest_price_job.payment == resp_data.max_price
+
+    smallest_price_job: m.Job = db.scalar(select(m.Job).order_by(m.Job.payment.asc()))
+    assert smallest_price_job.payment == resp_data.min_price
+
+    # check for region filter
+    test_location = db.query(m.Location).first()
+    assert test_location
+    response = client.get(f"api/options/price?region={test_location.name_en}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+    assert resp_data.max_price >= resp_data.min_price
+
+    biggest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.regions.any(m.Location.name_en == test_location.name_en))
+        .order_by(m.Job.payment.desc())
+    )
+    assert biggest_price_job.payment == resp_data.max_price
+
+    smallest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.regions.any(m.Location.name_en == test_location.name_en))
+        .order_by(m.Job.payment.asc())
+    )
+    assert smallest_price_job.payment == resp_data.min_price
