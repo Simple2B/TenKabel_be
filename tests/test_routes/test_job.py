@@ -3,7 +3,7 @@ from datetime import datetime
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_
 
 import app.model as m
 import app.schema as s
@@ -567,23 +567,38 @@ def test_create_jobs_options(
     assert smallest_price_job.payment == resp_data.min_price
 
     # check for region filter
-    test_location = db.query(m.Location).first()
-    assert test_location
-    response = client.get(f"api/options/price?region={test_location.name_en}")
+    test_locations = db.scalars(select(m.Location)).all()
+    tl1, tl2 = test_locations[:2]
+    assert tl1, tl2
+    response = client.get(
+        f"api/options/price?regions={tl1.name_en}&regions={tl2.name_en}"
+    )
     assert response.status_code == status.HTTP_200_OK
     resp_data = s.PriceOption.parse_obj(response.json())
     assert resp_data.max_price >= resp_data.min_price
 
     biggest_price_job: m.Job = db.scalar(
         select(m.Job)
-        .where(m.Job.regions.any(m.Location.name_en == test_location.name_en))
+        .where(
+            m.Job.regions.any(
+                or_(
+                    m.Location.name_en == tl1.name_en, m.Location.name_en == tl2.name_en
+                )
+            )
+        )
         .order_by(m.Job.payment.desc())
     )
     assert biggest_price_job.payment == resp_data.max_price
 
     smallest_price_job: m.Job = db.scalar(
         select(m.Job)
-        .where(m.Job.regions.any(m.Location.name_en == test_location.name_en))
+        .where(
+            m.Job.regions.any(
+                or_(
+                    m.Location.name_en == tl1.name_en, m.Location.name_en == tl2.name_en
+                )
+            )
+        )
         .order_by(m.Job.payment.asc())
     )
     assert smallest_price_job.payment == resp_data.min_price
