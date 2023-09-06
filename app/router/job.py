@@ -1,4 +1,7 @@
-from fastapi import Depends, APIRouter, status, HTTPException
+import re
+from typing import Annotated
+
+from fastapi import Depends, APIRouter, status, HTTPException, Query
 from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -39,7 +42,7 @@ def get_status_list():
 @time_measurement
 def get_jobs(
     profession_id: int = None,
-    city: str = None,
+    cities: Annotated[list[str] | None, Query()] = None,
     min_price: int = None,
     max_price: int = None,
     db: Session = Depends(get_db),
@@ -53,21 +56,24 @@ def get_jobs(
             or_(
                 m.Job.name.icontains(f"%{q}%"),
                 m.Job.description.icontains(f"%{q}%"),
-                m.Job.region.icontains(f"%{q}%"),
+                m.Job.city.icontains(f"%{q}%"),
+                m.Job.regions.any(m.Location.name_en.icontains(f"%{q}%")),
             )
         )
         log(log.INFO, "Job filtered by [%s] containing", q)
 
     elif (
         user is None
-        or user.google_openid_key
-        or any([profession_id, city, min_price, max_price])
+        # or user.google_openid_key
+        # or user.apple_uid
+        or any([profession_id, cities, min_price, max_price])
     ):
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
-        if city:
-            # city = re.sub(r"[^a-zA-Z0-9]", "", city)
-            query = query.where(m.Job.region.ilike(f"%{city}%"))
+        if cities:
+            for city in cities:
+                city = re.sub(r"[^a-zA-Z0-9]", "", city)
+                query = query.where(m.Job.regions.any(m.Location.name_en == city))
         if min_price:
             query = query.where(m.Job.payment >= min_price)
         if max_price:
@@ -76,22 +82,24 @@ def get_jobs(
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         cities_names: list[str] = [location.name_en for location in user.locations]
+        filter_conditions = []
         if profession_ids:
-            filter_conditions = []
             for prof_id in profession_ids:
                 filter_conditions.append(m.Job.profession_id == prof_id)
-            query = query.filter(or_(*filter_conditions))
+            query = query.where(or_(*filter_conditions))
 
             log(
                 log.INFO,
-                "Job filtered by profession ids [%s] user interests",
+                "Job filtered by profession ids %s user interests",
                 profession_ids,
             )
         if cities_names:
-            filter_conditions = []
-            for location in cities_names:
-                filter_conditions.append(m.Job.region.ilike(location))
-            query = query.filter(or_(*filter_conditions))
+            for city_name in cities_names:
+                filter_conditions.append(
+                    m.Job.regions.any(m.Location.name_en == city_name)
+                )
+
+            query = query.where(or_(*filter_conditions))
             log(
                 log.INFO,
                 "Job filtered by cities names [%s] user interests",
@@ -140,7 +148,6 @@ def create_job(
         commission=data.commission,
         who_pays=who_pays,
         city=data.city,
-        region=data.region,
         time=data.time,
         customer_first_name=data.customer_first_name,
         customer_last_name=data.customer_last_name,
@@ -152,6 +159,16 @@ def create_job(
         new_job.commission_status = s.enums.CommissionStatus.PAID
 
     db.add(new_job)
+
+    job_locations: list[m.JobLocation] = [
+        location
+        for location in db.scalars(
+            select(m.Location).where(m.Location.id.in_(data.regions))
+        )
+    ]
+    for location in job_locations:
+        db.flush()
+        db.add(m.JobLocation(job_id=new_job.id, location_id=location.id))
 
     try:
         db.commit()
@@ -189,9 +206,7 @@ def patch_job(
         if job_data.profession_id:
             job.profession_id = job_data.profession_id
         if job_data.city:
-            job.region = job_data.city
-        if job_data.region:
-            job.region = job_data.region
+            job.city = job_data.city
         if job_data.payment:
             job.payment = job_data.payment
         if job_data.commission:
@@ -217,6 +232,27 @@ def patch_job(
                 ).first()
                 if attachment:
                     attachment.job_id = job.id
+
+        if job_data.regions:
+            for location in job.regions:
+                location_obj: m.JobLocation = db.scalar(
+                    select(m.JobLocation).where(
+                        m.JobLocation.job_id == job.id,
+                        m.JobLocation.location_id == location.id,
+                    )
+                )
+                db.delete(location_obj)
+            for location_id in job_data.regions:
+                db.add(m.JobLocation(job_id=job.id, location_id=location_id))
+
+        if job_data.attachment_uuids:
+            for attachment_uuid in job_data.attachment_uuids:
+                attachment: m.Attachment = db.scalars(
+                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
+                ).first()
+                if attachment:
+                    attachment.job_id = job.id
+
     except ValueDownGradeForbidden as e:
         log(log.ERROR, "Error while patching job - %s", e)
         raise HTTPException(
@@ -269,7 +305,6 @@ def update_job(
     initial_job = s.Job.from_orm(job)
     try:
         job.profession_id = job_data.profession_id
-        job.region = job_data.region
         job.city = job_data.city
         job.payment = job_data.payment
         job.commission = job_data.commission
@@ -288,6 +323,17 @@ def update_job(
                 ).first()
                 if attachment:
                     attachment.job_id = job.id
+
+        for location in job.regions:
+            location_obj: m.JobLocation = db.scalar(
+                select(m.JobLocation).where(
+                    m.JobLocation.job_id == job.id,
+                    m.JobLocation.location_id == location.id,
+                )
+            )
+            db.delete(location_obj)
+        for location_id in job_data.regions:
+            db.add(m.JobLocation(job_id=job.id, location_id=location_id))
 
         if s.enums.CommissionStatus.get_index(
             job_data.commission_status

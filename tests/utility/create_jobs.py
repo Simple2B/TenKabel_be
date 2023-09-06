@@ -9,6 +9,8 @@ from app import model as m
 from app import schema as s
 from app.logger import log
 
+from .create_locations import create_locations
+
 fake: Faker = Faker()
 
 
@@ -116,6 +118,13 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
+    locations_ids = [location.id for location in db.scalars(select(m.Location)).all()]
+    if not locations_ids:
+        create_locations(db)
+        locations_ids = [
+            location.id for location in db.scalars(select(m.Location)).all()
+        ]
+
     created_jobs: list = list()
 
     for _ in range(test_jobs_num):
@@ -129,7 +138,6 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
-            region=random.choice(TEST_LOCATIONS).get("en"),
             time=datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
             payment_status=random.choice([e for e in s.enums.PaymentStatus]),
             commission_status=random.choice([e for e in s.enums.CommissionStatus]),
@@ -143,6 +151,12 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         db.add(job)
         created_jobs.append(job)
         db.flush()
+        locations = random.sample(locations_ids, random.randint(1, 3))
+        for location in locations:
+            job_location: m.JobLocation = m.JobLocation(
+                location_id=location, job_id=job.id
+            )
+            db.add(job_location)
 
     for job in created_jobs:
         # job status can't be pending with existing worker
@@ -173,6 +187,12 @@ def create_jobs_for_user(
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
+    locations_ids = [location.id for location in db.scalars(select(m.Location)).all()]
+    if not locations_ids:
+        create_locations(db)
+        locations_ids = [
+            location.id for location in db.scalars(select(m.Location)).all()
+        ]
     created_jobs = []
 
     for _ in range(test_jobs_num):
@@ -186,7 +206,6 @@ def create_jobs_for_user(
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
-            region=random.choice(TEST_LOCATIONS).get("en"),
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             payment_status=random.choice([e for e in s.enums.PaymentStatus]),
             commission_status=random.choice([e for e in s.enums.CommissionStatus]),
@@ -197,6 +216,13 @@ def create_jobs_for_user(
             customer_street_address=fake.address(),
         )
         db.add(job1)
+        db.flush()
+        locations = random.sample(locations_ids, random.randint(1, 3))
+        for location in locations:
+            job_location: m.JobLocation = m.JobLocation(
+                location_id=location, job_id=job1.id
+            )
+            db.add(job_location)
 
         job2: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
@@ -208,7 +234,6 @@ def create_jobs_for_user(
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
-            region=random.choice(TEST_LOCATIONS).get("en"),
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             payment_status=random.choice([e for e in s.enums.PaymentStatus]),
             commission_status=random.choice([e for e in s.enums.CommissionStatus]),
@@ -219,6 +244,14 @@ def create_jobs_for_user(
             customer_street_address=fake.address(),
         )
         db.add(job2)
+        db.flush()
+
+        locations = random.sample(locations_ids, random.randint(1, 3))
+        for location in locations:
+            job_location: m.JobLocation = m.JobLocation(
+                location_id=location, job_id=job2.id
+            )
+            db.add(job_location)
         created_jobs.append(job1)
         created_jobs.append(job2)
 

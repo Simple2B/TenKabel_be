@@ -4,6 +4,7 @@ from .profession import Profession
 from .superuser import SuperUser
 
 from .jobs import Job
+from .job_location import JobLocation
 from .applications import Application
 
 from .rate import Rate

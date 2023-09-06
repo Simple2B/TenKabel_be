@@ -76,10 +76,16 @@ def test_auth_user_jobs(
         },
     )
     assert response.status_code == status.HTTP_200_OK
+
     resp_obj: s.ListJob = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
-        assert job.city in [location.name_en for location in user.locations]
+        assert any(
+            [
+                location.name_en in [region.name_en for region in job.regions]
+                for location in user.locations
+            ]
+        )
         assert job.owner_id != user.id
 
 
@@ -113,18 +119,18 @@ def test_unauth_user_jobs(
     # filtering jobs with profession_id=1
     test_location = db.query(m.Location).first()
     assert test_location
-    response = client.get(f"api/jobs?city={test_location.name_en}")
+    response = client.get(f"api/jobs?cities={test_location.name_en}")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.region == test_location.name_en
+        assert test_location.id in [region.id for region in job.regions]
 
     # regex checking
-    response = client.get(f"api/jobs?city=  ){test_location.name_en} & && !*?'  ")
+    response = client.get(f"api/jobs?cities=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
     resp_obj = s.ListJob.parse_obj(response.json())
     for job in resp_obj.jobs:
-        assert job.region == test_location.name_en
+        assert test_location.id in [region.id for region in job.regions]
 
     # filtering jobs by min price
     response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
@@ -207,7 +213,7 @@ def test_create_job(
     request_data: s.JobIn = s.JobIn(
         profession_id=profession_id,
         city=city.name_en,
-        region=city.name_en,
+        regions=[city.id],
         payment=10000,
         commission=10000,
         who_pays=s.Job.WhoPays.ME,
@@ -271,11 +277,17 @@ def test_search_job(
     )
     assert job
 
-    response = client.get("api/jobs", params={"q": f"{job.region}"})
+    response = client.get("api/jobs", params={"q": f"{job.regions[0].name_en}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
-    assert all([resp_job.region == job.region for resp_job in response_jobs_list.jobs])
+    assert all(
+        [
+            job.regions[0].name_en in [region.name_en for region in resp_job.regions]
+            or job.regions[0].name_en in resp_job.city
+            for resp_job in response_jobs_list.jobs
+        ]
+    )
 
     response = client.get("api/jobs", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
@@ -314,8 +326,8 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
         payment=job.payment,
+        regions=[job.regions[0].id],
         commission=job.commission,
         payment_status=job.payment_status,
         commission_status=job.commission_status,
@@ -342,8 +354,8 @@ def test_update_job(
 
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
-        city=job.region,
-        region=job.region,
+        city=job.regions[0].name_en,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=s.enums.PaymentStatus.PAID,
@@ -372,7 +384,7 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=s.enums.PaymentStatus.UNPAID,
@@ -399,7 +411,7 @@ def test_update_job(
     request_data: s.JobUpdate = s.JobUpdate(
         profession_id=job.profession_id,
         city=job.city,
-        region=job.region,
+        regions=[job.regions[0].id],
         payment=job.payment,
         commission=job.commission,
         payment_status=job.payment_status,

@@ -1,4 +1,4 @@
-from typing import Self
+from typing import Self, TYPE_CHECKING
 import sqlalchemy as sa
 from sqlalchemy import orm
 from app.hash_utils import hash_verify
@@ -12,9 +12,13 @@ from .user_location import users_locations
 from .user_notifications_professions import users_notifications_professions
 from .user_notifications_location import users_notifications_locations
 from .base_user import BaseUser
-from .profession import Profession
-from .location import Location
-from .attachment import Attachment
+
+
+if TYPE_CHECKING:
+    from .profession import Profession
+    from .location import Location
+    from .attachment import Attachment
+    from .applications import Application
 
 
 class User(db.Model, BaseUser):
@@ -26,24 +30,24 @@ class User(db.Model, BaseUser):
     first_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
     last_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), default="")
 
-    professions: orm.Mapped[Profession] = orm.relationship(
+    professions: orm.Mapped[list["Profession"]] = orm.relationship(
         "Profession", secondary=users_professions, viewonly=True
     )
-    locations: orm.Mapped[Location] = orm.relationship(
+    locations: orm.Mapped[list["Location"]] = orm.relationship(
         "Location", secondary=users_locations, viewonly=True
     )
 
     notification_profession_flag: orm.Mapped[bool] = orm.mapped_column(
         sa.Boolean, default=True
     )
-    notification_profession: orm.Mapped[Profession] = orm.relationship(
+    notification_profession: orm.Mapped[list["Profession"]] = orm.relationship(
         "Profession", secondary=users_notifications_professions, viewonly=True
     )
 
     notification_locations_flag: orm.Mapped[bool] = orm.mapped_column(
         sa.Boolean, default=True
     )
-    notification_locations: orm.Mapped[Location] = orm.relationship(
+    notification_locations: orm.Mapped[list["Location"]] = orm.relationship(
         "Location", secondary=users_notifications_locations, viewonly=True
     )
 
@@ -61,8 +65,13 @@ class User(db.Model, BaseUser):
     )
 
     card_name: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
-    attachments: orm.Mapped[Attachment] = orm.relationship(
-        "Attachment", backref="user", lazy="dynamic"
+    attachments: orm.Mapped["Attachment"] = orm.relationship(
+        "Attachment",
+        backref="user",
+    )
+
+    applications: orm.WriteOnlyMapped["Application"] = orm.relationship(
+        foreign_keys="Application.owner_id"
     )
 
     @property

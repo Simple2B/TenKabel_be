@@ -10,6 +10,8 @@ from app import model as m
 from app.model.applications import Application
 from .platform_comission import PlatformCommission
 from .attachment import Attachment
+from .job_location import jobs_locations
+from .location import Location
 
 
 class Job(db.Model):
@@ -55,7 +57,9 @@ class Job(db.Model):
     payment: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 
-    region: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+    regions: orm.Mapped[Location] = orm.relationship(
+        "Location", secondary=jobs_locations, viewonly=True
+    )
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
 
