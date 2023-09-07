@@ -57,3 +57,12 @@ class PlatformPaymentStatus(enum.Enum):
 class AttachmentType(enum.Enum):
     IMAGE = "image"
     DOCUMENT = "document"
+
+
+class ImageExtension(enum.Enum):
+    JPG = "jpg"
+    JPEG = "jpeg"
+    PNG = "png"
+    SVG = "svg"
+    WEBP = "webp"
+    TIFF = "tiff"

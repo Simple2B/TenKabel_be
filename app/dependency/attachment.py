@@ -3,8 +3,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-import app.model as m
 from app.logger import log
+import app.model as m
 
 from .user import get_current_user
 
@@ -13,7 +13,7 @@ def get_current_attachment(
     attachment_uuid: str,
     user: m.User = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+) -> m.Attachment:
     attachment: m.Attachment = db.scalars(
         select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
     ).first()

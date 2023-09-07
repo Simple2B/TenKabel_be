@@ -132,7 +132,7 @@ def test_application_methods(
 
     # check for payment commission for both of users
     # create test assertion
-    # for each user in job we have to check if platform payment and platform_comission exists
+    # for each user in job we have to check if platform payment and platform_commission exists
 
     assert db.scalar(
         select(m.PlatformPayment).where(

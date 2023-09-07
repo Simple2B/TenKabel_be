@@ -74,6 +74,11 @@ class User(db.Model, BaseUser):
         foreign_keys="Application.owner_id"
     )
 
+    files: orm.Mapped["File"] = orm.relationship(  # noqa: F821
+        "File",
+        backref="user",
+    )
+
     @property
     def is_payment_method_invalid(self) -> bool:
         return any(

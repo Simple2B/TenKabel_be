@@ -17,7 +17,7 @@ from tests.utility import (
     create_jobs_for_user,
     generate_customer_uid,
     generate_card_token,
-    create_attachments,
+    create_files_for_user,
 )
 
 
@@ -169,47 +169,17 @@ def test_create_job(
     test_data: TestData,
     faker,
 ):
-    def get_current_user_attachments():
-        user = db.scalar(
-            select(m.User).where(
-                m.User.email == test_data.test_authorized_users[0].email
-            )
-        )
-        assert user
-        attachment_uuids = [
-            attachment.uuid
-            for attachment in db.scalars(
-                select(m.Attachment).where(m.Attachment.created_by_id == user.id)
-            ).all()
-        ]
-        return attachment_uuids
-
     create_professions(db)
     create_locations(db)
-    create_attachments(db, is_create_jobs=False)
     profession_id = db.scalar(select(m.Profession.id))
     city = db.scalar(select(m.Location))
-    user = m.User(
-        username="UserTestJobsCreate",
-        first_name="Jack",
-        last_name="JobTest",
-        password_hash="123",
-        email="usertest@test.com",
-        phone="0663579795",
-        country_code="IL",
-        is_verified=True,
+    user = db.scalar(
+        select(m.User).where(m.User.email == test_data.test_authorized_users[0].email)
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
 
-    user_profession = m.UserProfession(user_id=user.id, profession_id=profession_id)
-    user_location = m.UserLocation(user_id=user.id, location_id=city.id)
-    db.add(user_location)
-    db.add(user_profession)
-    db.commit()
+    create_files_for_user(db, user.id, 5)
 
-    attachments_uuids = get_current_user_attachments()
+    file_uuids = db.scalars(select(m.File.uuid).where(m.File.user_id == user.id)).all()
     request_data: s.JobIn = s.JobIn(
         profession_id=profession_id,
         city=city.name_en,
@@ -224,7 +194,7 @@ def test_create_job(
         customer_last_name="test_last_name",
         customer_phone="+3800000000",
         customer_street_address="test_location",
-        attachment_uuids=attachments_uuids,
+        file_uuids=file_uuids,
     )
     response = client.post(
         "api/jobs",
@@ -342,7 +312,7 @@ def test_update_job(
         customer_phone=job.customer_phone,
         customer_street_address=job.customer_street_address,
         status=s.enums.JobStatus.JOB_IS_FINISHED,
-        attachment_uuids=[],
+        file_uuids=[],
     )
     response = client.put(
         f"api/jobs/{job.uuid}",
@@ -544,6 +514,8 @@ def test_delete_job(
     db.refresh(job)
     assert response.status_code == status.HTTP_200_OK
     assert job.is_deleted
+    for attachment in job.attachments:
+        assert attachment.is_deleted
 
 
 def test_create_jobs_options(

@@ -2,26 +2,21 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from .enums import AttachmentType
+from .file import FileOut
 
 
-class BaseAttachment(BaseModel):
-    filename: str
+class AttachmentIn(BaseModel):
+    file_uuids: list[str]
+    job_id: int
 
 
-class AttachmentIn(BaseAttachment):
-    file: str  # base64 encoded file
-
-
-class AttachmentOut(BaseAttachment):
+class AttachmentOut(BaseModel):
     uuid: str
-    job_id: int | None
-    filename: str
-    original_filename: str
-    extension: str
-    url: str
-    type: AttachmentType
-    uploaded_at: datetime
+    job_id: int
+    user_id: int
+    file_id: int
+    file: FileOut
+    created_at: datetime
 
     class Config:
         orm_mode = True

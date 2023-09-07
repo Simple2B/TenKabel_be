@@ -1,16 +1,21 @@
 from fastapi import HTTPException, status
 from google.cloud.exceptions import GoogleCloudError
 from google.cloud import storage
+from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import select
 
-from app.config import Settings
+from app import model as m
+from app import schema as s
 from app.logger import log
-import app.schema as s
+from app.config import Settings
+from app.dependency.file import get_current_file
 
 
 class AttachmentController:
     @staticmethod
     def get_type_by_extension(extension: str) -> s.enums.AttachmentType:
-        if extension in ["jpg", "jpeg", "png", "svg", "webp", "tiff"]:
+        if extension in [e.value for e in s.enums.ImageExtension]:
             return s.enums.AttachmentType.IMAGE
         return s.enums.AttachmentType.DOCUMENT
 
@@ -36,6 +41,59 @@ class AttachmentController:
             )
 
         return blob
+
+    @staticmethod
+    def validate_files(
+        file_uuids: list[str], user: m.User, db: Session
+    ) -> list[m.File]:
+        files = []
+        for file_uuid in file_uuids:
+            file: m.File = get_current_file(file_uuid, user=user, db=db)
+            files.append(file)
+
+        return files
+
+    @staticmethod
+    def create_attachments(
+        current_user: m.User, request_data: s.AttachmentIn, db: Session
+    ):
+        files: list[s.Attachment] = AttachmentController.validate_files(
+            request_data.file_uuids, current_user, db
+        )
+        job = db.scalars(select(m.Job).where(m.Job.id == request_data.job_id)).first()
+        if not job:
+            log(log.INFO, "Job %s not found", request_data.job_id)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job not found",
+            )
+        if current_user.id != job.owner_id and current_user.id != job.worker_id:
+            log(
+                log.INFO, "User %s is not allowed to create attachment", current_user.id
+            )
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User is not allowed to create attachment to this job",
+            )
+
+        for file in files:
+            attachment = m.Attachment(
+                user_id=current_user.id,
+                job_id=request_data.job_id,
+                file_id=file.id,
+            )
+            db.add(attachment)
+
+        try:
+            db.commit()
+        except SQLAlchemyError as e:
+            log.error(e)
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Error while saving attachment",
+            )
+        return attachment
 
     @staticmethod
     def delete_file_from_google_cloud_storage(

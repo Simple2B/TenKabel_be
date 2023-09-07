@@ -1,42 +1,28 @@
-import random
-
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 from faker import Faker
 
 from app import model as m
-from app import schema as s
 from app.logger import log
-from tests.utility import create_locations, create_professions, fill_test_data
 
-from . import create_jobs
+from .create_files import create_files_for_user
+from .create_jobs import create_jobs_for_user
 
 fake: Faker = Faker()
 
 
-def create_attachments(
-    db: Session, num_test_attachments: int = 150, is_create_jobs: bool = True
-):
-    create_professions(db)
-    create_locations(db)
-    fill_test_data(db)
-    if is_create_jobs:
-        create_jobs(db, 300)
-    job_ids = [job.id for job in db.scalars(select(m.Job)).all()] + [None]
-    user_ids = [user.id for user in db.scalars(select(m.User)).all()]
-    for _ in range(num_test_attachments):
-        filename = fake.unique.file_name(category="image")
+def create_attachments(db: Session, num_test_attachments: int = 150):
+    users = db.scalars(select(m.User)).all()
+    for user in users:
+        create_jobs_for_user(db, user.id, 1, logs_off=True)
+        create_files_for_user(db, user.id, 1, logs_off=True)
+        job_id = db.scalars(select(m.Job.id).where(m.Job.owner_id == user.id)).first()
+        file = db.scalars(select(m.File).where(m.File.user_id == user.id)).first()
+
         attachment: m.Attachment = m.Attachment(
-            job_id=random.choice(job_ids),
-            created_by_id=random.choice(user_ids),
-            type=random.choice(
-                [s.enums.AttachmentType.DOCUMENT, s.enums.AttachmentType.IMAGE]
-            ),
-            url=fake.unique.image_url(),
-            filename=filename,
-            original_filename=filename,
-            storage_path="attachments/" + filename,
-            extension=filename.split(".")[-1],
+            user_id=user.id,
+            job_id=job_id,
+            file_id=file.id,
         )
         db.add(attachment)
     db.commit()

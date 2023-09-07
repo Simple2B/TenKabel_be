@@ -4,10 +4,11 @@ from sqlalchemy import orm
 
 from app.database import db
 from app.utility import generate_uuid
+from app import schema as s
 
 
-class Attachment(db.Model):
-    __tablename__ = "attachments"
+class File(db.Model):
+    __tablename__ = "files"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(
@@ -16,26 +17,23 @@ class Attachment(db.Model):
         index=True,
         default=generate_uuid,
     )
-    job_id: orm.Mapped[int] = orm.mapped_column(
-        sa.Integer,
-        sa.ForeignKey("jobs.id"),
-        nullable=True,
-    )
+
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.Integer,
         sa.ForeignKey("users.id"),
         nullable=True,
     )
 
-    file_id: orm.Mapped[int] = orm.mapped_column(
-        sa.Integer,
-        sa.ForeignKey("files.id"),
-        nullable=True,
+    filename: orm.Mapped[str] = orm.mapped_column(sa.String(256), nullable=False)
+    original_filename: orm.Mapped[str] = orm.mapped_column(
+        sa.String(256), nullable=False
     )
-
-    file: orm.Mapped["File"] = orm.relationship(  # noqa: F821
-        "File",
-        backref="attachment",
+    storage_path: orm.Mapped[str] = orm.mapped_column(sa.String(256), nullable=True)
+    # TODO: url could be property
+    url: orm.Mapped[str] = orm.mapped_column(
+        sa.String(256),
+        unique=True,
+        nullable=False,
     )
 
     created_at: orm.Mapped[datetime] = orm.mapped_column(
@@ -47,6 +45,16 @@ class Attachment(db.Model):
         nullable=False,
         default=False,
     )
+
+    @property
+    def type(self) -> s.enums.AttachmentType:
+        if self.extension in [e.value for e in s.enums.ImageExtension]:
+            return s.enums.AttachmentType.IMAGE
+        return s.enums.AttachmentType.DOCUMENT
+
+    @property
+    def extension(self) -> str:
+        return self.filename.split(".")[-1]
 
     def __str__(self):
         return self.filename
