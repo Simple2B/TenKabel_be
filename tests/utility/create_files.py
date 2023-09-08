@@ -21,9 +21,7 @@ def create_files(db: Session, num_test_files: int = 150, is_create_jobs: bool = 
         file: m.File = m.File(
             user_id=random.choice(user_ids),
             url=fake.unique.image_url(),
-            filename=filename,
             original_filename=filename,
-            storage_path="attachments/" + filename,
         )
         db.add(file)
     db.commit()
@@ -36,9 +34,7 @@ def create_files_for_user(db: Session, user_id: int, num_test_files=5, logs_off=
         file: m.File = m.File(
             user_id=user_id,
             url=fake.unique.image_url(),
-            filename=filename,
             original_filename=filename,
-            storage_path="attachments/" + filename,
         )
         db.add(file)
     db.commit()

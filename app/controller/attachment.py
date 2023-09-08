@@ -9,7 +9,7 @@ from app import model as m
 from app import schema as s
 from app.logger import log
 from app.config import Settings
-from app.dependency.file import get_current_file
+from app.dependency.file import get_file_by_uuid
 
 
 class AttachmentController:
@@ -48,7 +48,7 @@ class AttachmentController:
     ) -> list[m.File]:
         files = []
         for file_uuid in file_uuids:
-            file: m.File = get_current_file(file_uuid, user=user, db=db)
+            file: m.File = get_file_by_uuid(file_uuid, user=user, db=db)
             files.append(file)
 
         return files

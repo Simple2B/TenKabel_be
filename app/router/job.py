@@ -10,7 +10,7 @@ from app.controller.notification import (
     handle_job_payment_notification,
     handle_job_status_update_notification,
 )
-from app.controller.google import AttachmentController
+from app.controller.attachment import AttachmentController
 
 from app.dependency import (
     get_current_user,

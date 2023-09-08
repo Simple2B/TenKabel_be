@@ -21,15 +21,12 @@ class File(db.Model):
     user_id: orm.Mapped[int] = orm.mapped_column(
         sa.Integer,
         sa.ForeignKey("users.id"),
-        nullable=True,
     )
 
-    filename: orm.Mapped[str] = orm.mapped_column(sa.String(256), nullable=False)
     original_filename: orm.Mapped[str] = orm.mapped_column(
         sa.String(256), nullable=False
     )
-    storage_path: orm.Mapped[str] = orm.mapped_column(sa.String(256), nullable=True)
-    # TODO: url could be property
+
     url: orm.Mapped[str] = orm.mapped_column(
         sa.String(256),
         unique=True,
@@ -46,6 +43,19 @@ class File(db.Model):
         default=False,
     )
 
+    # user: orm.Mapped["User"] = orm.relationship(  # noqa: F821
+    #     "User",
+    #     back_populates="files",
+    # )
+
+    @property
+    def storage_path(self) -> str:
+        return f"attachments/{self.user.uuid}/{self.filename}"
+
+    @property
+    def filename(self) -> str:
+        return f"{self.uuid}_{self.original_filename}"
+
     @property
     def type(self) -> s.enums.AttachmentType:
         if self.extension in [e.value for e in s.enums.ImageExtension]:
@@ -58,3 +68,6 @@ class File(db.Model):
 
     def __str__(self):
         return self.filename
+
+    def __repr__(self):
+        return f"<File {self.id} - {self.filename}>"

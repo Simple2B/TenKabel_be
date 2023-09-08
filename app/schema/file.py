@@ -15,7 +15,6 @@ class FileIn(BaseFile):
 
 class FileOut(BaseFile):
     uuid: str
-    filename: str
     original_filename: str
     extension: str
     url: str

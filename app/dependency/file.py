@@ -4,17 +4,16 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.logger import log
-from app.model.user import User
-from app.model.file import File
+from app import model as m
 from .user import get_current_user
 
 
-def get_current_file(
+def get_file_by_uuid(
     file_uuid: str,
-    user: User = Depends(get_current_user),
+    user: m.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    file: File = db.scalars(select(File).where(File.uuid == file_uuid)).first()
+    file: m.File = db.scalars(select(m.File).where(m.File.uuid == file_uuid)).first()
     if not file:
         log(log.INFO, "File not found")
         raise HTTPException(

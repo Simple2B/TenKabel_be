@@ -1,5 +1,4 @@
 import base64
-import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -8,7 +7,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.controller import AttachmentController
 from app.database import get_db
 from app.logger import log
-from app.dependency import get_google_storage_client, get_current_file, get_current_user
+from app.dependency import get_google_storage_client, get_file_by_uuid, get_current_user
 from app.config import get_settings, Settings
 import app.schema as s
 import app.model as m
@@ -24,7 +23,7 @@ file_router = APIRouter(prefix="/files", tags=["Files"])
 def get_file(
     file_uuid: str,
     db: Session = Depends(get_db),
-    file: m.File = Depends(get_current_file),
+    file: m.File = Depends(get_file_by_uuid),
 ):
     return file
 
@@ -43,7 +42,7 @@ def upload_file(
 ):
     # uploading file to google cloud bucket
     decoded_file = base64.b64decode(file.file)
-    filename = f"{uuid.uuid4()}_{file.filename}"
+
     destination_blob_name = f"attachments/{current_user.uuid}/{file.filename}"
     blob = AttachmentController.upload_file_to_google_cloud_storage(
         decoded_file=decoded_file,
@@ -55,9 +54,7 @@ def upload_file(
 
     file = m.File(
         user_id=current_user.id,
-        filename=filename,
         original_filename=file.filename,
-        storage_path=destination_blob_name,
         url=blob.public_url,
     )
     log(log.INFO, "File %s uploaded", file)
@@ -81,7 +78,7 @@ def delete_file(
     db: Session = Depends(get_db),
     google_storage_client=Depends(get_google_storage_client),
     settings: Settings = Depends(get_settings),
-    file: m.File = Depends(get_current_file),
+    file: m.File = Depends(get_file_by_uuid),
 ):
     # deleting from bucket
     AttachmentController.delete_file_from_google_cloud_storage(

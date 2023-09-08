@@ -14,7 +14,7 @@ from .test_data import TestData
 @pytest.fixture
 def client(monkeypatch) -> Generator:
     from app.main import app
-    from app.controller.google import AttachmentController
+    from app.controller.attachment import AttachmentController
 
     def mock_google_account_json(**kwargs):
         return True
