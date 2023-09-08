@@ -39,11 +39,11 @@ class PaymentMethod(enum.Enum):
 
 
 class CommissionStatus(IndexableStringEnum):
-    REQUESTED = "requested"
-    UNPAID = "unpaid"
-    DENY = "deny"
-    CONFIRM = "confirm"
-    PAID = "paid"
+    REQUESTED = "REQUESTED"
+    UNPAID = "UNPAID"
+    DENY = "DENY"
+    CONFIRM = "CONFIRM"
+    PAID = "PAID"
 
 
 # Payplus

@@ -124,11 +124,11 @@ def upgrade():
         sa.Column(
             "commission_status",
             sa.Enum(
-                "paid",
-                "unpaid",
-                "requested",
-                "deny",
-                "confirm",
+                "PAID",
+                "UNPAID",
+                "REQUESTED",
+                "DENY",
+                "CONFIRM",
                 name="commissionstatus",
             ),
             nullable=False,

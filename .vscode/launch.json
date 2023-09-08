@@ -40,11 +40,11 @@
       "justMyCode": true
     },
     {
-      "name": "create-job",
+      "name": "create-jobs",
       "type": "python",
       "request": "launch",
       "module": "invoke",
-      "args": ["create-job"],
+      "args": ["create-jobs"],
       "justMyCode": true
     },
     {
