@@ -9,10 +9,6 @@ class BaseFile(BaseModel):
     filename: str
 
 
-class FileIn(BaseFile):
-    file: str  # base64 encoded file
-
-
 class FileOut(BaseFile):
     uuid: str
     original_filename: str

@@ -21,8 +21,8 @@ class AttachmentController:
 
     @staticmethod
     def upload_file_to_google_cloud_storage(
-        decoded_file: bytes,
         filename: str,
+        file: str,
         destination_filename: str,
         google_storage_client,
         settings: Settings,
@@ -32,7 +32,7 @@ class AttachmentController:
         blob = bucket.blob(filename)
         blob = bucket.blob(destination_filename)
         try:
-            blob.upload_from_string(decoded_file)
+            blob.upload_file(file)
         except GoogleCloudError as e:
             log(log.INFO, "Error while uploading file to google cloud storage:\n%s", e)
             raise HTTPException(

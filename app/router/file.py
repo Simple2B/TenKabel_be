@@ -1,6 +1,4 @@
-import base64
-
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -34,19 +32,24 @@ def get_file(
     status_code=status.HTTP_201_CREATED,
 )
 def upload_file(
-    file: s.FileIn,
+    file: UploadFile = File(None),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
     google_storage_client=Depends(get_google_storage_client),
     settings: Settings = Depends(get_settings),
 ):
     # uploading file to google cloud bucket
-    decoded_file = base64.b64decode(file.file)
+    if not file:
+        log(log.INFO, "File not found")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="File not found",
+        )
 
     destination_blob_name = f"attachments/{current_user.uuid}/{file.filename}"
     blob = AttachmentController.upload_file_to_google_cloud_storage(
-        decoded_file=decoded_file,
         filename=file.filename,
+        file=file,
         destination_filename=destination_blob_name,
         google_storage_client=google_storage_client,
         settings=settings,

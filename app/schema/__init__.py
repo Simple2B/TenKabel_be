@@ -60,4 +60,4 @@ from .platform_commission import PlatformCommission
 from .option import PriceOption
 
 from .attachment import AttachmentIn, AttachmentOut
-from .file import FileIn, FileOut
+from .file import FileOut

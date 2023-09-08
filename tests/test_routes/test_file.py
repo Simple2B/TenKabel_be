@@ -1,5 +1,3 @@
-import base64
-
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -19,13 +17,13 @@ def test_file_methods(
     faker,
 ):
     filename = "test_avatar_1.png"
-    with open(f"tests/utility/images/{filename}", "rb") as image_file:
-        encoded_string = base64.b64encode(image_file.read())
+    file = open(f"tests/utility/images/{filename}", "rb")
 
-    request_data = s.FileIn(file=encoded_string, filename=filename)
     response = client.post(
         "api/files",
-        json=request_data.dict(),
+        files={
+            "file": file,
+        },
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_201_CREATED
