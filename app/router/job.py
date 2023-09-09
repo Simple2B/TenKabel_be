@@ -10,6 +10,7 @@ from app.controller.notification import (
     handle_job_payment_notification,
     handle_job_status_update_notification,
 )
+from app.controller.attachment import AttachmentController
 
 from app.dependency import (
     get_current_user,
@@ -180,14 +181,11 @@ def create_job(
 
     job_created_notify(new_job, db)
     # assigning attachments to job
-    if data.attachment_uuids:
-        for attachment_uuid in data.attachment_uuids:
-            attachment: m.Attachment = db.scalars(
-                select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
-            ).first()
-            if attachment:
-                attachment.job_id = new_job.id
-                db.commit()
+    if data.file_uuids:
+        attachment_in = s.AttachmentIn(job_id=new_job.id, file_uuids=data.file_uuids)
+        AttachmentController.create_attachments(
+            current_user=current_user, request_data=attachment_in, db=db
+        )
 
     log(log.INFO, "Job [%s] created successfully", new_job.id)
     db.refresh(new_job)
@@ -225,13 +223,13 @@ def patch_job(
             job.customer_phone = job_data.customer_phone
         if job_data.customer_street_address:
             job.customer_street_address = job_data.customer_street_address
-        if job_data.attachment_uuids:
-            for attachment_uuid in job_data.attachment_uuids:
-                attachment: m.Attachment = db.scalars(
-                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
-                ).first()
-                if attachment:
-                    attachment.job_id = job.id
+        if job_data.file_uuids:
+            attachment_in = s.AttachmentIn(
+                job_id=job.id, file_uuids=job_data.file_uuids
+            )
+            AttachmentController.create_attachments(
+                current_user=current_user, request_data=attachment_in, db=db
+            )
 
         if job_data.regions:
             for location in job.regions:
@@ -244,14 +242,6 @@ def patch_job(
                 db.delete(location_obj)
             for location_id in job_data.regions:
                 db.add(m.JobLocation(job_id=job.id, location_id=location_id))
-
-        if job_data.attachment_uuids:
-            for attachment_uuid in job_data.attachment_uuids:
-                attachment: m.Attachment = db.scalars(
-                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
-                ).first()
-                if attachment:
-                    attachment.job_id = job.id
 
     except ValueDownGradeForbidden as e:
         log(log.ERROR, "Error while patching job - %s", e)
@@ -316,14 +306,13 @@ def update_job(
         job.customer_phone = job_data.customer_phone
         job.customer_street_address = job_data.customer_street_address
         job.status = s.enums.JobStatus(job_data.status)
-        if job_data.attachment_uuids:
-            for attachment_uuid in job_data.attachment_uuids:
-                attachment: m.Attachment = db.scalars(
-                    select(m.Attachment).where(m.Attachment.uuid == attachment_uuid)
-                ).first()
-                if attachment:
-                    attachment.job_id = job.id
-
+        if job_data.file_uuids:
+            attachment_in = s.AttachmentIn(
+                job_id=job.id, file_uuids=job_data.file_uuids
+            )
+            AttachmentController.create_attachments(
+                current_user=current_user, request_data=attachment_in, db=db
+            )
         for location in job.regions:
             location_obj: m.JobLocation = db.scalar(
                 select(m.JobLocation).where(
@@ -401,6 +390,8 @@ def delete_job(
                 ),
             )
         )
+    for attachment in job.attachments:
+        attachment.is_deleted = True
 
     try:
         db.commit()

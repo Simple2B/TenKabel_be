@@ -175,6 +175,7 @@ def create_jobs_for_user(
     db: Session,
     user_id: int,
     test_jobs_num: int = TEST_USER_JOBS_NUM,
+    logs_off: bool = False,
 ):
     statuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     user = db.scalar(select(m.User).where(m.User.id == user_id))
@@ -268,5 +269,5 @@ def create_jobs_for_user(
             job.worker_id = random.choice(worker_ids)
 
     db.commit()
-
-    log(log.INFO, "Jobs for user [%s] created - %s", user_id, test_jobs_num)
+    if not logs_off:
+        log(log.INFO, "Jobs for user [%s] created - %s", user_id, test_jobs_num)

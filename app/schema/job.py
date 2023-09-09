@@ -56,8 +56,7 @@ class Job(BaseJob):
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
 
-    worker_attachments: list[AttachmentOut]
-    owner_attachments: list[AttachmentOut]
+    attachments: list[AttachmentOut]
 
     class Config:
         orm_mode = True
@@ -83,7 +82,7 @@ class JobIn(BaseModel):
     customer_phone: str
     customer_street_address: str
 
-    attachment_uuids: list[str] = []
+    file_uuids: list[str] = []
 
     class Config:
         orm_mode = True
@@ -112,7 +111,7 @@ class JobPatch(BaseModel):
     customer_phone: str | None
     customer_street_address: str | None
     status: JobStatus | None
-    attachment_uuids: list[str] = []
+    file_uuids: list[str] = []
 
     class Config:
         orm_mode = True

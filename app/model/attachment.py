@@ -5,8 +5,6 @@ from sqlalchemy import orm
 from app.database import db
 from app.utility import generate_uuid
 
-from app import schema as s
-
 
 class Attachment(db.Model):
     __tablename__ = "attachments"
@@ -23,31 +21,31 @@ class Attachment(db.Model):
         sa.ForeignKey("jobs.id"),
         nullable=True,
     )
-    created_by_id: orm.Mapped[int] = orm.mapped_column(
+    user_id: orm.Mapped[int] = orm.mapped_column(
         sa.Integer,
         sa.ForeignKey("users.id"),
         nullable=True,
     )
 
-    filename: orm.Mapped[str] = orm.mapped_column(sa.String(255), nullable=False)
-    original_filename: orm.Mapped[str] = orm.mapped_column(
-        sa.String(255), nullable=False
-    )
-    storage_path: orm.Mapped[str] = orm.mapped_column(sa.String(512), nullable=True)
-    extension: orm.Mapped[str] = orm.mapped_column(sa.String(32), nullable=False)
-    url: orm.Mapped[str] = orm.mapped_column(
-        sa.String(255),
-        unique=True,
-        nullable=False,
-    )
-    type: orm.Mapped[s.enums.AttachmentType] = orm.mapped_column(
-        sa.Enum(s.enums.AttachmentType),
-        nullable=False,
-        default=s.enums.AttachmentType.IMAGE,
+    file_id: orm.Mapped[int] = orm.mapped_column(
+        sa.Integer,
+        sa.ForeignKey("files.id"),
+        nullable=True,
     )
 
-    uploaded_at: orm.Mapped[datetime] = orm.mapped_column(
+    file: orm.Mapped["File"] = orm.relationship(  # noqa: F821
+        "File",
+        backref="attachment",
+    )
+
+    created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, nullable=False, default=datetime.utcnow
+    )
+
+    is_deleted: orm.Mapped[bool] = orm.mapped_column(
+        sa.Boolean,
+        nullable=False,
+        default=False,
     )
 
     def __str__(self):

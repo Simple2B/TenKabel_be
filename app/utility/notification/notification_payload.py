@@ -1,11 +1,11 @@
 from app import schema as s
-from app import model as m
+from app.model import Application, Job
 
 
 def get_notification_payload(
     notification_type: s.NotificationType,
-    job: m.Job,
-    application: m.Application | None = None,
+    job: Job,
+    application: Application | None = None,
 ):
     if job.worker:
         worker_name = (

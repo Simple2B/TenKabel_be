@@ -8,7 +8,7 @@ from app.utility import generate_uuid
 from app import schema as s
 from app import model as m
 from app.model.applications import Application
-from .platform_comission import PlatformCommission
+from .platform_commission import PlatformCommission
 from .attachment import Attachment
 from .job_location import jobs_locations
 from .location import Location
@@ -88,6 +88,17 @@ class Job(db.Model):
     owner: orm.Mapped[m.User] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
+
+    # worker_attachments: orm.Mapped[m.Attachment] = orm.relationship(
+    #     "Attachment",
+    #     foreign_keys=[worker_attachments_id],
+    #     viewonly=True,
+    # )
+    # owner_attachments: orm.Mapped[m.Attachment] = orm.relationship(
+    #     "Attachment",
+    #     foreign_keys=[owner_attachments_id],
+    #     viewonly=True,
+    # )
     platform_commissions: orm.Mapped[PlatformCommission] = orm.relationship(
         "PlatformCommission", backref="job"
     )
