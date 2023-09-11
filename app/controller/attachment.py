@@ -1,4 +1,4 @@
-from fastapi import HTTPException, status
+from fastapi import HTTPException, status, UploadFile
 from google.cloud.exceptions import GoogleCloudError
 from google.cloud import storage
 from sqlalchemy.orm import Session
@@ -22,7 +22,7 @@ class AttachmentController:
     @staticmethod
     def upload_file_to_google_cloud_storage(
         filename: str,
-        file: str,
+        file: UploadFile,
         destination_filename: str,
         google_storage_client,
         settings: Settings,
@@ -32,7 +32,7 @@ class AttachmentController:
         blob = bucket.blob(filename)
         blob = bucket.blob(destination_filename)
         try:
-            blob.upload_file(file)
+            blob.upload_from_file(file.file)
         except GoogleCloudError as e:
             log(log.INFO, "Error while uploading file to google cloud storage:\n%s", e)
             raise HTTPException(

@@ -15,7 +15,7 @@ class FileOut(BaseFile):
     extension: str
     url: str
     type: AttachmentType
-    created_at: datetime
+    created_at: datetime | None
 
     class Config:
         orm_mode = True

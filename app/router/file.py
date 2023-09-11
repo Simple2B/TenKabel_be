@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
+from sqlalchemy import and_, select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -32,7 +33,7 @@ def get_file(
     status_code=status.HTTP_201_CREATED,
 )
 def upload_file(
-    file: UploadFile = File(None),
+    file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
     google_storage_client=Depends(get_google_storage_client),
@@ -54,25 +55,34 @@ def upload_file(
         google_storage_client=google_storage_client,
         settings=settings,
     )
-
-    file = m.File(
-        user_id=current_user.id,
-        original_filename=file.filename,
-        url=blob.public_url,
-    )
-    log(log.INFO, "File %s uploaded", file)
-    db.add(file)
-    try:
-        db.commit()
-        db.refresh(file)
-    except SQLAlchemyError as e:
-        log(log.ERROR, "File %s failed to upload - %s", file, e)
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Failed to upload file",
+    user_file = db.scalar(select(m.File).where(
+            and_(
+                m.File.url == blob.public_url,
+                m.File.user_id == current_user.id,
+            )
+        ))
+    if not user_file:
+        # creating file in database
+        new_file = m.File(
+            user_id=current_user.id,
+            original_filename=file.filename,
+            url=blob.public_url,
         )
-    return file
+        log(log.INFO, "File %s uploaded", new_file)
+        db.add(new_file)
+        try:
+            db.commit()
+            db.refresh(new_file)
+        except SQLAlchemyError as e:
+            log(log.ERROR, "File %s failed to upload - %s", new_file, e)
+            db.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Failed to upload file",
+            )
+        return new_file
+    log(log.INFO, "File %s already exists", user_file)
+    return user_file
 
 
 @file_router.delete("/{file_uuid}", status_code=status.HTTP_200_OK)
