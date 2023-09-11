@@ -2,7 +2,7 @@ import re
 from typing import Annotated
 
 from fastapi import Depends, APIRouter, status, HTTPException, Query
-from sqlalchemy import select, or_
+from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from app.controller.notification import (
@@ -83,30 +83,44 @@ def get_jobs(
     else:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         cities_names: list[str] = [location.name_en for location in user.locations]
-        filter_conditions = []
+        profession_conditions = []
+        city_conditions = []
+
         if profession_ids:
             for prof_id in profession_ids:
-                filter_conditions.append(m.Job.profession_id == prof_id)
-            query = query.where(or_(*filter_conditions))
+                profession_conditions.append(m.Job.profession_id == prof_id)
 
+        if cities_names:
+            for city_name in cities_names:
+                city_conditions.append(
+                    m.Job.regions.any(m.Location.name_en == city_name)
+                )
+
+        if profession_conditions or city_conditions:
+            query = query.where(
+                and_(or_(*profession_conditions), or_(*city_conditions))
+            )
+
+        if profession_conditions and city_conditions:
+            log(
+                log.INFO,
+                "Job filtered by profession ids %s and cities names [%s] user interests",
+                profession_ids,
+                ",".join(cities_names),
+            )
+        elif profession_conditions:
             log(
                 log.INFO,
                 "Job filtered by profession ids %s user interests",
                 profession_ids,
             )
-        if cities_names:
-            for city_name in cities_names:
-                filter_conditions.append(
-                    m.Job.regions.any(m.Location.name_en == city_name)
-                )
-
-            query = query.where(or_(*filter_conditions))
+        elif city_conditions:
             log(
                 log.INFO,
                 "Job filtered by cities names [%s] user interests",
                 ",".join(cities_names),
             )
-        if not cities_names and not profession_ids:
+        else:
             log(log.INFO, "Job returned with no filters")
 
     jobs: s.ListJob = s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
