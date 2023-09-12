@@ -1,4 +1,5 @@
 import base64
+import json
 from datetime import datetime
 
 from fastapi import status
@@ -182,23 +183,23 @@ def test_signup(
     response = client.get(
         f"api/auth/user/pre-validate?field=email&value={test_data.test_user.email}",
     )
-    assert response.status_code == status.HTTP_409_CONFLICT
+    assert json.loads(response.text) == {"isExist": True, "message": "User already exist"}
     # pre-validating user exist
     response = client.get(
         f"api/auth/user/pre-validate?field=phone&value={test_data.test_user.phone}",
     )
-    assert response.status_code == status.HTTP_409_CONFLICT
+    assert json.loads(response.text) == {"isExist": True, "message": "User already exist"}
 
     # pre-validating user not exist
     response = client.get(
         "api/auth/user/pre-validate?field=phone&value=123456",
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert json.loads(response.text) == {"isExist": False, "message": "User doesn't exist"}
 
     response = client.get(
         "api/auth/user/pre-validate?field=phone&value=123456",
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert json.loads(response.text) == {"isExist": False, "message": "User doesn't exist"}
 
     response = client.get(
         "api/auth/user/pre-validate?field=SOME_BAD_FIELD&value=123456",
