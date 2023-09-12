@@ -55,12 +55,14 @@ def upload_file(
         google_storage_client=google_storage_client,
         settings=settings,
     )
-    user_file = db.scalar(select(m.File).where(
+    user_file = db.scalar(
+        select(m.File).where(
             and_(
                 m.File.url == blob.public_url,
                 m.File.user_id == current_user.id,
             )
-        ))
+        )
+    )
     if not user_file:
         # creating file in database
         new_file = m.File(
@@ -81,7 +83,8 @@ def upload_file(
                 detail="Failed to upload file",
             )
         return new_file
-    log(log.INFO, "File %s already exists", user_file)
+    else:
+        log(log.INFO, "File %s already exists", user_file)
     return user_file
 
 
@@ -99,7 +102,7 @@ def delete_file(
         google_storage_client=google_storage_client,
         settings=settings,
     )
-    file.is_deleted = True
+    db.delete(file)
     try:
         db.commit()
     except SQLAlchemyError as e:
