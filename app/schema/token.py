@@ -12,3 +12,8 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     user_id: str = None
+
+
+class PreValidate(BaseModel):
+    isExist: bool
+    message: str

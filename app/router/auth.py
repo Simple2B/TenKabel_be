@@ -308,6 +308,7 @@ def logout(
 @auth_router.get(
     "/user/pre-validate",
     status_code=status.HTTP_200_OK,
+    response_model=s.PreValidate
 )
 def pre_validate_user(
     field: str,
@@ -326,8 +327,6 @@ def pre_validate_user(
         )
     )
     if user:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="User already exist",
-        )
-    return
+        return s.PreValidate(isExist=True, message="User already exist")
+
+    return s.PreValidate(isExist=False, message="User doesn't exist")
