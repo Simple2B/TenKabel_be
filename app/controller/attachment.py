@@ -95,6 +95,8 @@ class AttachmentController:
             )
         return attachment
 
+    # /b/tenkabel-dev/o/attachments%2Fa55738b7-2a3c-4fbc-824e-e0c533a0def1%2Ffranko-ivan-iakovych-boryslav-smiietsia625%202.epub
+    # /b/tenkabel-dev/o/attachments%2Fa55738b7-2a3c-4fbc-824e-e0c533a0def1%2Ffranko-ivan-iakovych-boryslav-smiietsia625%202.epub
     @staticmethod
     def delete_file_from_google_cloud_storage(
         filename: str,
@@ -103,12 +105,19 @@ class AttachmentController:
     ):
         bucket = google_storage_client.get_bucket(settings.GOOGLE_STORAGE_BUCKET_NAME)
         blob = bucket.blob(filename)
-        try:
-            blob.delete()
-        except GoogleCloudError as e:
-            log(log.INFO, "Error while deleting file from google cloud storage:\n%s", e)
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="Error while deleting file from google cloud storage",
-            )
-        log(log.INFO, "Deleting file %s from google cloud client", filename)
+        if blob.exists():
+            try:
+                blob.delete()
+                log(log.INFO, "Deleting file %s from google cloud client", filename)
+            except GoogleCloudError as e:
+                log(
+                    log.INFO,
+                    "Error while deleting file from google cloud storage:\n%s",
+                    e,
+                )
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Error while deleting file from google cloud storage",
+                )
+        else:
+            log(log.INFO, "File %s not found in google cloud client", filename)

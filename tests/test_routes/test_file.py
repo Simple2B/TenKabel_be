@@ -49,4 +49,4 @@ def test_file_methods(
     assert response.status_code == status.HTTP_200_OK
     file: m.File = db.scalars(select(m.File).where(m.File.uuid == file.uuid)).first()
 
-    assert file.is_deleted
+    assert not file

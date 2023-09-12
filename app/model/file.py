@@ -50,7 +50,7 @@ class File(db.Model):
 
     @property
     def storage_path(self) -> str:
-        return f"attachments/{self.user.uuid}/{self.filename}"
+        return f"attachments/{self.user.uuid}/{self.original_filename}"
 
     @property
     def filename(self) -> str:
