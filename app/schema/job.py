@@ -42,6 +42,7 @@ class Job(BaseJob):
     who_pays: WhoPays
     is_deleted: bool
     owner: User
+    is_asap: bool
     frame_time: str | None
     worker: User | None
     payment: int | None
@@ -77,6 +78,7 @@ class JobIn(BaseModel):
     who_pays: Job.WhoPays | None
     name: str
     description: str
+    is_asap: bool
     frame_time: str | None = None
     time: str
     customer_first_name: str
@@ -104,6 +106,7 @@ class JobPatch(BaseModel):
     payment: int | None
     commission: int | None
     payment_status: PaymentStatus | None
+    is_asap: bool | None
     commission_status: CommissionStatus | None
     frame_time: str | None
     name: str | None
