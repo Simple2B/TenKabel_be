@@ -29,6 +29,7 @@ class NotificationType(IndexableStringEnum):
 
 # Job
 class PaymentStatus(enum.Enum):
+    # TODO: add required, denied. Look at CommissionStatus
     PAID = "paid"
     UNPAID = "unpaid"
 

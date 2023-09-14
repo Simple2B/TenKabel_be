@@ -443,3 +443,41 @@ def post_user_payplus_token(
 ):
     create_payplus_token(card_data, current_user, settings, db)
     return current_user
+
+
+@user_router.get(
+    "/payments-tab",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentTab,
+)
+def get_user_payments_tab(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+):
+    pass
+
+
+@user_router.get(
+    "/payments",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentList,
+)
+def get_user_payments(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    manage_tab: s.Job.TabFilter | None = None,
+):
+    pass
+
+
+@user_router.get(
+    "/commissions",
+    status_code=status.HTTP_200_OK,
+    response_model=s.CommissionList,
+)
+def get_user_commissions(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    pass
