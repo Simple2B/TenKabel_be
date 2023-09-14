@@ -162,6 +162,7 @@ def create_job(
         payment=data.payment,
         commission=data.commission,
         who_pays=who_pays,
+        is_asap=data.is_asap,
         frame_time=data.frame_time,
         city=data.city,
         time=data.time,
@@ -230,6 +231,8 @@ def patch_job(
             job.description = job_data.description
         if job_data.time:
             job.time = job_data.time
+        if job_data.is_asap:
+            job.is_asap = job_data.is_asap
         if job.frame_time:
             job.frame_time = job_data.frame_time
         if job_data.customer_first_name:
@@ -318,6 +321,7 @@ def update_job(
         job.name = job_data.name
         job.description = job_data.description
         job.time = job_data.time
+        job.is_asap = job_data.is_asap
         job.frame_time = job_data.frame_time
         job.customer_first_name = job_data.customer_first_name
         job.customer_last_name = job_data.customer_last_name

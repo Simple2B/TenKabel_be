@@ -62,6 +62,8 @@ class Job(db.Model):
     )
     city: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
     formatted_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=False)
+
+    is_asap: orm.Mapped[bool] = orm.mapped_column(sa.Boolean, default=False)
     frame_time: orm.Mapped[str] = orm.mapped_column(sa.String(64), nullable=True)
 
     payment_status: orm.Mapped[s.enums.PaymentStatus] = orm.mapped_column(
