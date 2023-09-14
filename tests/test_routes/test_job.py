@@ -187,6 +187,7 @@ def test_create_job(
         payment=10000,
         commission=10000,
         who_pays=s.Job.WhoPays.ME,
+        frame_time="Until sunset",
         name="-=Test Task=-",
         description="Just do anything",
         time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -220,6 +221,7 @@ def test_create_job(
     assert db.scalar(
         select(m.Job).filter_by(customer_last_name=request_data.customer_last_name)
     )
+    assert db.scalar(select(m.Job).filter_by(frame_time=request_data.frame_time))
     assert db.scalar(select(m.Job).filter_by(name=request_data.name))
     resp_data = s.Job.parse_obj(response.json())
     assert resp_data.owner_id == owner_user.id
