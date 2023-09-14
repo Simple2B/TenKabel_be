@@ -42,6 +42,7 @@ class Job(BaseJob):
     who_pays: WhoPays
     is_deleted: bool
     owner: User
+    frame_time: str | None
     worker: User | None
     payment: int | None
     commission: int | None
@@ -76,6 +77,7 @@ class JobIn(BaseModel):
     who_pays: Job.WhoPays | None
     name: str
     description: str
+    frame_time: str | None = None
     time: str
     customer_first_name: str
     customer_last_name: str
@@ -103,6 +105,7 @@ class JobPatch(BaseModel):
     commission: int | None
     payment_status: PaymentStatus | None
     commission_status: CommissionStatus | None
+    frame_time: str | None
     name: str | None
     description: str | None
     time: str | None

@@ -162,6 +162,7 @@ def create_job(
         payment=data.payment,
         commission=data.commission,
         who_pays=who_pays,
+        frame_time=data.frame_time,
         city=data.city,
         time=data.time,
         customer_first_name=data.customer_first_name,
@@ -229,6 +230,8 @@ def patch_job(
             job.description = job_data.description
         if job_data.time:
             job.time = job_data.time
+        if job.frame_time:
+            job.frame_time = job_data.frame_time
         if job_data.customer_first_name:
             job.customer_first_name = job_data.customer_first_name
         if job_data.customer_last_name:
@@ -315,6 +318,7 @@ def update_job(
         job.name = job_data.name
         job.description = job_data.description
         job.time = job_data.time
+        job.frame_time = job_data.frame_time
         job.customer_first_name = job_data.customer_first_name
         job.customer_last_name = job_data.customer_last_name
         job.customer_phone = job_data.customer_phone
