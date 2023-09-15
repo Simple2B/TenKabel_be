@@ -28,10 +28,24 @@ class NotificationType(IndexableStringEnum):
 
 
 # Job
+class PaymentsTab(enum.Enum):
+    PAYMENT = "PAYMENT"
+    COMMISSION = "COMMISSION"
+
+
+class AdditionalInfoTab(enum.Enum):
+    UNPAID = "UNPAID"
+    APPROVE = "APPROVE"
+    SEND = "SEND"
+
+
 class PaymentStatus(enum.Enum):
-    # TODO: add required, denied. Look at CommissionStatus
-    PAID = "paid"
-    UNPAID = "unpaid"
+    # TODO: alembic revision
+    REQUESTED = "REQUESTED"
+    UNPAID = "UNPAID"
+    DENY = "DENY"
+    CONFIRM = "CONFIRM"
+    PAID = "PAID"
 
 
 class PaymentMethod(enum.Enum):

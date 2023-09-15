@@ -16,25 +16,13 @@ class PaymentTab(BaseModel):
     send_commissions: float
 
 
-class Payment(BaseModel):
+class PaymentTabData(BaseModel):
     job_id: int
     job_uuid: str
     job_name: str
     job_payment: int
-    status: s.enums.PaymentStatus
+    status: s.enums.PaymentStatus | s.enums.CommissionStatus
 
 
-class Commission(BaseModel):
-    job_id: int
-    job_uuid: str
-    job_name: str
-    job_commission: int
-    status: s.enums.PaymentStatus
-
-
-class PaymentList(BaseModel):
-    payments: list[Payment]
-
-
-class CommissionList(BaseModel):
-    commissions: list[Commission]
+class PaymentTabOutList(BaseModel):
+    data: list[PaymentTabData]

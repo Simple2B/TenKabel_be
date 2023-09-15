@@ -183,23 +183,35 @@ def test_signup(
     response = client.get(
         f"api/auth/user/pre-validate?field=email&value={test_data.test_user.email}",
     )
-    assert json.loads(response.text) == {"isExist": True, "message": "User already exist"}
+    assert json.loads(response.text) == {
+        "isExist": True,
+        "message": "User already exist",
+    }
     # pre-validating user exist
     response = client.get(
         f"api/auth/user/pre-validate?field=phone&value={test_data.test_user.phone}",
     )
-    assert json.loads(response.text) == {"isExist": True, "message": "User already exist"}
+    assert json.loads(response.text) == {
+        "isExist": True,
+        "message": "User already exist",
+    }
 
     # pre-validating user not exist
     response = client.get(
         "api/auth/user/pre-validate?field=phone&value=123456",
     )
-    assert json.loads(response.text) == {"isExist": False, "message": "User doesn't exist"}
+    assert json.loads(response.text) == {
+        "isExist": False,
+        "message": "User doesn't exist",
+    }
 
     response = client.get(
         "api/auth/user/pre-validate?field=phone&value=123456",
     )
-    assert json.loads(response.text) == {"isExist": False, "message": "User doesn't exist"}
+    assert json.loads(response.text) == {
+        "isExist": False,
+        "message": "User doesn't exist",
+    }
 
     response = client.get(
         "api/auth/user/pre-validate?field=SOME_BAD_FIELD&value=123456",
@@ -802,3 +814,58 @@ def test_delete_user(
 
     assert response.status_code == status.HTTP_409_CONFLICT
     assert not user.is_deleted
+
+
+def test_payments_tab(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+    faker,
+):
+    create_professions(db)
+    create_locations(db)
+
+    user: m.User = db.scalar(
+        select(m.User).where(
+            m.User.username == test_data.test_authorized_users[0].username
+        )
+    )
+    create_jobs_for_user(db, user.id, 15)
+
+    response = client.get(
+        "api/users/payments-tab",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.PaymentTab.parse_obj(response.json())
+    total_earnings: float = sum(
+        db.scalars(
+            select(m.Job.payment).where(
+                and_(
+                    m.Job.worker_id == user.id,
+                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                )
+            )
+        ).all()
+    )
+    assert total_earnings == resp_obj.total_earnings
+
+    response = client.get(
+        "api/users/additional-info-payments",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+        params={
+            "tab_type": s.enums.PaymentsTab.PAYMENT.value,
+            "additional_info_tab": s.AdditionalInfoTab.UNPAID.value,
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+    resp_obj = s.PaymentTabOutList.parse_obj(response.json())
+
+    assert resp_obj
+    for payment_data in resp_obj.data:
+        assert db.scalar(select(m.Job.name).where(m.Job.id == payment_data.job_id)) == (
+            payment_data.job_name
+        )

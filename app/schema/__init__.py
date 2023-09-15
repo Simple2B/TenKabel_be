@@ -35,6 +35,8 @@ from .enums import (
     CommissionStatus,
     PaymentMethod,
     AttachmentType,
+    PaymentsTab,
+    AdditionalInfoTab,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
@@ -63,8 +65,6 @@ from .attachment import AttachmentIn, AttachmentOut
 from .file import FileOut
 from .payments import (
     PaymentTab,
-    Payment,
-    Commission,
-    PaymentList,
-    CommissionList,
+    PaymentTabData,
+    PaymentTabOutList,
 )
