@@ -224,6 +224,112 @@ def change_password(
 
 
 @user_router.get(
+    "/payments-tab",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentTab,
+)
+def get_user_payments_tab(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
+):
+    # TODO: check for payment currency
+    total_earnings: float = sum(
+        db.scalars(
+            select(m.Job.payment).where(
+                and_(
+                    m.Job.worker_id == current_user.id,
+                    m.Job.payment_status == s.enums.PaymentStatus.PAID,
+                )
+            )
+        ).all()
+    )
+    unpaid_payments, unpaid_commissions = 0, 0
+    approve_payments, approve_commissions = 0, 0
+    for job in current_user.jobs_to_do:
+        if job.payment_status == s.enums.PaymentStatus.UNPAID:
+            unpaid_payments += job.payment
+        elif job.payment_status == s.enums.PaymentStatus.REQUESTED:
+            approve_payments += job.payment
+        if job.commission_status == s.enums.CommissionStatus.REQUESTED:
+            approve_commissions += job.commission
+        elif job.commission_status == s.enums.CommissionStatus.UNPAID:
+            unpaid_commissions += job.commission
+
+    send_payments, send_commissions = 0, 0
+    for job in current_user.jobs_owned:
+        if job.payment_status == s.enums.PaymentStatus.REQUESTED:
+            send_payments += job.payment
+        if job.commission_status == s.enums.CommissionStatus.REQUESTED:
+            send_commissions += job.commission
+
+    return s.PaymentTab(
+        total_earnings=total_earnings,
+        unpaid_commissions=unpaid_commissions,
+        unpaid_payments=unpaid_payments,
+        approve_commissions=approve_commissions,
+        approve_payments=approve_payments,
+        send_commissions=send_commissions,
+        send_payments=send_payments,
+    )
+
+
+@user_router.get(
+    "/additional-info-payments",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentTabOutList,
+)
+def get_user_payments(
+    tab_type: s.PaymentsTab,
+    additional_info_tab: s.enums.AdditionalInfoTab,
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+):
+    if tab_type == s.enums.PaymentsTab.PAYMENT:
+        status_field = "payment_status"
+    elif tab_type == s.enums.PaymentsTab.COMMISSION:
+        status_field = "commission_status"
+
+    if additional_info_tab == s.enums.AdditionalInfoTab.UNPAID:
+        query = select(m.Job).where(
+            and_(
+                m.Job.worker_id == current_user.id,
+                getattr(m.Job, status_field) == s.enums.PaymentStatus.UNPAID,
+            )
+        )
+
+    elif additional_info_tab == s.enums.AdditionalInfoTab.APPROVE:
+        query = select(m.Job).where(
+            and_(
+                m.Job.worker_id == current_user.id,
+                getattr(m.Job, status_field) == s.enums.PaymentStatus.REQUESTED,
+            )
+        )
+
+    elif additional_info_tab == s.enums.AdditionalInfoTab.SEND:
+        query = select(m.Job).where(
+            and_(
+                m.Job.owner_id == current_user.id,
+                getattr(m.Job, status_field) == s.enums.PaymentStatus.REQUESTED,
+            )
+        )
+
+    data: list[m.Job] = db.scalars(query).all()
+    return s.PaymentTabOutList(
+        data=[
+            s.PaymentTabData(
+                job_id=job.id,
+                job_uuid=job.uuid,
+                job_name=job.name,
+                job_payment=job.payment,
+                status=getattr(job, status_field),
+            )
+            for job in data
+        ]
+    )
+
+
+@user_router.get(
     "/applications", status_code=status.HTTP_200_OK, response_model=s.ApplicationList
 )
 def get_user_applications(

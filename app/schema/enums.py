@@ -28,9 +28,23 @@ class NotificationType(IndexableStringEnum):
 
 
 # Job
+class PaymentsTab(enum.Enum):
+    PAYMENT = "PAYMENT"
+    COMMISSION = "COMMISSION"
+
+
+class AdditionalInfoTab(enum.Enum):
+    UNPAID = "UNPAID"
+    APPROVE = "APPROVE"
+    SEND = "SEND"
+
+
 class PaymentStatus(enum.Enum):
-    PAID = "paid"
-    UNPAID = "unpaid"
+    REQUESTED = "REQUESTED"
+    UNPAID = "UNPAID"
+    DENY = "DENY"
+    CONFIRM = "CONFIRM"
+    PAID = "PAID"
 
 
 class PaymentMethod(enum.Enum):
