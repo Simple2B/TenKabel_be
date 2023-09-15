@@ -40,7 +40,6 @@ class AdditionalInfoTab(enum.Enum):
 
 
 class PaymentStatus(enum.Enum):
-    # TODO: alembic revision
     REQUESTED = "REQUESTED"
     UNPAID = "UNPAID"
     DENY = "DENY"

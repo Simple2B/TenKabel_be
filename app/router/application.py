@@ -160,7 +160,7 @@ def update_application(
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
         job.worker_id = application.worker_id
-        job.status = s.enums.JobStatus.IN_PROGRESS
+        job.status = s.enums.JobStatus.APPROVED
         create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED
@@ -268,7 +268,7 @@ def patch_application(
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
         job.worker_id = application.worker_id
-        job.status = s.enums.JobStatus.IN_PROGRESS
+        job.status = s.enums.JobStatus.APPROVED
         create_application_payments(db, application)
         log(log.INFO, "Job [%s] status updated", job.id)
         notification_type = s.NotificationType.APPLICATION_ACCEPTED

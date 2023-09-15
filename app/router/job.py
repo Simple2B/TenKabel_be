@@ -278,6 +278,7 @@ def patch_job(
         handle_job_payment_notification(current_user, job, db, initial_job)
 
     if job_data.commission_status != job.commission_status:
+        # TODO: recheck this logic
         try:
             if s.enums.CommissionStatus.get_index(
                 job_data.commission_status
