@@ -259,7 +259,6 @@ def create_jobs_for_user(
     for job in created_jobs:
         # job status can't be pending with existing worker
         if job.worker_id and job.status == s.enums.JobStatus.PENDING:
-            # TODO: jobs with pending status not creating
             job.worker_id = None
         # job progress cant exist with no worker
         elif not job.worker_id and job.status != s.enums.JobStatus.PENDING:

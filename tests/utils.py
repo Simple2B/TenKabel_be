@@ -64,7 +64,4 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
             )
         )
 
-        # TODO
-        # professions and locations for this users !!!
-
     db.commit()

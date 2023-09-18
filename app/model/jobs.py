@@ -81,6 +81,39 @@ class Job(db.Model):
         sa.DateTime, default=datetime.utcnow
     )
 
+    # timestamps of status changes
+    # job progress screen
+    pending_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True, default=datetime.utcnow
+    )  # could be application changed_at
+    approved_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
+    in_progress_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
+    job_is_finished_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+    # payment screen
+    # TODO: find why does design have 2 different payment screens
+    payment_unpaid_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )  # could be self.created_at
+    payment_paid_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+
+    # commission screen
+    commission_sent_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+    commission_confirmation_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+    commission_denied_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+    commission_approved_at: orm.Mapped[datetime] = orm.mapped_column(
+        sa.DateTime, nullable=True
+    )
+
     # relationships
     applications: orm.Mapped[list[Application]] = orm.relationship(
         "Application", viewonly=True, backref="job"
@@ -113,6 +146,39 @@ class Job(db.Model):
 
     def __repr__(self):
         return f"<{self.id}: {self.name}>"
+
+    def set_enum(
+        self, enum: s.enums.JobStatus | s.enums.PaymentStatus | s.enums.CommissionStatus
+    ):
+        if isinstance(enum, s.enums.JobStatus):
+            if enum == s.enums.JobStatus.APPROVED:
+                self.approved_at = datetime.utcnow()
+            elif enum == s.enums.JobStatus.IN_PROGRESS:
+                self.in_progress_at = datetime.utcnow()
+            elif enum == s.enums.JobStatus.JOB_IS_FINISHED:
+                self.job_is_finished_at = datetime.utcnow()
+            self.status = enum
+        elif isinstance(enum, s.enums.PaymentStatus):
+            if enum == s.enums.PaymentStatus.PAID:
+                self.payment_paid_at = datetime.utcnow()
+            elif enum == s.enums.PaymentStatus.UNPAID:
+                self.payment_unpaid_at = datetime.utcnow()
+            # recheck design
+            # elif enum == s.enums.PaymentStatus.DENY:
+            #     self.payment_denied_at = datetime.utcnow()
+            self.payment_status = enum
+        elif isinstance(enum, s.enums.CommissionStatus):
+            if enum == s.enums.CommissionStatus.PAID:
+                self.commission_sent_at = datetime.utcnow()
+            elif enum == s.enums.CommissionStatus.UNPAID:
+                self.commission_confirmation_at = datetime.utcnow()
+            elif enum == s.enums.CommissionStatus.DENY:
+                self.commission_denied_at = datetime.utcnow()
+            elif enum == s.enums.CommissionStatus.CONFIRM:
+                self.commission_approved_at = datetime.utcnow()
+            self.commission_status = enum
+        else:
+            raise TypeError(f"Enum {enum} is not supported")
 
     @property
     def owner_rate_uuid(self) -> str | None:
