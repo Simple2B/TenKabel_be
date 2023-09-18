@@ -18,8 +18,6 @@ options_router = APIRouter(prefix="/options", tags=["Options"])
 )
 def get_max_min_price(
     db: Session = Depends(get_db),
-    min_selected: int = None,
-    max_selected: int = None,
     regions: Annotated[list[str] | None, Query()] = None,
     category: Annotated[str | None, Query()] = None,
 ):
@@ -47,10 +45,9 @@ def get_max_min_price(
         result.min_price,
         regions,
     )
-    # if min_selected and min_selected > result.min_price:
-    #     result.min_price = min_selected
-    # if max_selected and max_selected < result.max_price:
-    #     result.max_price = max_selected
+    # handling extra logic when min price is greater than max price
+    if result.min_price > result.max_price:
+        result.min_price, result.max_price = result.max_price, result.min_price
 
     return s.PriceOption(
         max_price=result.max_price,
