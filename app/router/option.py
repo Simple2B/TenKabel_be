@@ -46,8 +46,9 @@ def get_max_min_price(
         regions,
     )
     # handling extra logic when min price is greater than max price
-    if result.min_price > result.max_price:
-        result.min_price, result.max_price = result.max_price, result.min_price
+    if result.min_price and result.max_price:
+        if result.min_price > result.max_price:
+            result.min_price, result.max_price = result.max_price, result.min_price
 
     return s.PriceOption(
         max_price=result.max_price,

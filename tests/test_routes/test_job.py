@@ -532,6 +532,13 @@ def test_create_jobs_options(
 ):
     create_professions(db)
     create_locations(db)
+    # test no jobs
+    response = client.get(
+        "api/options/price",
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+
     create_jobs(db)
     # getting mix or min job prices
     response = client.get("api/options/price")
