@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     PAY_PLUS_CASHIERS_ID: str = ""
     PAY_PLUS_PAYMENT_PAGE_ID: str = ""
     PAYPLUS_CURRENCY_CODE: str = "ILS"
+    PAY_PLUS_DISABLED: bool = False
 
     # GOOGLE
     GOOGLE_STORAGE_BUCKET_NAME: str = "tenkabel-dev"
