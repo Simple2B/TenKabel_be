@@ -185,6 +185,7 @@ def validate_charge_response(
         )
 
         platform_payment.status = s.enums.PlatformPaymentStatus.REJECTED
+        log(log.WARNING, "Fee rejected")
         db.commit()
 
     if response_data.get("results", {}).get("status") == "success":
@@ -210,10 +211,10 @@ def payplus_periodic_charge(
     except httpx.RequestError as e:
         log(
             log.ERROR,
-            "Error occured while charging for comissions:\n%s",
+            "Error occurred while charging for commissions:\n%s",
             e,
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Error occured while charging comission",
+            detail="Error occurred while charging commission",
         )
