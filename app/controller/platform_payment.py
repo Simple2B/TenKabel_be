@@ -8,7 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 import app.model as m
 import app.schema as s
 from app.logger import log
+from app.config import get_settings, Settings
 from .payplus import payplus_periodic_charge
+
+settings: Settings = get_settings()
 
 
 def create_platform_payment(
@@ -83,6 +86,15 @@ def create_platform_commission(
 def create_application_payments(db: Session, application: m.Application):
     user_ids = [application.worker_id, application.owner_id]
     for user_id in user_ids:
+        if settings.PAY_PLUS_DISABLED:
+            user = db.scalar(select(m.User).where(m.User.id == user_id))
+            if user.is_payment_method_invalid:
+                log(
+                    log.INFO,
+                    "User [%s] payment method is invalid, skipping payment creation due to payplus disabled",
+                    user_id,
+                )
+                continue
         platform_payment = create_platform_payment(
             db=db,
             user_id=user_id,
@@ -102,9 +114,7 @@ def create_application_payments(db: Session, application: m.Application):
 
 def collect_fee():
     from app.database import get_db
-    from app.config import get_settings
 
-    settings = get_settings()
     with get_db().__next__() as db:
         log(log.INFO, "Collecting fee")
 
