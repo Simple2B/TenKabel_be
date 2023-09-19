@@ -58,6 +58,7 @@ class CommissionStatus(IndexableStringEnum):
     DENY = "DENY"
     CONFIRM = "CONFIRM"
     PAID = "PAID"
+    SENT = "SENT"
 
 
 # Payplus
