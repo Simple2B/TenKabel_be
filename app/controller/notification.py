@@ -175,6 +175,7 @@ def handle_job_commission_notification(
         notification_type = s.NotificationType.COMMISSION_REQUESTED
 
     if not notification_type:
+        log(log.INFO, "Job [%i] commission status not changed", job.id)
         return
 
     notification: m.Notification = m.Notification(
@@ -185,6 +186,7 @@ def handle_job_commission_notification(
     db.add(notification)
 
     if not user.notification_job_status:
+        log(log.INFO, "User [%i] notification_job_status is disabled", user.id)
         return
 
     push_handler = PushHandler()

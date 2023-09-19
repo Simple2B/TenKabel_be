@@ -51,8 +51,8 @@ def manage_tab_controller(
                     and_(
                         m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
                         or_(
-                            m.Job.payment_status == s.enums.PaymentStatus.UNPAID,
-                            m.Job.commission_status == s.enums.CommissionStatus.UNPAID,
+                            ~(m.Job.payment_status == s.enums.PaymentStatus.PAID),
+                            ~(m.Job.commission_status == s.enums.CommissionStatus.PAID),
                         ),
                     ),
                 ),
