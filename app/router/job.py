@@ -347,12 +347,12 @@ def update_job(
         for location_id in job_data.regions:
             db.add(m.JobLocation(job_id=job.id, location_id=location_id))
 
-        if s.enums.CommissionStatus.get_index(
-            job_data.commission_status
-        ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
-            raise ValueDownGradeForbidden(
-                f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
-            )
+        # if s.enums.CommissionStatus.get_index(
+        #     job_data.commission_status
+        # ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
+        #     raise ValueDownGradeForbidden(
+        #         f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+        #     )
 
         job.payment_status = s.enums.PaymentStatus(job_data.payment_status)
         job.commission_status = s.enums.CommissionStatus(job_data.commission_status)
@@ -364,7 +364,7 @@ def update_job(
 
     handle_job_status_update_notification(current_user, job, db, initial_job)
     handle_job_payment_notification(current_user, job, db, initial_job)
-    handle_job_commission_notification(current_user, job, db, initial_job)
+    # handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()
