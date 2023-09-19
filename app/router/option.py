@@ -45,7 +45,7 @@ def get_max_min_price(
         result.max_price,
         result.min_price,
         regions,
-        category.name_en,
+        category.name_en if category else "None",
     )
     # handling extra logic when min price is greater than max price
     if result.min_price and result.max_price:
