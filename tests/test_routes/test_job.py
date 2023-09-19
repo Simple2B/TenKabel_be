@@ -532,6 +532,13 @@ def test_create_jobs_options(
 ):
     create_professions(db)
     create_locations(db)
+    # test no jobs
+    response = client.get(
+        "api/options/price",
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+
     create_jobs(db)
     # getting mix or min job prices
     response = client.get("api/options/price")
@@ -578,6 +585,28 @@ def test_create_jobs_options(
                 )
             )
         )
+        .order_by(m.Job.payment.asc())
+    )
+    assert smallest_price_job.payment == resp_data.min_price
+
+    # check for category filter
+    test_profession = db.scalar(select(m.Profession))
+    assert test_profession
+    response = client.get(f"api/options/price?category={test_profession.name_en}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+    assert resp_data.max_price >= resp_data.min_price
+
+    biggest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.profession_id == test_profession.id)
+        .order_by(m.Job.payment.desc())
+    )
+    assert biggest_price_job.payment == resp_data.max_price
+
+    smallest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.profession_id == test_profession.id)
         .order_by(m.Job.payment.asc())
     )
     assert smallest_price_job.payment == resp_data.min_price
