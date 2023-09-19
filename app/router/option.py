@@ -19,7 +19,7 @@ options_router = APIRouter(prefix="/options", tags=["Options"])
 def get_max_min_price(
     db: Session = Depends(get_db),
     regions: Annotated[list[str] | None, Query()] = None,
-    category: Annotated[str | None, Query()] = None,
+    category: str | None = Query(default=None),
 ):
     price_query = select(
         func.max(m.Job.payment).label("max_price"),
@@ -29,14 +29,15 @@ def get_max_min_price(
     if regions:
         for region in regions:
             filters.append(m.Job.regions.any(m.Location.name_en == region))
+        price_query = price_query.where(or_(*filters))
 
     if category:
         category = db.scalars(
             select(m.Profession).where(m.Profession.name_en == category)
         ).first()
         filters.append(m.Job.profession_id == category.id)
+        price_query = price_query.where(or_(*filters))
 
-    price_query = price_query.where(or_(*filters))
     result = db.execute(price_query).first()
     log(
         log.INFO,
