@@ -49,11 +49,11 @@ class PushHandler:
             log(log.INFO, "Notification sended")
             return {"status": "should be done"}
 
-        except FirebaseError:
-            log(log.ERROR, "Error while sending message")
+        except FirebaseError as e:
+            log(log.ERROR, "FirebaseError while sending message: \n %s", e)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="Error while sending message",
+                detail="FirebaseError while sending message",
             )
 
         except (ValueError, TypeError):

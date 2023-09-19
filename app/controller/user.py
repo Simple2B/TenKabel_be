@@ -48,6 +48,7 @@ def manage_tab_controller(
                 m.Job.is_deleted.is_(False),
                 or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    m.Job.status == s.enums.JobStatus.APPROVED,
                     and_(
                         m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
                         or_(
