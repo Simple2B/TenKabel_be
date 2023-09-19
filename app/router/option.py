@@ -20,6 +20,7 @@ def get_max_min_price(
     db: Session = Depends(get_db),
     regions: Annotated[list[str] | None, Query()] = None,
     category: str | None = Query(default=None),
+    user_uuid: str | None = Query(default=None),
 ):
     price_query = select(
         func.max(m.Job.payment).label("max_price"),
@@ -37,6 +38,10 @@ def get_max_min_price(
         ).first()
         filters.append(m.Job.profession_id == category.id)
         price_query = price_query.where(or_(*filters))
+
+    if user_uuid:
+        user_id = db.scalars(select(m.User.id).where(m.User.uuid == user_uuid)).first()
+        price_query = price_query.where(m.Job.owner_id != user_id)
 
     result = db.execute(price_query).first()
     log(
