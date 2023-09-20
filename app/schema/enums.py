@@ -41,6 +41,7 @@ class AdditionalInfoTab(enum.Enum):
 
 class PaymentStatus(IndexableStringEnum):
     REQUESTED = "REQUESTED"
+    SENT = "SENT"
     UNPAID = "UNPAID"
     DENY = "DENY"
     CONFIRM = "CONFIRM"
