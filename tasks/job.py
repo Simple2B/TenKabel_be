@@ -1,3 +1,5 @@
+import random
+
 from invoke import task
 from sqlalchemy import select
 from fastapi import status
@@ -76,6 +78,7 @@ def create_job(
 
     create_professions(db)
     create_locations(db)
+    locations = [location.id for location in db.scalars(select(m.Location)).all()]
 
     with TestClient(app) as client:
         profession_id: int = db.scalar(
@@ -89,12 +92,14 @@ def create_job(
             commission=10,
             who_pays=s.Job.WhoPays.ME,
             name=name,
+            is_asap=True,
             description=description,
             time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             customer_first_name="Mykola",
             customer_last_name="Černov",
             customer_phone="+380123456789",
             customer_street_address="Kyiv",
+            regions=[random.choice(locations)],
         )
         response = client.post(
             "/api/job",

@@ -1,4 +1,6 @@
 import enum
+from datetime import datetime
+
 from pydantic import BaseModel
 
 from .user import User
@@ -57,6 +59,11 @@ class Job(BaseJob):
     applications: list[ApplicationOut]
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
+
+    pending_at: datetime | None
+    approved_at: datetime | None
+    in_progress_at: datetime | None
+    job_is_finished_at: datetime | None
 
     attachments: list[AttachmentOut]
 
