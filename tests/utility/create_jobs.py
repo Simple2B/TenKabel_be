@@ -139,18 +139,17 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
             time=datetime.utcnow().strftime("%Y-%m-%d %H:%M"),
-            payment_status=random.choice([e for e in s.enums.PaymentStatus]),
-            commission_status=random.choice([e for e in s.enums.CommissionStatus]),
             who_pays=random.choice([e for e in s.Job.WhoPays]),
             customer_first_name=fake.first_name(),
             customer_last_name=fake.last_name(),
             customer_phone=fake.unique.phone_number(),
             customer_street_address=fake.address(),
         )
-
         db.add(job)
         created_jobs.append(job)
         db.flush()
+        job.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
+        job.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))
         for location in locations:
             job_location: m.JobLocation = m.JobLocation(
@@ -208,8 +207,6 @@ def create_jobs_for_user(
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
             time=datetime.now().strftime("%Y-%m-%d %H:%M"),
-            payment_status=random.choice([e for e in s.enums.PaymentStatus]),
-            commission_status=random.choice([e for e in s.enums.CommissionStatus]),
             who_pays=random.choice([e for e in s.Job.WhoPays]),
             customer_first_name=fake.first_name(),
             customer_last_name=fake.last_name(),
@@ -218,6 +215,8 @@ def create_jobs_for_user(
         )
         db.add(job1)
         db.flush()
+        job1.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
+        job1.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))
         for location in locations:
             job_location: m.JobLocation = m.JobLocation(
@@ -236,8 +235,6 @@ def create_jobs_for_user(
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
             time=datetime.now().strftime("%Y-%m-%d %H:%M"),
-            payment_status=random.choice([e for e in s.enums.PaymentStatus]),
-            commission_status=random.choice([e for e in s.enums.CommissionStatus]),
             who_pays=random.choice([e for e in s.Job.WhoPays]),
             customer_first_name=fake.unique.first_name(),
             customer_last_name=fake.unique.last_name(),
@@ -246,7 +243,8 @@ def create_jobs_for_user(
         )
         db.add(job2)
         db.flush()
-
+        job2.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
+        job2.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))
         for location in locations:
             job_location: m.JobLocation = m.JobLocation(

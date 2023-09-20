@@ -254,11 +254,12 @@ def test_search_job(
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
+
     assert all(
         [
             job.regions[0].name_en in [region.name_en for region in resp_job.regions]
             or job.regions[0].name_en in resp_job.city
-            or job.regions[0].name_en in resp_job.description
+            or job.regions[0].name_en.lower() in resp_job.description.lower()
             or job.regions[0].name_en in resp_job.name
             for resp_job in response_jobs_list.jobs
         ]
