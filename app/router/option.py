@@ -1,7 +1,7 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, status, Query
-from sqlalchemy import select, func, or_
+from sqlalchemy import select, func, or_, and_
 from sqlalchemy.orm import Session
 
 import app.model as m
@@ -25,7 +25,12 @@ def get_max_min_price(
     price_query = select(
         func.max(m.Job.payment).label("max_price"),
         func.min(m.Job.payment).label("min_price"),
-    ).where(m.Job.is_deleted.is_(False))
+    ).where(
+        and_(
+            m.Job.is_deleted.is_(False),
+            m.Job.status == s.enums.JobStatus.PENDING,
+        )
+    )
     filters = []
     if regions:
         for region in regions:
