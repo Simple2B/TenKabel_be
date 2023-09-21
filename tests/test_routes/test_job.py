@@ -578,10 +578,18 @@ def test_create_jobs_options(
     resp_data = s.PriceOption.parse_obj(response.json())
     assert resp_data.max_price >= resp_data.min_price
 
-    biggest_price_job: m.Job = db.scalar(select(m.Job).order_by(m.Job.payment.desc()))
+    biggest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.status == s.enums.JobStatus.PENDING)
+        .order_by(m.Job.payment.desc())
+    )
     assert biggest_price_job.payment == resp_data.max_price
 
-    smallest_price_job: m.Job = db.scalar(select(m.Job).order_by(m.Job.payment.asc()))
+    smallest_price_job: m.Job = db.scalar(
+        select(m.Job)
+        .where(m.Job.status == s.enums.JobStatus.PENDING)
+        .order_by(m.Job.payment.asc())
+    )
     assert smallest_price_job.payment == resp_data.min_price
 
     # check for region filter
@@ -598,10 +606,14 @@ def test_create_jobs_options(
     biggest_price_job: m.Job = db.scalar(
         select(m.Job)
         .where(
-            m.Job.regions.any(
-                or_(
-                    m.Location.name_en == tl1.name_en, m.Location.name_en == tl2.name_en
-                )
+            and_(
+                m.Job.regions.any(
+                    or_(
+                        m.Location.name_en == tl1.name_en,
+                        m.Location.name_en == tl2.name_en,
+                    )
+                ),
+                m.Job.status == s.enums.JobStatus.PENDING,
             )
         )
         .order_by(m.Job.payment.desc())
@@ -612,8 +624,12 @@ def test_create_jobs_options(
         select(m.Job)
         .where(
             m.Job.regions.any(
-                or_(
-                    m.Location.name_en == tl1.name_en, m.Location.name_en == tl2.name_en
+                and_(
+                    or_(
+                        m.Location.name_en == tl1.name_en,
+                        m.Location.name_en == tl2.name_en,
+                    ),
+                    m.Job.status == s.enums.JobStatus.PENDING,
                 )
             )
         )
@@ -631,14 +647,24 @@ def test_create_jobs_options(
 
     biggest_price_job: m.Job = db.scalar(
         select(m.Job)
-        .where(m.Job.profession_id == test_profession.id)
+        .where(
+            and_(
+                m.Job.profession_id == test_profession.id,
+                m.Job.status == s.enums.JobStatus.PENDING,
+            )
+        )
         .order_by(m.Job.payment.desc())
     )
     assert biggest_price_job.payment == resp_data.max_price
 
     smallest_price_job: m.Job = db.scalar(
         select(m.Job)
-        .where(m.Job.profession_id == test_profession.id)
+        .where(
+            and_(
+                m.Job.profession_id == test_profession.id,
+                m.Job.status == s.enums.JobStatus.PENDING,
+            )
+        )
         .order_by(m.Job.payment.asc())
     )
     assert smallest_price_job.payment == resp_data.min_price
