@@ -88,6 +88,37 @@ def test_auth_user_jobs(
         )
         assert job.owner_id != user.id
 
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.owner_id == user.id))
+    response = client.get(
+        f"api/jobs/{job.uuid}/payments",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.PaymentList = s.PaymentList.parse_obj(response.json())
+    assert len(resp_obj.payments) > 0
+
+    response = client.get(
+        f"api/jobs/{job.uuid}/commissions",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.CommissionList = s.CommissionList.parse_obj(response.json())
+    assert len(resp_obj.commissions) > 0
+
+    response = client.get(
+        f"api/jobs/{job.uuid}/statuses",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.JobStatusList = s.JobStatusList.parse_obj(response.json())
+    assert len(resp_obj.statuses) > 0
+
 
 def test_unauth_user_jobs(
     client: TestClient,

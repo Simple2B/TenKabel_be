@@ -180,6 +180,7 @@ def create_job(
         new_job.set_enum(s.enums.CommissionStatus.UNPAID, db)
 
     new_job.set_enum(s.enums.PaymentStatus.UNPAID, db)
+    new_job.set_enum(s.enums.JobStatus.PENDING, db)
 
     job_locations: list[m.JobLocation] = [
         location
@@ -450,3 +451,48 @@ def delete_job(
 
     log(log.INFO, "Job [%s] deleted successfully", job.name)
     return job
+
+
+@job_router.get(
+    "/{job_uuid}/payments",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentList,
+)
+def get_job_payments(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    payments: s.PaymentList = s.PaymentList(payments=job.payments)
+    log(log.INFO, "Job [%s] payments got - [%s]", job.name, payments.payments)
+    return payments
+
+
+@job_router.get(
+    "/{job_uuid}/commissions",
+    status_code=status.HTTP_200_OK,
+    response_model=s.CommissionList,
+)
+def get_job_commissions(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    commissions: s.CommissionList = s.CommissionList(commissions=job.commissions)
+    log(log.INFO, "Job [%s] commissions got - [%s]", job.name, commissions.commissions)
+    return commissions
+
+
+@job_router.get(
+    "/{job_uuid}/statuses",
+    status_code=status.HTTP_200_OK,
+    response_model=s.JobStatusList,
+)
+def get_job_statuses(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    statuses: s.JobStatusList = s.JobStatusList(statuses=job.statuses)
+    log(log.INFO, "Job [%s] statuses got - [%s]", job.name, statuses.statuses)
+    return statuses

@@ -114,7 +114,6 @@ TEST_LOCATIONS = [
 
 def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()]
-    statuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     profession_ids = [
         profession.id for profession in db.scalars(select(m.Profession)).all()
     ]
@@ -134,7 +133,6 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.unique.sentence(),
-            status=random.choice(statuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
@@ -148,6 +146,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         db.add(job)
         created_jobs.append(job)
         db.flush()
+        job.set_enum(random.choice([e for e in s.enums.JobStatus]), db)
         job.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
         job.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))
@@ -176,7 +175,6 @@ def create_jobs_for_user(
     test_jobs_num: int = TEST_USER_JOBS_NUM,
     logs_off: bool = False,
 ):
-    statuses = [e for e in s.enums.JobStatus if e != s.enums.JobStatus.APPROVED]
     user = db.scalar(select(m.User).where(m.User.id == user_id))
     if not user:
         log(log.INFO, "User with id [%s] doesn't exist", user_id)
@@ -202,7 +200,6 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice(statuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
@@ -215,6 +212,7 @@ def create_jobs_for_user(
         )
         db.add(job1)
         db.flush()
+        job1.set_enum(random.choice([e for e in s.enums.JobStatus]), db)
         job1.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
         job1.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))
@@ -230,7 +228,6 @@ def create_jobs_for_user(
             profession_id=random.choice(profession_ids),
             name=random.choice(JOBS_LIST),
             description=fake.sentence(),
-            status=random.choice(statuses),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
             city=random.choice(TEST_REGIONS),
@@ -243,6 +240,7 @@ def create_jobs_for_user(
         )
         db.add(job2)
         db.flush()
+        job2.set_enum(random.choice([e for e in s.enums.JobStatus]), db)
         job2.set_enum(random.choice([e for e in s.enums.PaymentStatus]), db)
         job2.set_enum(random.choice([e for e in s.enums.CommissionStatus]), db)
         locations = random.sample(locations_ids, random.randint(1, 3))

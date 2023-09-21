@@ -16,7 +16,17 @@ from .user import (
 from .token import Token, TokenData, PreValidate
 from .profession import BaseProfession, Profession, ProfessionList
 from .location import BaseLocation, Location, LocationList
-from .job import BaseJob, Job, ListJob, JobIn, JobUpdate, JobPatch
+from .job import (
+    BaseJob,
+    Job,
+    ListJob,
+    JobIn,
+    JobUpdate,
+    JobPatch,
+    PaymentList,
+    CommissionList,
+    JobStatusList,
+)
 from .pagination import Pagination
 from .rate import BaseRate, Rate, RateList, RatePatch
 from .application import (
