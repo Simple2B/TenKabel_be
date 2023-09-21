@@ -13,6 +13,7 @@ from app.model.applications import Application
 from .job_location import jobs_locations
 from .payment import Payment
 from .commission import Commission
+from .job_status import JobStatus
 from .location import Location
 from .platform_commission import PlatformCommission
 
@@ -89,38 +90,9 @@ class Job(db.Model):
         sa.DateTime, default=datetime.utcnow
     )
 
-    # timestamps of status changes
-    # job progress screen
-    pending_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True, default=datetime.utcnow
-    )  # could be application changed_at
-    approved_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
-    in_progress_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
-    job_is_finished_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-    # payment screen
-    # payment_unpaid_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )  # could be self.created_at
-    # payment_paid_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )
     payments: orm.Mapped[list["Payment"]] = orm.relationship()
     commissions: orm.Mapped[list["Commission"]] = orm.relationship()
-    # commission screen
-    # commission_sent_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )
-    # commission_confirmation_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )
-    # commission_denied_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )
-    # commission_approved_at: orm.Mapped[datetime] = orm.mapped_column(
-    #     sa.DateTime, nullable=True
-    # )
+    statuses: orm.Mapped[list["JobStatus"]] = orm.relationship()
 
     # relationships
     applications: orm.Mapped[list["Application"]] = orm.relationship(
@@ -161,13 +133,9 @@ class Job(db.Model):
         db: orm.Session,
     ):
         if isinstance(enum, s.enums.JobStatus):
-            if enum == s.enums.JobStatus.APPROVED:
-                self.approved_at = datetime.utcnow()
-            elif enum == s.enums.JobStatus.IN_PROGRESS:
-                self.in_progress_at = datetime.utcnow()
-            elif enum == s.enums.JobStatus.JOB_IS_FINISHED:
-                self.job_is_finished_at = datetime.utcnow()
+            job_status = JobStatus(job_id=self.id, status=enum)
             self.status = enum
+            db.add(job_status)
 
         elif isinstance(enum, s.enums.PaymentStatus):
             payment = Payment(job_id=self.id, payment_status=enum)

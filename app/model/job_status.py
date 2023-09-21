@@ -7,8 +7,8 @@ from app.utility import generate_uuid
 from app import schema as s
 
 
-class Commission(db.Model):
-    __tablename__ = "commissions"
+class JobStatus(db.Model):
+    __tablename__ = "job_statuses"
 
     id: orm.Mapped[int] = orm.mapped_column(sa.Integer, primary_key=True)
     uuid: orm.Mapped[str] = orm.mapped_column(
@@ -21,8 +21,8 @@ class Commission(db.Model):
     job_id: orm.Mapped[int] = orm.mapped_column(
         sa.ForeignKey("jobs.id"), nullable=False
     )
-    commission_status: orm.Mapped[s.enums.CommissionStatus] = orm.mapped_column(
-        sa.Enum(s.enums.CommissionStatus), default=s.enums.CommissionStatus.UNPAID
+    status: orm.Mapped[s.enums.JobStatus] = orm.mapped_column(
+        sa.Enum(s.enums.JobStatus), default=s.enums.JobStatus.PENDING
     )
 
     created_at: orm.Mapped[datetime] = orm.mapped_column(
