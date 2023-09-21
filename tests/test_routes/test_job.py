@@ -571,7 +571,7 @@ def test_create_jobs_options(
     assert response.status_code == status.HTTP_200_OK
     resp_data = s.PriceOption.parse_obj(response.json())
 
-    create_jobs(db)
+    create_jobs(db, 300)
     # getting mix or min job prices
     response = client.get("api/options/price")
     assert response.status_code == status.HTTP_200_OK
