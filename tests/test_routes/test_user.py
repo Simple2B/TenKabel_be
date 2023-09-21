@@ -488,6 +488,7 @@ def test_get_user_profile(
                 m.Job.is_deleted.is_(False),
                 or_(
                     m.Job.status == s.enums.JobStatus.IN_PROGRESS,
+                    m.Job.status == s.enums.JobStatus.APPROVED,
                     and_(
                         m.Job.status == s.enums.JobStatus.JOB_IS_FINISHED,
                         or_(
@@ -509,6 +510,7 @@ def test_get_user_profile(
         assert job.status in (
             s.enums.JobStatus.IN_PROGRESS.value,
             s.enums.JobStatus.JOB_IS_FINISHED,
+            s.enums.JobStatus.APPROVED,
         )
         # assert (
         #     job.payment_status == s.enums.PaymentStatus.UNPAID.value
