@@ -39,7 +39,7 @@ class AdditionalInfoTab(enum.Enum):
     SEND = "SEND"
 
 
-class PaymentStatus(enum.Enum):
+class PaymentStatus(IndexableStringEnum):
     REQUESTED = "REQUESTED"
     SENT = "SENT"
     UNPAID = "UNPAID"

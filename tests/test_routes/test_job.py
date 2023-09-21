@@ -88,6 +88,37 @@ def test_auth_user_jobs(
         )
         assert job.owner_id != user.id
 
+    job: m.Job = db.scalar(select(m.Job).where(m.Job.owner_id == user.id))
+    response = client.get(
+        f"api/jobs/{job.uuid}/payments",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.PaymentList = s.PaymentList.parse_obj(response.json())
+    assert len(resp_obj.payments) > 0
+
+    response = client.get(
+        f"api/jobs/{job.uuid}/commissions",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.CommissionList = s.CommissionList.parse_obj(response.json())
+    assert len(resp_obj.commissions) > 0
+
+    response = client.get(
+        f"api/jobs/{job.uuid}/statuses",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.JobStatusList = s.JobStatusList.parse_obj(response.json())
+    assert len(resp_obj.statuses) > 0
+
 
 def test_unauth_user_jobs(
     client: TestClient,
@@ -254,11 +285,12 @@ def test_search_job(
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJob.parse_obj(response.json())
     assert len(response_jobs_list.jobs) > 0
+
     assert all(
         [
             job.regions[0].name_en in [region.name_en for region in resp_job.regions]
             or job.regions[0].name_en in resp_job.city
-            or job.regions[0].name_en in resp_job.description
+            or job.regions[0].name_en.lower() in resp_job.description.lower()
             or job.regions[0].name_en in resp_job.name
             for resp_job in response_jobs_list.jobs
         ]
@@ -539,7 +571,7 @@ def test_create_jobs_options(
     assert response.status_code == status.HTTP_200_OK
     resp_data = s.PriceOption.parse_obj(response.json())
 
-    create_jobs(db)
+    create_jobs(db, 300)
     # getting mix or min job prices
     response = client.get("api/options/price")
     assert response.status_code == status.HTTP_200_OK

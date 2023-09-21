@@ -20,5 +20,8 @@ from .platform_commission import PlatformCommission
 from .platform_payment import PlatformPayment
 from .attachment import Attachment
 from .file import File
+from .commission import Commission
+from .payment import Payment
+
 
 from app.database import db

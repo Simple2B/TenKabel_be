@@ -1,17 +1,26 @@
 from datetime import datetime
+from typing import TYPE_CHECKING
+
 import sqlalchemy as sa
 from sqlalchemy import orm
+
 
 from app.database import db
 from app.exceptions import ValueDownGradeForbidden
 from app.utility import generate_uuid
 from app import schema as s
-from app import model as m
 from app.model.applications import Application
-from .platform_commission import PlatformCommission
-from .attachment import Attachment
 from .job_location import jobs_locations
+from .payment import Payment
+from .commission import Commission
+from .job_status import JobStatus
 from .location import Location
+from .platform_commission import PlatformCommission
+
+if TYPE_CHECKING:
+    from .attachment import Attachment
+    from .profession import Profession
+    from .user import User
 
 
 class Job(db.Model):
@@ -81,47 +90,18 @@ class Job(db.Model):
         sa.DateTime, default=datetime.utcnow
     )
 
-    # timestamps of status changes
-    # job progress screen
-    pending_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True, default=datetime.utcnow
-    )  # could be application changed_at
-    approved_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
-    in_progress_at: orm.Mapped[datetime] = orm.mapped_column(sa.DateTime, nullable=True)
-    job_is_finished_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-    # payment screen
-    # TODO: find why does design have 2 different payment screens
-    payment_unpaid_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )  # could be self.created_at
-    payment_paid_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-
-    # commission screen
-    commission_sent_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-    commission_confirmation_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-    commission_denied_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
-    commission_approved_at: orm.Mapped[datetime] = orm.mapped_column(
-        sa.DateTime, nullable=True
-    )
+    payments: orm.Mapped[list["Payment"]] = orm.relationship()
+    commissions: orm.Mapped[list["Commission"]] = orm.relationship()
+    statuses: orm.Mapped[list["JobStatus"]] = orm.relationship()
 
     # relationships
-    applications: orm.Mapped[list[Application]] = orm.relationship(
+    applications: orm.Mapped[list["Application"]] = orm.relationship(
         "Application", viewonly=True, backref="job"
     )
-    worker: orm.Mapped[m.User] = orm.relationship(
+    worker: orm.Mapped["User"] = orm.relationship(
         "User", foreign_keys=[worker_id], viewonly=True, backref="jobs_to_do"
     )
-    owner: orm.Mapped[m.User] = orm.relationship(
+    owner: orm.Mapped["User"] = orm.relationship(
         "User", foreign_keys=[owner_id], viewonly=True, backref="jobs_owned"
     )
 
@@ -139,8 +119,8 @@ class Job(db.Model):
         "PlatformCommission", backref="job"
     )
 
-    profession: orm.Mapped[m.Profession] = orm.relationship("Profession", viewonly=True)
-    attachments: orm.Mapped[list[Attachment]] = orm.relationship(
+    profession: orm.Mapped["Profession"] = orm.relationship("Profession", viewonly=True)
+    attachments: orm.Mapped[list["Attachment"]] = orm.relationship(
         "Attachment", backref="job"
     )
 
@@ -148,35 +128,25 @@ class Job(db.Model):
         return f"<{self.id}: {self.name}>"
 
     def set_enum(
-        self, enum: s.enums.JobStatus | s.enums.PaymentStatus | s.enums.CommissionStatus
+        self,
+        enum: s.enums.JobStatus | s.enums.PaymentStatus | s.enums.CommissionStatus,
+        db: orm.Session,
     ):
         if isinstance(enum, s.enums.JobStatus):
-            if enum == s.enums.JobStatus.APPROVED:
-                self.approved_at = datetime.utcnow()
-            elif enum == s.enums.JobStatus.IN_PROGRESS:
-                self.in_progress_at = datetime.utcnow()
-            elif enum == s.enums.JobStatus.JOB_IS_FINISHED:
-                self.job_is_finished_at = datetime.utcnow()
+            job_status = JobStatus(job_id=self.id, status=enum)
             self.status = enum
+            db.add(job_status)
+
         elif isinstance(enum, s.enums.PaymentStatus):
-            if enum == s.enums.PaymentStatus.PAID:
-                self.payment_paid_at = datetime.utcnow()
-            elif enum == s.enums.PaymentStatus.UNPAID:
-                self.payment_unpaid_at = datetime.utcnow()
-            # recheck design
-            # elif enum == s.enums.PaymentStatus.DENY:
-            #     self.payment_denied_at = datetime.utcnow()
+            payment = Payment(job_id=self.id, payment_status=enum)
             self.payment_status = enum
+            db.add(payment)
+
         elif isinstance(enum, s.enums.CommissionStatus):
-            if enum == s.enums.CommissionStatus.PAID:
-                self.commission_sent_at = datetime.utcnow()
-            elif enum == s.enums.CommissionStatus.UNPAID:
-                self.commission_confirmation_at = datetime.utcnow()
-            elif enum == s.enums.CommissionStatus.DENY:
-                self.commission_denied_at = datetime.utcnow()
-            elif enum == s.enums.CommissionStatus.CONFIRM:
-                self.commission_approved_at = datetime.utcnow()
+            commission = Commission(job_id=self.id, commission_status=enum)
             self.commission_status = enum
+            db.add(commission)
+
         else:
             raise TypeError(f"Enum {enum} is not supported")
 
@@ -230,7 +200,7 @@ class Job(db.Model):
         return value
 
     @property
-    def owner_attachments(self) -> list[Attachment]:
+    def owner_attachments(self) -> list["Attachment"]:
         result = []
         for attachment in self.attachments:
             if attachment.created_by_id == self.owner_id:
@@ -238,7 +208,7 @@ class Job(db.Model):
         return result
 
     @property
-    def worker_attachments(self) -> list[Attachment]:
+    def worker_attachments(self) -> list["Attachment"]:
         result = []
         for attachment in self.attachments:
             if attachment.created_by_id == self.worker_id:

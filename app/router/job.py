@@ -172,10 +172,15 @@ def create_job(
         customer_street_address=data.customer_street_address,
     )
 
-    if new_job.who_pays == s.Job.WhoPays.ME:
-        new_job.set_enum(s.enums.CommissionStatus.PAID)
-
     db.add(new_job)
+    db.flush()
+    if new_job.who_pays == s.Job.WhoPays.ME:
+        new_job.set_enum(s.enums.CommissionStatus.PAID, db)
+    else:
+        new_job.set_enum(s.enums.CommissionStatus.UNPAID, db)
+
+    new_job.set_enum(s.enums.PaymentStatus.UNPAID, db)
+    new_job.set_enum(s.enums.JobStatus.PENDING, db)
 
     job_locations: list[m.JobLocation] = [
         location
@@ -270,12 +275,24 @@ def patch_job(
         )
 
     if job_data.status != job.status:
-        job.set_enum(s.enums.JobStatus(job_data.status))
+        job.set_enum(s.enums.JobStatus(job_data.status), db)
         handle_job_status_update_notification(current_user, job, db, initial_job)
 
     if job_data.payment_status != job.payment_status:
-        job.set_enum(s.enums.PaymentStatus(job_data.payment_status))
-        handle_job_payment_notification(current_user, job, db, initial_job)
+        try:
+            if s.enums.PaymentStatus.get_index(
+                job_data.payment_status
+            ) < s.enums.PaymentStatus.get_index(job.payment_status.value):
+                raise ValueDownGradeForbidden(
+                    f"Can't downgrade payment status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+                )
+            job.set_enum(s.enums.PaymentStatus(job_data.payment_status), db)
+            handle_job_payment_notification(current_user, job, db, initial_job)
+        except ValueDownGradeForbidden as e:
+            log(log.ERROR, "Error while patching job - %s", e)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Error patching job"
+            )
 
     if job_data.commission_status != job.commission_status:
         # TODO: recheck this logic
@@ -286,7 +303,7 @@ def patch_job(
                 raise ValueDownGradeForbidden(
                     f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
                 )
-            job.set_enum(s.enums.CommissionStatus(job_data.commission_status))
+            job.set_enum(s.enums.CommissionStatus(job_data.commission_status), db)
             handle_job_commission_notification(current_user, job, db, initial_job)
         except ValueDownGradeForbidden as e:
             log(log.ERROR, "Error while patching job [%i] - %s", job.id, e)
@@ -328,7 +345,7 @@ def update_job(
         job.customer_last_name = job_data.customer_last_name
         job.customer_phone = job_data.customer_phone
         job.customer_street_address = job_data.customer_street_address
-        job.set_enum(s.enums.JobStatus(job_data.status))
+        job.set_enum(s.enums.JobStatus(job_data.status), db)
         if job_data.file_uuids:
             attachment_in = s.AttachmentIn(
                 job_id=job.id, file_uuids=job_data.file_uuids
@@ -347,15 +364,22 @@ def update_job(
         for location_id in job_data.regions:
             db.add(m.JobLocation(job_id=job.id, location_id=location_id))
 
-        job.set_enum(s.enums.PaymentStatus(job_data.payment_status))
-        job.set_enum(s.enums.CommissionStatus(job_data.commission_status))
+        job.set_enum(s.enums.PaymentStatus(job_data.payment_status), db)
+        job.set_enum(s.enums.CommissionStatus(job_data.commission_status), db)
 
-        # if s.enums.CommissionStatus.get_index(
-        #     job_data.commission_status
-        # ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
-        #     raise ValueDownGradeForbidden(
-        #         f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
-        #     )
+        if s.enums.CommissionStatus.get_index(
+            job_data.commission_status
+        ) < s.enums.CommissionStatus.get_index(job.commission_status.value):
+            raise ValueDownGradeForbidden(
+                f"Can't downgrade commission status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+            )
+
+        if s.enums.PaymentStatus.get_index(
+            job_data.payment_status
+        ) < s.enums.PaymentStatus.get_index(job.payment_status.value):
+            raise ValueDownGradeForbidden(
+                f"Can't downgrade payment status from {job.commission_status} to {job_data.commission_status}"  # noqa E501
+            )
 
     except ValueDownGradeForbidden as e:
         log(log.ERROR, "Error while updating job [%i] - %s", job.id, e)
@@ -427,3 +451,48 @@ def delete_job(
 
     log(log.INFO, "Job [%s] deleted successfully", job.name)
     return job
+
+
+@job_router.get(
+    "/{job_uuid}/payments",
+    status_code=status.HTTP_200_OK,
+    response_model=s.PaymentList,
+)
+def get_job_payments(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    payments: s.PaymentList = s.PaymentList(payments=job.payments)
+    log(log.INFO, "Job [%s] payments got - [%s]", job.name, payments.payments)
+    return payments
+
+
+@job_router.get(
+    "/{job_uuid}/commissions",
+    status_code=status.HTTP_200_OK,
+    response_model=s.CommissionList,
+)
+def get_job_commissions(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    commissions: s.CommissionList = s.CommissionList(commissions=job.commissions)
+    log(log.INFO, "Job [%s] commissions got - [%s]", job.name, commissions.commissions)
+    return commissions
+
+
+@job_router.get(
+    "/{job_uuid}/statuses",
+    status_code=status.HTTP_200_OK,
+    response_model=s.JobStatusList,
+)
+def get_job_statuses(
+    db: Session = Depends(get_db),
+    current_user: m.User = Depends(get_current_user),
+    job: m.Job = Depends(get_job_by_uuid),
+):
+    statuses: s.JobStatusList = s.JobStatusList(statuses=job.statuses)
+    log(log.INFO, "Job [%s] statuses got - [%s]", job.name, statuses.statuses)
+    return statuses

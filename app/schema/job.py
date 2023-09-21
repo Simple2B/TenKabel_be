@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from .user import User
 from .profession import Profession
 from .application import ApplicationOut
-from .enums import JobStatus, PaymentStatus, CommissionStatus
+from .enums import JobStatus as Status, PaymentStatus, CommissionStatus
 from .platform_commission import PlatformCommission
 from .attachment import AttachmentOut
 from .location import Location
@@ -37,7 +37,7 @@ class Job(BaseJob):
         ARCHIVE = "archive"
 
     id: int
-    status: JobStatus
+    status: Status
     payment_status: PaymentStatus
     commission_status: CommissionStatus
     platform_commissions: list[PlatformCommission]
@@ -101,7 +101,7 @@ class JobIn(BaseModel):
 
 
 class JobUpdate(JobIn):
-    status: JobStatus
+    status: Status
     payment_status: PaymentStatus
     commission_status: CommissionStatus
 
@@ -123,9 +123,57 @@ class JobPatch(BaseModel):
     customer_last_name: str | None
     customer_phone: str | None
     customer_street_address: str | None
-    status: JobStatus | None
+    status: Status | None
     file_uuids: list[str] = []
 
     class Config:
         orm_mode = True
         use_enum_values = True
+
+
+class Payment(BaseModel):
+    id: int
+    job_id: int
+    uuid: str
+    payment_status: PaymentStatus
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class PaymentList(BaseModel):
+    payments: list[Payment]
+
+
+class Commission(BaseModel):
+    id: int
+    job_id: int
+    uuid: str
+    commission_status: CommissionStatus
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class CommissionList(BaseModel):
+    commissions: list[Commission]
+
+
+class JobStatus(BaseModel):
+    id: int
+    job_id: int
+    uuid: str
+    status: Status
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class JobStatusList(BaseModel):
+    statuses: list[JobStatus]
