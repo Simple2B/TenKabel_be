@@ -15,8 +15,8 @@ jobs:
       matrix:
         python-version: ["3.11"]
         poetry-version: [1.4.1]
-        os: [Linux]
-    runs-on: ${{ matrix.os }}
+        runner: [builder]
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v2
