@@ -21,6 +21,8 @@ def get_max_min_price(
     regions: Annotated[list[str] | None, Query()] = None,
     category: str | None = Query(default=None),
     user_uuid: str | None = Query(default=None),
+    min_selected: int | None = Query(default=None),
+    max_selected: int | None = Query(default=None),
 ):
     price_query = select(
         func.max(m.Job.payment).label("max_price"),
@@ -31,6 +33,12 @@ def get_max_min_price(
             m.Job.status == s.enums.JobStatus.PENDING,
         )
     )
+
+    if min_selected:
+        price_query = price_query.where(m.Job.payment >= min_selected)
+    if max_selected:
+        price_query = price_query.where(m.Job.payment <= max_selected)
+
     filters = []
     if regions:
         for region in regions:

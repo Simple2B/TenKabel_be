@@ -668,3 +668,33 @@ def test_create_jobs_options(
         .order_by(m.Job.payment.asc())
     )
     assert smallest_price_job.payment == resp_data.min_price
+
+
+def test_options_filtering(
+    client: TestClient,
+    db: Session,
+    faker,
+):
+    create_professions(db)
+    create_locations(db)
+    create_jobs(db, 200)
+
+    # querying for max and min price
+    response = client.get("api/options/price")
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+    assert resp_data.max_price >= resp_data.min_price
+
+    # querying for max and min price with min_price filter
+    response = client.get(f"api/options/price?min_price={resp_data.min_price}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
+    assert resp_data.max_price >= resp_data.min_price
+
+    # getting certain values for min and max price and categories and cities
+    PRICE_DELTA = 10
+    response = client.get(
+        f"api/options/price?min_price={resp_data.min_price +PRICE_DELTA}&max_price={resp_data.max_price - PRICE_DELTA}"
+    )
+    assert response.status_code == status.HTTP_200_OK
+    resp_data = s.PriceOption.parse_obj(response.json())
