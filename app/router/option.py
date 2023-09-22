@@ -41,8 +41,7 @@ def get_max_min_price(
         category = db.scalars(
             select(m.Profession).where(m.Profession.name_en == category)
         ).first()
-        filters.append(m.Job.profession_id == category.id)
-        price_query = price_query.where(or_(*filters))
+        price_query = price_query.where(m.Job.profession_id == category.id)
 
     if user_uuid:
         user_id = db.scalars(select(m.User.id).where(m.User.uuid == user_uuid)).first()
