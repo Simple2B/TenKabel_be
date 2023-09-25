@@ -24,6 +24,15 @@
       "justMyCode": false
     },
     {
+      "name": "Python: time measurement",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "console": "integratedTerminal",
+      "args": ["test-time-response"],
+      "justMyCode": false
+    },
+    {
       "name": "create-user",
       "type": "python",
       "request": "launch",

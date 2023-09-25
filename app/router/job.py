@@ -39,7 +39,7 @@ def get_status_list():
     return [e.value for e in s.enums.JobStatus]
 
 
-@job_router.get("", status_code=status.HTTP_200_OK, response_model=s.ListJob)
+@job_router.get("", status_code=status.HTTP_200_OK, response_model=s.ListJobSearch)
 @time_measurement
 def get_jobs(
     profession_id: int = None,
@@ -49,7 +49,7 @@ def get_jobs(
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
     q: str | None = "",
-) -> s.ListJob:
+) -> s.ListJobSearch:
     query = get_pending_jobs_query_for_user(db, user)
 
     if q:
@@ -123,7 +123,9 @@ def get_jobs(
         else:
             log(log.INFO, "Job returned with no filters")
 
-    jobs: s.ListJob = s.ListJob(jobs=db.scalars(query.order_by(m.Job.id)).all())
+    jobs: s.ListJobSearch = s.ListJobSearch(
+        jobs=db.scalars(query.order_by(m.Job.id)).all()
+    )
     log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
     return jobs
 
