@@ -96,6 +96,15 @@ class User(BaseUser):
         orm_mode = True
 
 
+class UserPicture(BaseUser):
+    id: int
+    uuid: str
+    picture: str
+
+    class Config:
+        orm_mode = True
+
+
 class UserUpdate(BaseUser):
     professions: list[int] | None
     locations: list[int] | None

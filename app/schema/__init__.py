@@ -12,6 +12,7 @@ from .user import (
     ForgotPassword,
     ChangePassword,
     PasswordStatus,
+    UserPicture,
 )
 from .token import Token, TokenData, PreValidate
 from .profession import BaseProfession, Profession, ProfessionList
@@ -26,6 +27,8 @@ from .job import (
     PaymentList,
     CommissionList,
     JobStatusList,
+    SearchJob,
+    ListJobSearch,
 )
 from .pagination import Pagination
 from .rate import BaseRate, Rate, RateList, RatePatch

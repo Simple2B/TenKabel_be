@@ -50,7 +50,7 @@ def get_max_min_price(
     result = db.execute(price_query).first()
     log(
         log.INFO,
-        "Max price is - %s\n min price is - %s\n regions are - %s\n category is - %s",
+        "Max price is - %s min price is - %s regions are - %s category is - %s",
         result.max_price,
         result.min_price,
         regions,

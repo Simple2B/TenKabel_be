@@ -200,6 +200,24 @@ def create_job_for_notification(
 
 
 @task
+def test_time_response(ctx):
+    import httpx
+
+    from sqlalchemy import select
+    from app.database import db as dbo
+    from app import model as m
+    from app.oauth2 import create_access_token
+
+    db = dbo.Session()
+    user = db.scalar(select(m.User).where(m.User.id == 1))
+    token = create_access_token(data={"user_id": user.id})
+    response = httpx.get(
+        "http://127.0.0.1:8000/api/jobs", headers={"Authorization": f"Bearer {token}"}
+    )
+    assert response.status_code == status.HTTP_200_OK
+
+
+@task
 def patch_job_status(
     ctx,
     name: str = JOB_NAME,

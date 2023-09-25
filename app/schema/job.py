@@ -3,7 +3,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-from .user import User
+from .user import User, UserPicture
 from .profession import Profession
 from .application import ApplicationOut
 from .enums import JobStatus as Status, PaymentStatus, CommissionStatus
@@ -70,6 +70,47 @@ class Job(BaseJob):
     class Config:
         orm_mode = True
         use_enum_values = True
+
+
+class SearchJob(BaseJob):
+    class WhoPays(enum.Enum):
+        ME = "me"
+        CLIENT = "client"
+
+    class TabFilter(enum.Enum):
+        PENDING = "pending"
+        ACTIVE = "active"
+        ARCHIVE = "archive"
+
+    id: int
+    uuid: str
+    status: Status
+    payment_status: PaymentStatus
+    commission_status: CommissionStatus
+    is_deleted: bool
+    regions: list[Location]
+    owner: UserPicture
+    is_asap: bool
+    frame_time: str | None
+
+    payment: int | None
+    commission: int | None
+    customer_first_name: str
+    customer_last_name: str
+    customer_phone: str
+    customer_street_address: str
+    city: str
+    time: str
+    owner_rate_uuid: str | None
+    worker_rate_uuid: str | None
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class ListJobSearch(BaseModel):
+    jobs: list[SearchJob]
 
 
 class ListJob(BaseModel):
