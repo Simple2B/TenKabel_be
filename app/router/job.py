@@ -63,7 +63,7 @@ def get_jobs(
         )
         log(log.INFO, "Job filtered by [%s] containing", q)
 
-    elif (
+    if (
         user is None
         # or user.google_openid_key
         # or user.apple_uid
