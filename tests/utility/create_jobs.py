@@ -114,9 +114,7 @@ TEST_LOCATIONS = [
 
 def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     worker_ids = [worker.id for worker in db.scalars(select(m.User)).all()]
-    profession_ids = [
-        profession.id for profession in db.scalars(select(m.Profession)).all()
-    ]
+    professions = db.scalars(select(m.Profession)).all()
     locations_ids = [location.id for location in db.scalars(select(m.Location)).all()]
     if not locations_ids:
         create_locations(db)
@@ -127,11 +125,12 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
     created_jobs: list = list()
 
     for _ in range(test_jobs_num):
+        profession = random.choice(professions)
         job: m.Job = m.Job(
             owner_id=random.choice(worker_ids),
             worker_id=random.choice(worker_ids),
-            profession_id=random.choice(profession_ids),
-            name=random.choice(JOBS_LIST),
+            profession_id=profession.id,
+            name=profession.name_en,
             description=fake.unique.sentence(),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
@@ -158,7 +157,6 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
 
     for job in created_jobs:
         # job status can't be pending with existing worker
-
         if job.status == s.enums.JobStatus.PENDING:
             job.worker_id = None
         # owner can't work on his own job
@@ -182,9 +180,7 @@ def create_jobs_for_user(
     worker_ids = [
         worker.id for worker in db.scalars(select(m.User)).all() if worker.id != user_id
     ] + [None]
-    profession_ids = [
-        profession.id for profession in db.scalars(select(m.Profession)).all()
-    ]
+    professions = db.scalars(select(m.Profession)).all()
     locations_ids = [location.id for location in db.scalars(select(m.Location)).all()]
     if not locations_ids:
         create_locations(db)
@@ -194,11 +190,12 @@ def create_jobs_for_user(
     created_jobs = []
 
     for _ in range(test_jobs_num):
+        profession = random.choice(professions)
         job1: m.Job = m.Job(
             owner_id=user_id,
             worker_id=random.choice(worker_ids),
-            profession_id=random.choice(profession_ids),
-            name=random.choice(JOBS_LIST),
+            profession_id=profession.id,
+            name=profession.name_en,
             description=fake.sentence(),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
@@ -225,8 +222,8 @@ def create_jobs_for_user(
         job2: m.Job = m.Job(
             owner_id=random.choice(worker_ids[:-1]),
             worker_id=user_id,
-            profession_id=random.choice(profession_ids),
-            name=random.choice(JOBS_LIST),
+            profession_id=profession.id,
+            name=profession.name_en,
             description=fake.sentence(),
             payment=random.randint(0, 100),
             commission=random.uniform(0, 10),
