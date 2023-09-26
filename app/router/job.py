@@ -72,9 +72,18 @@ def get_jobs(
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if cities:
+            # for city in cities:
+            #     city = re.sub(r"[^a-zA-Z0-9]", "", city)
+            #     query = query.where(m.Job.regions.any(m.Location.name_en == city))
+            city_conditions = []
             for city in cities:
-                city = re.sub(r"[^a-zA-Z0-9]", "", city)
-                query = query.where(m.Job.regions.any(m.Location.name_en == city))
+                city_conditions.append(
+                    m.Job.regions.any(
+                        m.Location.name_en == re.sub(r"[^a-zA-Z0-9]", "", city)
+                    )
+                )
+            query = query.where(or_(*city_conditions))
+
         if min_price:
             query = query.where(m.Job.payment >= min_price)
         if max_price:
