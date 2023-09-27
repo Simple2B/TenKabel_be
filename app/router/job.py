@@ -72,9 +72,6 @@ def get_jobs(
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if cities:
-            # for city in cities:
-            #     city = re.sub(r"[^a-zA-Z0-9]", "", city)
-            #     query = query.where(m.Job.regions.any(m.Location.name_en == city))
             city_conditions = []
             for city in cities:
                 city_conditions.append(
@@ -89,7 +86,7 @@ def get_jobs(
         if max_price:
             query = query.where(m.Job.payment <= max_price)
         log(log.INFO, "Job filtered")
-    else:
+    elif not q:
         profession_ids: list[int] = [profession.id for profession in user.professions]
         cities_names: list[str] = [location.name_en for location in user.locations]
         profession_conditions = []
@@ -400,7 +397,7 @@ def update_job(
 
     handle_job_status_update_notification(current_user, job, db, initial_job)
     handle_job_payment_notification(current_user, job, db, initial_job)
-    # handle_job_commission_notification(current_user, job, db, initial_job)
+    handle_job_commission_notification(current_user, job, db, initial_job)
 
     try:
         db.commit()

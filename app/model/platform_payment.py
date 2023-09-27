@@ -36,7 +36,7 @@ class PlatformPayment(db.Model):
     reject_reason: orm.Mapped[str] = orm.mapped_column(
         sa.String(512), default=""
     )  # reason of rejection
-    created_at = orm.mapped_column(sa.DateTime(), default=datetime.now)
+    created_at = orm.mapped_column(sa.DateTime(), default=datetime.utcnow)
     paid_at: orm.Mapped[sa.DateTime] = orm.mapped_column(sa.DateTime(), nullable=True)
     rejected_at: orm.Mapped[sa.DateTime] = orm.mapped_column(
         sa.DateTime(), nullable=True
