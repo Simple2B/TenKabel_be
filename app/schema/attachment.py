@@ -14,8 +14,8 @@ class AttachmentOut(BaseModel):
     uuid: str
     job_id: int
     user_id: int
-    file_id: int
-    file: FileOut
+    file_id: int | None
+    file: FileOut | None
     created_at: datetime
 
     class Config:
