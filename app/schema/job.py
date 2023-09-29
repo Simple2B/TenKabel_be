@@ -65,7 +65,7 @@ class Job(BaseJob):
     in_progress_at: datetime | None
     job_is_finished_at: datetime | None
 
-    attachments: list[AttachmentOut]
+    attachments: list[AttachmentOut] | None
 
     class Config:
         orm_mode = True
