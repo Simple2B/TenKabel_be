@@ -122,6 +122,22 @@ def test_auth_user_jobs(
     resp_obj: s.JobStatusList = s.JobStatusList.parse_obj(response.json())
     assert len(resp_obj.statuses) > 0
 
+    # bad pagination params testing
+    response = client.get(
+        "api/jobs?page=1&size=999999",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code != status.HTTP_200_OK
+    response = client.get(
+        "api/jobs?page=-1&size=20",
+        headers={
+            "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
+        },
+    )
+    assert response.status_code != status.HTTP_200_OK
+
 
 def test_unauth_user_jobs(
     client: TestClient,
