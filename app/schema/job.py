@@ -12,6 +12,30 @@ from .attachment import AttachmentOut
 from .location import Location
 
 
+class Payment(BaseModel):
+    id: int
+    job_id: int
+    uuid: str
+    payment_status: PaymentStatus
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
+class Commission(BaseModel):
+    id: int
+    job_id: int
+    uuid: str
+    commission_status: CommissionStatus
+    created_at: datetime
+
+    class Config:
+        orm_mode = True
+        use_enum_values = True
+
+
 class BaseJob(BaseModel):
     uuid: str
     owner_id: int
@@ -59,6 +83,8 @@ class Job(BaseJob):
     applications: list[ApplicationOut]
     owner_rate_uuid: str | None
     worker_rate_uuid: str | None
+    payments: list[Payment]
+    commissions: list[Commission]
 
     pending_at: datetime | None
     approved_at: datetime | None
@@ -172,32 +198,8 @@ class JobPatch(BaseModel):
         use_enum_values = True
 
 
-class Payment(BaseModel):
-    id: int
-    job_id: int
-    uuid: str
-    payment_status: PaymentStatus
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
-
-
 class PaymentList(BaseModel):
     payments: list[Payment]
-
-
-class Commission(BaseModel):
-    id: int
-    job_id: int
-    uuid: str
-    commission_status: CommissionStatus
-    created_at: datetime
-
-    class Config:
-        orm_mode = True
-        use_enum_values = True
 
 
 class CommissionList(BaseModel):
