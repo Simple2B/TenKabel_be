@@ -70,14 +70,17 @@ def test_auth_user_jobs(
 
     # check jobs are created
     response = client.get(
-        "api/jobs",
+        "api/jobs?page=1&size=50",
         headers={
             "Authorization": f"Bearer {authorized_users_tokens[0].access_token}",
         },
     )
     assert response.status_code == status.HTTP_200_OK
+    assert (
+        response.json()["page"] == 1 and response.json()["size"] == 50
+    )  # validating pagination
 
-    resp_obj: s.ListJobSearch = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert job.profession_id in [profession.id for profession in user.professions]
         assert any(
@@ -137,13 +140,13 @@ def test_unauth_user_jobs(
     # check jobs are created
     response = client.get("api/jobs")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     assert len(resp_obj.jobs) > 0
 
     # filtering jobs with profession_id=1
     response = client.get("api/jobs?profession_id=1")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert job.profession_id == 1
 
@@ -152,28 +155,28 @@ def test_unauth_user_jobs(
     assert test_location
     response = client.get(f"api/jobs?cities={test_location.name_en}")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert test_location.id in [region.id for region in job.regions]
 
     # regex checking
     response = client.get(f"api/jobs?cities=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert test_location.id in [region.id for region in job.regions]
 
     # filtering jobs by min price
     response = client.get(f"api/jobs?min_price={TEST_MIN_PRICE}")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert job.payment >= TEST_MIN_PRICE
 
     # filtering jobs by max price
     response = client.get(f"api/jobs?max_price={TEST_MAX_PRICE}")
     assert response.status_code == status.HTTP_200_OK
-    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    resp_obj = s.ListJobSearch(jobs=response.json()["items"])
     for job in resp_obj.jobs:
         assert job.payment <= TEST_MAX_PRICE
 
@@ -270,7 +273,7 @@ def test_search_job(
 
     response = client.get("api/jobs")
     assert response.status_code == status.HTTP_200_OK
-    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    response_jobs_list = s.ListJobSearch(jobs=response.json()["items"])
     assert len(response_jobs_list.jobs) > 0
 
     for job in response_jobs_list.jobs:
@@ -283,7 +286,7 @@ def test_search_job(
 
     response = client.get("api/jobs", params={"q": f"{job.regions[0].name_en}"})
     assert response.status_code == status.HTTP_200_OK
-    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    response_jobs_list = s.ListJobSearch(jobs=response.json()["items"])
     assert len(response_jobs_list.jobs) > 0
 
     assert all(
@@ -298,17 +301,17 @@ def test_search_job(
 
     response = client.get("api/jobs", params={"q": f"{job.name}"})
     assert response.status_code == status.HTTP_200_OK
-    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    response_jobs_list = s.ListJobSearch(jobs=response.json()["items"])
     assert len(response_jobs_list.jobs) > 0
 
     response = client.get("api/jobs", params={"q": f"{job.description}"})
     assert response.status_code == status.HTTP_200_OK
-    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    response_jobs_list = s.ListJobSearch(jobs=response.json()["items"])
     assert len(response_jobs_list.jobs) > 0
 
     response = client.get("api/jobs", params={"q": "non_existing_city_for_sure_123"})
     assert response.status_code == status.HTTP_200_OK
-    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    response_jobs_list = s.ListJobSearch(jobs=response.json()["items"])
     assert len(response_jobs_list.jobs) == 0
 
 

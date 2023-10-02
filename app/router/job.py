@@ -2,6 +2,8 @@ import re
 from typing import Annotated
 
 from fastapi import Depends, APIRouter, status, HTTPException, Query
+from fastapi_pagination import Page
+from fastapi_pagination.ext.sqlalchemy import paginate
 from sqlalchemy import select, or_, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -39,7 +41,7 @@ def get_status_list():
     return [e.value for e in s.enums.JobStatus]
 
 
-@job_router.get("", status_code=status.HTTP_200_OK, response_model=s.ListJobSearch)
+@job_router.get("", status_code=status.HTTP_200_OK, response_model=Page[s.SearchJob])
 @time_measurement
 def get_jobs(
     profession_id: int = None,
@@ -133,7 +135,7 @@ def get_jobs(
         jobs=db.scalars(query.order_by(m.Job.id)).all()
     )
     log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
-    return jobs
+    return paginate(db, query.order_by(m.Job.id))
 
 
 @job_router.get("/{job_uuid}", status_code=status.HTTP_200_OK, response_model=s.Job)

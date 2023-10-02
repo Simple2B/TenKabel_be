@@ -8,6 +8,7 @@ jinja2.contextfunction = jinja2.pass_context
 
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
+from fastapi_pagination import add_pagination
 from sqladmin import Admin
 
 from app.database import get_engine
@@ -30,6 +31,8 @@ admin = Admin(
 sql_admin = Admin(app, engine)
 
 app.include_router(router)
+
+add_pagination(app)
 
 
 @app.middleware("http")
