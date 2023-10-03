@@ -133,13 +133,27 @@ def handle_job_payment_notification(
 
     user = job.worker if current_user == job.owner else job.owner
 
-    if not user or job.payment_status != s.enums.PaymentStatus.PAID or user.is_deleted:
+    if not user or user.is_deleted:
+        log(log.INFO, "User for notification not found")
         return
+
+    notification_type = None
+    if job.payment_status == s.enums.PaymentStatus.PAID:
+        notification_type = s.NotificationType.JOB_PAID
+
+    if job.payment_status == s.enums.PaymentStatus.REQUESTED:
+        notification_type = s.NotificationType.PAYMENT_REQUESTED
+
+    if job.payment_status == s.enums.PaymentStatus.DENY:
+        notification_type = s.NotificationType.PAYMENT_DENIED
+
+    if job.payment_status == s.enums.PaymentStatus.SENT:
+        notification_type = s.NotificationType.PAYMENT_SENT
 
     notification: m.Notification = m.Notification(
         user_id=user.id,
         entity_id=job.id,
-        type=s.NotificationType.JOB_PAID,
+        type=notification_type,
     )
     db.add(notification)
 
@@ -174,10 +188,22 @@ def handle_job_commission_notification(
     if job.commission_status == s.enums.CommissionStatus.REQUESTED:
         notification_type = s.NotificationType.COMMISSION_REQUESTED
 
+    if job.commission_status == s.enums.CommissionStatus.DENY:
+        notification_type = s.NotificationType.COMMISSION_DENIED
+
+    if job.commission_status == s.enums.CommissionStatus.SENT:
+        notification_type = s.NotificationType.COMMISSION_SENT
+
     if not notification_type:
         log(log.INFO, "Job [%i] commission status not changed", job.id)
         return
 
+    log(
+        log.INFO,
+        "Job [%i] commission status changed to [%s]",
+        job.id,
+        notification_type,
+    )
     notification: m.Notification = m.Notification(
         user_id=user.id,
         entity_id=job.id,
@@ -186,7 +212,11 @@ def handle_job_commission_notification(
     db.add(notification)
 
     if not user.notification_job_status:
-        log(log.INFO, "User [%i] notification_job_status is disabled", user.id)
+        log(
+            log.INFO,
+            "User [%i] notification_commission_job_status is disabled",
+            user.id,
+        )
         return
 
     push_handler = PushHandler()
