@@ -157,6 +157,25 @@ def update_application(
                 pending_application.status = (
                     s.BaseApplication.ApplicationStatus.DECLINED
                 )
+                notification: m.Notification = m.Notification(
+                    user_id=pending_application.worker.id,
+                    entity_id=application.id,
+                    type=s.NotificationType.APPLICATION_REJECTED,
+                )
+                db.add(notification)
+
+                push_handler = PushHandler()
+                push_handler.send_notification(
+                    s.PushNotificationMessage(
+                        device_tokens=[
+                            device.push_token
+                            for device in pending_application.worker.devices
+                        ],
+                        payload=get_notification_payload(
+                            notification_type=notification.type, job=job
+                        ),
+                    )
+                )
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
         job.worker_id = application.worker_id
@@ -167,7 +186,8 @@ def update_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
-    user = job.worker if current_user == job.owner else job.owner
+    user = application.worker if current_user == job.owner else job.owner
+
     if user:
         notification: m.Notification = m.Notification(
             user_id=user.id,
@@ -265,6 +285,25 @@ def patch_application(
                 pending_application.status = (
                     s.BaseApplication.ApplicationStatus.DECLINED
                 )
+                notification: m.Notification = m.Notification(
+                    user_id=pending_application.worker.id,
+                    entity_id=application.id,
+                    type=s.NotificationType.APPLICATION_REJECTED,
+                )
+                db.add(notification)
+
+                push_handler = PushHandler()
+                push_handler.send_notification(
+                    s.PushNotificationMessage(
+                        device_tokens=[
+                            device.push_token
+                            for device in pending_application.worker.devices
+                        ],
+                        payload=get_notification_payload(
+                            notification_type=notification.type, job=job
+                        ),
+                    )
+                )
         log(log.INFO, "Applications to [%s] job updated", application.job_id)
 
         job.worker_id = application.worker_id
@@ -275,7 +314,7 @@ def patch_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
-    user = job.worker if current_user == job.owner else job.owner
+    user = application.worker if current_user == job.owner else job.owner
 
     if user:
         notification: m.Notification = m.Notification(
