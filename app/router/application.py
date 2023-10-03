@@ -167,7 +167,7 @@ def update_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
-    user = job.worker if current_user == job.owner else job.owner
+    user = application.worker if current_user == job.owner else job.owner
     if user:
         notification: m.Notification = m.Notification(
             user_id=user.id,
@@ -275,7 +275,7 @@ def patch_application(
     else:
         notification_type = s.NotificationType.APPLICATION_REJECTED
 
-    user = job.worker if current_user == job.owner else job.owner
+    user = application.worker if current_user == job.owner else job.owner
 
     if user:
         notification: m.Notification = m.Notification(
