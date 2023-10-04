@@ -123,8 +123,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         ]
 
     created_jobs: list = list()
-    one_week_ago = datetime.utcnow() - timedelta(days=2)
-    random_created_at = one_week_ago + timedelta(days=random.randint(0, 2))
+    one_week_ago = datetime.utcnow() - timedelta(days=3)
+    random_created_at = one_week_ago + timedelta(days=random.randint(0, 6))
     for _ in range(test_jobs_num):
         profession = random.choice(professions)
         job: m.Job = m.Job(

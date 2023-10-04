@@ -306,9 +306,7 @@ def logout(
 
 
 @auth_router.get(
-    "/user/pre-validate",
-    status_code=status.HTTP_200_OK,
-    response_model=s.PreValidate
+    "/user/pre-validate", status_code=status.HTTP_200_OK, response_model=s.PreValidate
 )
 def pre_validate_user(
     field: str,
