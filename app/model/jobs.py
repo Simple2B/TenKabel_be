@@ -161,6 +161,20 @@ class Job(db.Model):
         return rates[0].uuid if rates else None
 
     @property
+    def owner_review_uuid(self) -> str | None:
+        reviews = [
+            review for review in self.reviews if review.worker_id == self.owner_id
+        ]
+        return reviews[0].uuid if reviews else None
+
+    @property
+    def worker_review_uuid(self) -> str | None:
+        reviews = [
+            review for review in self.reviews if review.worker_id == self.worker_id
+        ]
+        return reviews[0].uuid if reviews else None
+
+    @property
     def time(self) -> str:
         return self.formatted_time
 
