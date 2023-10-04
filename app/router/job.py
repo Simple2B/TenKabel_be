@@ -150,7 +150,7 @@ def get_job(
         )
 
     log(log.INFO, "Job [%s] info", job_uuid)
-    return job
+    return s.Job.from_orm(job)
 
 
 @job_router.post("", status_code=status.HTTP_201_CREATED, response_model=s.Job)
