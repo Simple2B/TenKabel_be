@@ -22,6 +22,8 @@ from .attachment import Attachment
 from .file import File
 from .commission import Commission
 from .payment import Payment
+from .tag import Tag
+from .review import Review
 
 
 from app.database import db

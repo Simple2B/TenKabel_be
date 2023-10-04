@@ -73,10 +73,10 @@
     "google_openid_key": "1234567890abc",
     "picture": "http://test",
     "rates": [{
-      "rate": "positive",
+      "rate": "POSITIVE",
       "owner_id": 5
     },
-    {"rate": "negative",
+    {"rate": "NEGATIVE",
       "owner_id": 3
     }]
   },
@@ -89,13 +89,13 @@
   "test_rates":[{
     "owner_id": 1,
     "worker_id": 2,
-    "rate": "negative"
+    "rate": "NEGATIVE"
   }],
   "test_rate":{
     "uuid": "test_uuid_for_rate",
     "owner_id": 3,
     "worker_id": 1,
-    "rate": "positive"
+    "rate": "POSITIVE"
   },
   "test_application":{
     "job_id": 3
