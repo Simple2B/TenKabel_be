@@ -15,6 +15,7 @@ from .platform_payment import payment_router
 from .option import options_router
 from .attachment import attachment_router
 from .file import file_router
+from .review import review_router
 
 # from .notify import notification_test_router
 
@@ -35,6 +36,7 @@ router.include_router(payment_router)
 router.include_router(options_router)
 router.include_router(attachment_router)
 router.include_router(file_router)
+router.include_router(review_router)
 
 
 @router.get("/list-endpoints/")

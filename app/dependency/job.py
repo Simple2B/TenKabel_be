@@ -1,13 +1,11 @@
-from fastapi import Depends, HTTPException, status, Request
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from app.oauth2 import verify_access_token, INVALID_CREDENTIALS_EXCEPTION
 from app.database import get_db
 import app.model as m
-import app.schema as s
 from app.logger import log
 from . import get_current_user
 
@@ -37,14 +35,14 @@ def get_job_by_uuid(
     return job
 
 
-def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
-    """Raises an exception if the current user is authenticated"""
-    auth_header: str = request.headers.get("Authorization")
-    if auth_header:
-        # Assuming the header value is in the format "Bearer <token>"
-        token: s.TokenData = verify_access_token(
-            auth_header.split(" ")[1], INVALID_CREDENTIALS_EXCEPTION
-        )
-        user = db.query(m.User).filter_by(id=token.user_id).first()
-        if user and not user.is_deleted:
-            return user
+# def get_user(request: Request, db: Session = Depends(get_db)) -> m.User | None:
+#     """Raises an exception if the current user is authenticated"""
+#     auth_header: str = request.headers.get("Authorization")
+#     if auth_header:
+#         # Assuming the header value is in the format "Bearer <token>"
+#         token: s.TokenData = verify_access_token(
+#             auth_header.split(" ")[1], INVALID_CREDENTIALS_EXCEPTION
+#         )
+#         user = db.query(m.User).filter_by(id=token.user_id).first()
+#         if user and not user.is_deleted:
+#             return user

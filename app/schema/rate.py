@@ -4,10 +4,11 @@ from pydantic import BaseModel
 
 
 class BaseRate(BaseModel):
+    # TODO: MIGRATE ENUM
     class RateStatus(enum.Enum):
-        POSITIVE = "positive"
-        NEGATIVE = "negative"
-        NEUTRAL = "neutral"
+        POSITIVE = "POSITIVE"
+        NEGATIVE = "NEGATIVE"
+        NEUTRAL = "NEUTRAL"
 
     job_id: int
     owner_id: int
