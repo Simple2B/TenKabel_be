@@ -149,7 +149,7 @@ def get_job(
             detail="Job not found",
         )
 
-    log(log.INFO, "Job [%s] info", job_uuid)
+    log(log.INFO, "Job [%s] info", job_uuid)  # noqa E501
     return s.Job.from_orm(job)
 
 
