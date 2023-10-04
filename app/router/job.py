@@ -130,7 +130,7 @@ def get_jobs(
             log(log.INFO, "Job returned with no filters")
 
     jobs: s.ListJobSearch = s.ListJobSearch(
-        jobs=db.scalars(query.order_by(m.Job.id)).all()
+        jobs=db.scalars(query.order_by(m.Job.id.desc())).all()
     )
     log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
     return jobs

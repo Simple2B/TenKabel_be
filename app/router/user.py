@@ -1,6 +1,6 @@
 import datetime
 
-from fastapi import HTTPException, Depends, APIRouter, status
+from fastapi import HTTPException, Depends, APIRouter, status, Query
 from sqlalchemy import select, or_, and_, desc
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
@@ -373,6 +373,12 @@ def get_user_applications(
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_jobs(
     manage_tab: s.Job.TabFilter | None = None,
+    start_date: int
+    | None = Query(
+        None,
+        ge=0,
+    ),
+    end_date: int | None = Query(None, ge=0),
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
 ):
@@ -381,10 +387,18 @@ def get_user_jobs(
     )
     log(log.INFO, "Manage tab query parameter: (%s)", str(manage_tab))
 
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Start date can't be greater than end date",
+        )
     if manage_tab:
         query = manage_tab_controller(db, current_user, query, manage_tab)
-
-    jobs: list[m.Job] = db.scalars(query.order_by(desc(m.Job.created_at))).all()
+    if start_date:
+        query = query.where(m.Job.created_at >= start_date)
+    if end_date:
+        query = query.where(m.Job.created_at <= end_date)
+    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at.desc())).all()
     log(
         log.INFO,
         "User [%s] with id (%s) got [%s] jobs total",
@@ -421,7 +435,7 @@ def get_user_postings(
     """Get list of jobs where current user is a owner"""
     query = select(m.Job).where(m.Job.owner_id == current_user.id)
 
-    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at)).all()
+    jobs: list[m.Job] = db.scalars(query.order_by(m.Job.created_at.desc())).all()
     log(
         log.INFO,
         "User [%s] with id (%s) have [%s] jobs owning",
