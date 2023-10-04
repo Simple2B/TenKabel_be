@@ -1,7 +1,8 @@
 import enum
+import pytz
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .user import User, UserPicture
 from .profession import Profession
@@ -19,6 +20,13 @@ class Payment(BaseModel):
     payment_status: PaymentStatus
     created_at: datetime
 
+    @validator("created_at")
+    def to_israel_tz(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = pytz.utc.localize(value)
+        israel_tz = pytz.timezone("Asia/Jerusalem")
+        return value.astimezone(israel_tz)
+
     class Config:
         orm_mode = True
         use_enum_values = True
@@ -30,6 +38,13 @@ class Commission(BaseModel):
     uuid: str
     commission_status: CommissionStatus
     created_at: datetime
+
+    @validator("created_at")
+    def to_israel_tz(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = pytz.utc.localize(value)
+        israel_tz = pytz.timezone("Asia/Jerusalem")
+        return value.astimezone(israel_tz)
 
     class Config:
         orm_mode = True
@@ -94,6 +109,22 @@ class Job(BaseJob):
     attachments: list[AttachmentOut] | None
 
     created_at: datetime
+
+    @validator(
+        "created_at",
+        "approved_at",
+        "in_progress_at",
+        "job_is_finished_at",
+        "pending_at",
+        each_item=True,  # Set pre=True to apply the validator before default values are set
+    )
+    def date_to_israel_tz(cls, value):
+        if value is not None:
+            if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+                value = pytz.utc.localize(value)
+            israel_tz = pytz.timezone("Asia/Jerusalem")
+            return value.astimezone(israel_tz)
+        return None
 
     class Config:
         orm_mode = True
@@ -215,9 +246,17 @@ class JobStatus(BaseModel):
     status: Status
     created_at: datetime
 
+    @validator("created_at")
+    def date_to_israel_tz(cls, value):
+        if value is not None:
+            if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+                value = pytz.utc.localize(value)
+            israel_tz = pytz.timezone("Asia/Jerusalem")
+            return value.astimezone(israel_tz)
+        return None
+
     class Config:
         orm_mode = True
-        use_enum_values = True
 
 
 class JobStatusList(BaseModel):

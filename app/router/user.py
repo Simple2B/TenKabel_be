@@ -463,7 +463,7 @@ def get_user_profile(
         )
 
     log(log.INFO, "User [%s] info", user.username)
-    return user
+    return s.User.from_orm(user)
 
 
 @user_router.patch(

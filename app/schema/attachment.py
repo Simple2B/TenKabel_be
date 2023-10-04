@@ -1,6 +1,7 @@
+import pytz
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .file import FileOut
 
@@ -17,6 +18,13 @@ class AttachmentOut(BaseModel):
     file_id: int | None
     file: FileOut | None
     created_at: datetime
+
+    @validator("created_at", each_item=True)
+    def to_israel_tz(cls, value: datetime) -> datetime:
+        if value.tzinfo is None or value.tzinfo.utcoffset(value) is None:
+            value = pytz.utc.localize(value)
+        israel_tz = pytz.timezone("Asia/Jerusalem")
+        return value.astimezone(israel_tz)
 
     class Config:
         orm_mode = True
