@@ -34,15 +34,15 @@ def test_review_methods(
 
     job: m.Job = auth_user.jobs_owned[0]
     if not job.worker:
-        job.worker = db.scalars(
-            select(m.User).where(
+        job.worker_id = db.scalars(
+            select(m.User.id).where(
                 m.User.id != auth_user.id,
             )
         ).all()[10]
 
-    job.status = s.JobStatus.JOB_IS_FINISHED
+    job.set_enum(s.JobStatus.JOB_IS_FINISHED, db)
     db.commit()
-    assert job.worker
+    assert job.worker_id
 
     request_data: s.ReviewIn = s.ReviewIn(
         evaluated_id=job.worker.id,

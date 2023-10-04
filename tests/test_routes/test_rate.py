@@ -48,7 +48,7 @@ def test_rate_methods(
                 )
             )
         )
-        job.status = s.enums.JobStatus.JOB_IS_FINISHED
+        job.set_enum(s.enums.JobStatus.JOB_IS_FINISHED, db)
         db.commit()
     for rate in job.rates:
         db.delete(rate)
