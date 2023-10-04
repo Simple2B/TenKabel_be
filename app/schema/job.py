@@ -93,6 +93,8 @@ class Job(BaseJob):
 
     attachments: list[AttachmentOut] | None
 
+    created_at: datetime
+
     class Config:
         orm_mode = True
         use_enum_values = True

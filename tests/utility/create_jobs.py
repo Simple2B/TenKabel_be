@@ -1,5 +1,5 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy.orm import Session
 from sqlalchemy import select
@@ -123,7 +123,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         ]
 
     created_jobs: list = list()
-
+    one_week_ago = datetime.utcnow() - timedelta(days=2)
+    random_created_at = one_week_ago + timedelta(days=random.randint(0, 2))
     for _ in range(test_jobs_num):
         profession = random.choice(professions)
         job: m.Job = m.Job(
@@ -141,6 +142,8 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             customer_last_name=fake.last_name(),
             customer_phone=fake.unique.phone_number(),
             customer_street_address=fake.address(),
+            # random date between
+            created_at=random_created_at,
         )
         db.add(job)
         created_jobs.append(job)

@@ -1,6 +1,6 @@
 import base64
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import status
 from fastapi.encoders import jsonable_encoder
@@ -512,11 +512,7 @@ def test_get_user_profile(
             s.enums.JobStatus.JOB_IS_FINISHED,
             s.enums.JobStatus.APPROVED,
         )
-        # assert (
-        #     job.payment_status == s.enums.PaymentStatus.UNPAID.value
-        #     or job.commission_status == s.enums.CommissionStatus.UNPAID.value
-        #     or job.status == s.enums.JobStatus.IN_PROGRESS.value
-        # )
+
         assert user.id in (job.owner_id, job.worker_id)
 
     response = client.get(
@@ -549,6 +545,37 @@ def test_get_user_profile(
             and job.commission_status == s.enums.CommissionStatus.PAID.value
         )
         assert user.id in (job.owner_id, job.worker_id)
+
+    # manage tabs with start date and end date params
+    response = client.get(
+        "api/users/jobs",
+        params={
+            "manage_tab": s.Job.TabFilter.PENDING.value,
+            "start_date": datetime.now() - timedelta(days=1),  # bad params
+            "end_date": datetime.now() + timedelta(days=1),  # bad params
+        },
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    # correct data
+    start_date = int((datetime.now() - timedelta(days=2)).timestamp())
+    end_date = int((datetime.now() + timedelta(days=1)).timestamp())
+    response = client.get(
+        "api/users/jobs",
+        params={
+            "manage_tab": s.Job.TabFilter.PENDING.value,
+            "start_date": start_date,
+            # bad params
+            "end_date": end_date,
+            # bad params
+        },
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    resp_obj = s.ListJob.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        job.created_at = job.created_at.replace(tzinfo=None)
+        assert job.created_at >= datetime.fromtimestamp(start_date)
+        assert job.created_at <= datetime.fromtimestamp(end_date)
 
     response = client.get(
         "api/users",
