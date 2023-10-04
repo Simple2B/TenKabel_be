@@ -123,8 +123,9 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
         ]
 
     created_jobs: list = list()
-    one_week_ago = datetime.utcnow() - timedelta(days=3)
-    random_created_at = one_week_ago + timedelta(days=random.randint(0, 6))
+    start = datetime.now()
+    date_list = [start + timedelta(days=x) for x in range(3)]
+    date_list += [start - timedelta(days=x) for x in range(3)]
     for _ in range(test_jobs_num):
         profession = random.choice(professions)
         job: m.Job = m.Job(
@@ -143,7 +144,7 @@ def create_jobs(db: Session, test_jobs_num: int = TEST_JOBS_NUM):
             customer_phone=fake.unique.phone_number(),
             customer_street_address=fake.address(),
             # random date between
-            created_at=random_created_at,
+            created_at=random.choice(date_list),
         )
         db.add(job)
         created_jobs.append(job)
