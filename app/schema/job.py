@@ -108,10 +108,7 @@ class Job(BaseJob):
 
     attachments: list[AttachmentOut] | None
 
-    created_at: datetime
-
     @validator(
-        "created_at",
         "approved_at",
         "in_progress_at",
         "job_is_finished_at",
