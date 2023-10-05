@@ -47,8 +47,10 @@ class AppleAuthUser(BaseModel):
 class BaseUser(BaseModel):
     email: str | None
     username: str
-    first_name: constr(strip_whitespace=True, max_length=64, min_length=1)
-    last_name: constr(strip_whitespace=True, max_length=64, min_length=1)
+    # first_name: constr(strip_whitespace=True, max_length=64, min_length=1)
+    # last_name: constr(strip_whitespace=True, max_length=64, min_length=1)
+    first_name: str
+    last_name: str
 
 
 class UserNotificationSettingsIn(BaseModel):
