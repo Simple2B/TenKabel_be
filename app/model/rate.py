@@ -28,12 +28,12 @@ class Rate(db.Model):
         sa.Enum(s.BaseRate.RateStatus), default=s.BaseRate.RateStatus.NEUTRAL
     )
 
-    worker: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[worker_id], viewonly=True, backref="given_rates"
-    )
-    owner: orm.Mapped[m.User] = orm.relationship(
-        "User", foreign_keys=[owner_id], viewonly=True, backref="owned_rates"
-    )
+    # worker: orm.Mapped[m.User] = orm.relationship(
+    #     "User", foreign_keys=[worker_id], viewonly=True, backref="given_rates"
+    # )
+    # owner: orm.Mapped[m.User] = orm.relationship(
+    #     "User", foreign_keys=[owner_id], viewonly=True, backref="owned_rates"
+    # )
     job: orm.Mapped[m.Job] = orm.relationship(
         "Job", foreign_keys=[job_id], viewonly=True, backref="rates"
     )

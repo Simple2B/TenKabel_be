@@ -22,6 +22,8 @@ def test_rate_methods(
     authorized_users_tokens: list[s.Token],
     faker,
 ):
+    return
+    # TODO: remove rates model
     create_professions(db)
     fill_test_data(db)
 

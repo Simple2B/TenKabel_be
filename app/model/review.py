@@ -38,6 +38,12 @@ class Review(db.Model):
         "Job", foreign_keys=[job_id], viewonly=True, backref="reviews"
     )
     tag: orm.Mapped[m.Tag] = orm.relationship()
+    evaluated: orm.Mapped[m.User] = orm.relationship(
+        "User", foreign_keys=[evaluated_id], viewonly=True, backref="given_rates"
+    )
+    evaluates: orm.Mapped[m.User] = orm.relationship(
+        "User", foreign_keys=[evaluates_id], viewonly=True, backref="owned_rates"
+    )
 
     def __repr__(self):
         return f"<{self.id}: {self.rate}>"
