@@ -57,7 +57,7 @@ class AttachmentController:
     def create_attachments(
         current_user: m.User, request_data: s.AttachmentIn, db: Session
     ):
-        files: list[s.Attachment] = AttachmentController.validate_files(
+        files: list[s.FileOut] = AttachmentController.validate_files(
             request_data.file_uuids, current_user, db
         )
         job = db.scalars(select(m.Job).where(m.Job.id == request_data.job_id)).first()
@@ -77,6 +77,7 @@ class AttachmentController:
             )
 
         for file in files:
+            log(log.INFO, "Creating attachment %s, file url - %s", file, file.url)
             attachment = m.Attachment(
                 user_id=current_user.id,
                 job_id=request_data.job_id,

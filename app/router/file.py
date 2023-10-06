@@ -82,6 +82,7 @@ def upload_file(
                 status_code=status.HTTP_409_CONFLICT,
                 detail="Failed to upload file",
             )
+        log(log.INFO, "New file created - %s, url - %s", new_file, new_file.url)
         return new_file
     else:
         log(log.INFO, "File %s already exists", user_file)
