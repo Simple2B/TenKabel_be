@@ -159,10 +159,10 @@ class SearchJob(BaseJob):
     customer_street_address: str
     city: str
     time: str
-    owner_rate_uuid: str | None
-    worker_rate_uuid: str | None
-    owner_review_uuid: str | None
-    worker_review_uuid: str | None
+    # owner_rate_uuid: str | None
+    # worker_rate_uuid: str | None
+    # owner_review_uuid: str | None
+    # worker_review_uuid: str | None
 
     class Config:
         orm_mode = True

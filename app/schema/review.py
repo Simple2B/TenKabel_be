@@ -4,7 +4,7 @@ from .tag import TagIn, TagOut
 
 
 class BaseReview(BaseModel):
-    job_uuid: str
+    job_uuid: str | None
     evaluated_id: int
     evaluates_id: int
 
