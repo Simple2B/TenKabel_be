@@ -61,7 +61,7 @@ def test_review_methods(
     assert job.owner.negative_rates_count == len(tags)
 
     response = client.get(
-        f"api/reviews/review/{job.reviews[0].uuid}",
+        f"api/reviews/{job.reviews[0].uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
