@@ -33,4 +33,4 @@ class ReviewOut(BaseReview):
 
 
 class ReviewsOut(BaseReview):
-    tags: list[TagOut]
+    tags: list[TagOut] | None
