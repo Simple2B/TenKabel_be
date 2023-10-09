@@ -89,6 +89,8 @@ def patch_user(
         )
         current_user.picture = blob.public_url
         log(log.INFO, "User [%s] picture updated", current_user.id)
+        # TODO check comperssion
+        # check tests
     if data.phone:
         current_user.phone = data.phone
         current_user.country_code = data.country_code
