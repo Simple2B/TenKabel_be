@@ -4,6 +4,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, or_, and_
+from google.cloud.storage import Client
 from google.cloud.exceptions import GoogleCloudError
 
 from app.config import Settings, get_settings
@@ -165,7 +166,7 @@ def upload_user_profile_picture(
     filename: str,
     file: bytes,
     destination_filename: str,
-    google_storage_client,
+    google_storage_client: Client,
 ):
     bucket = google_storage_client.get_bucket(settings.GOOGLE_STORAGE_BUCKET_NAME)
 
@@ -180,12 +181,12 @@ def upload_user_profile_picture(
             detail="Error while uploading file to google cloud storage",
         )
 
-    return blob
+    return blob.public_url
 
 
 def is_valid_image_filename(filename: str):
     # Get the file extension
-    VALID_IMAGE_EXTENSIONS = ["jpg", "jpeg", "png", "gif", "bmp", "tiff", "svg"]
+    VALID_IMAGE_EXTENSIONS = ["jpeg", "png", "gif", "bmp", "tiff"]
 
     file_extension = filename.split(".")[-1]
 

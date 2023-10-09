@@ -79,24 +79,31 @@ def patch_user(
             )
         decoded_picture = base64.b64decode(data.picture)
         image = Image.open(io.BytesIO(decoded_picture))
+        image = image.convert("RGB")
         compressed_image_bytes_io = io.BytesIO()
-        image.save(compressed_image_bytes_io, format="PNG", quality=75)
-        blob = upload_user_profile_picture(
+        image.save(
+            compressed_image_bytes_io,
+            format=data.picture_filename.split(".")[-1],
+            optimize=True,
+            quality=50,
+        )
+
+        image_url = upload_user_profile_picture(
             filename=f"{data.picture_filename}",
             file=compressed_image_bytes_io.getvalue(),
             destination_filename=f"profile/{current_user.uuid}/{data.picture_filename}",
             google_storage_client=google_storage_client,
         )
-        current_user.picture = blob.public_url
+        current_user.picture = image_url
         log(log.INFO, "User [%s] picture updated", current_user.id)
-        # TODO check comperssion
+
         # check tests
     if data.phone:
         current_user.phone = data.phone
         current_user.country_code = data.country_code
         log(log.INFO, "User [%s] phone updated - [%s]", current_user.id, data.phone)
 
-    if data.professions != current_user.professions:
+    if data.professions and data.professions != current_user.professions:
         for profession in current_user.professions:
             profession_obj: m.UserProfession = db.scalar(
                 select(m.UserProfession).where(
@@ -121,7 +128,7 @@ def patch_user(
                 )
                 db.flush()
 
-    if data.locations != current_user.locations:
+    if data.locations and data.locations != current_user.locations:
         for location in current_user.locations:
             location_obj: m.UserLocation = db.scalar(
                 select(m.UserLocation).where(
