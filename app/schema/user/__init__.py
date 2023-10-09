@@ -8,6 +8,7 @@ from .user import (
     UserSignUp,
     AuthUser,
     UserUpdate,
+    UserUpdateIn,
     UserNotificationSettingsIn,
     UserNotificationSettingsOut,
     ChangePassword,

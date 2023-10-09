@@ -1,15 +1,19 @@
 import datetime
+import base64
+import io
 
 from fastapi import HTTPException, Depends, APIRouter, status, Query
 from sqlalchemy import select, or_, and_, desc
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
+from PIL import Image
 
 import app.model as m
 import app.schema as s
 from app.logger import log
+from app.controller import upload_user_profile_picture, is_valid_image_filename
 from app.config import get_settings, Settings
-from app.dependency import get_current_user
+from app.dependency import get_current_user, get_google_storage_client
 from app.database import get_db
 from app.hash_utils import hash_verify
 from app.controller import (
@@ -31,9 +35,10 @@ def get_current_user_profile(
 
 @user_router.patch("", status_code=status.HTTP_200_OK, response_model=s.User)
 def patch_user(
-    data: s.UserUpdate,
+    data: s.UserUpdateIn,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
+    google_storage_client=Depends(get_google_storage_client),
 ):
     if data.first_name:
         current_user.username = data.username
@@ -66,7 +71,23 @@ def patch_user(
         current_user.email = data.email
         log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
     if data.picture:
-        current_user.picture = data.picture
+        if not is_valid_image_filename(data.picture_filename):
+            log(log.ERROR, "Image filename is bad - %", data.picture_filename)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Please,provide valid image",
+            )
+        decoded_picture = base64.b64decode(data.picture)
+        image = Image.open(io.BytesIO(decoded_picture))
+        compressed_image_bytes_io = io.BytesIO()
+        image.save(compressed_image_bytes_io, format="PNG", quality=75)
+        blob = upload_user_profile_picture(
+            filename=f"{data.picture_filename}",
+            file=compressed_image_bytes_io.getvalue(),
+            destination_filename=f"profile/{current_user.uuid}/{data.picture_filename}",
+            google_storage_client=google_storage_client,
+        )
+        current_user.picture = blob.public_url
         log(log.INFO, "User [%s] picture updated", current_user.id)
     if data.phone:
         current_user.phone = data.phone

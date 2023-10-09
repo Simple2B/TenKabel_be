@@ -113,6 +113,15 @@ class UserUpdate(BaseUser):
     country_code: str | None
 
 
+class UserUpdateIn(BaseUser):
+    professions: list[int] | None
+    locations: list[int] | None
+    picture: str | None
+    picture_filename: str | None
+    phone: phone_field | None
+    country_code: str | None
+
+
 class ForgotPassword(BaseModel):
     new_password: str
     phone: phone_field

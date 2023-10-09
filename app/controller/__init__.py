@@ -8,7 +8,13 @@ from .notification import (
     handle_job_payment_notification,
     handle_job_commission_notification,
 )
-from .user import manage_tab_controller, delete_device, delete_user_view
+from .user import (
+    manage_tab_controller,
+    delete_device,
+    delete_user_view,
+    upload_user_profile_picture,
+    is_valid_image_filename,
+)
 from .rate import create_rate_controller
 from .payplus import (
     create_payplus_customer,

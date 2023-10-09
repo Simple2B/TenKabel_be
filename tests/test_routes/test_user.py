@@ -674,13 +674,14 @@ def test_update_user(
         )
     )
 
-    request_data: s.UserUpdate = s.UserUpdate(
+    request_data: s.UserUpdateIn = s.UserUpdateIn(
         username=user.email,
         first_name=test_data.test_authorized_users[1].first_name + "A1",
         last_name=test_data.test_authorized_users[1].last_name,
         email=user.email,
         phone=user.phone,
         picture=PICTURE,
+        picture_filename="file.jpeg",
         professions=PROFESSION_IDS,
         locations=LOCATIONS_IDS,
         country_code="IL",
