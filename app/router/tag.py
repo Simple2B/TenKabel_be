@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, status
+from fastapi import Depends, APIRouter, status, HTTPException
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -7,6 +7,7 @@ import app.schema as s
 from app.database import get_db
 from app.config import Settings, get_settings
 from app.dependency import get_current_user
+from app.logger import log
 
 tag_router = APIRouter(prefix="/tags", tags=["Tags"])
 
@@ -32,6 +33,15 @@ def get_popular_tags(
 def get_user_tags(
     db: Session = Depends(get_db),
     user: m.User = Depends(get_current_user),
+    user_uuid: str | None = None,
 ):
+    if user_uuid:
+        user = db.scalar(select(m.User).filter(m.User.uuid == user_uuid))
+    if not user:
+        log(log.INFO, "User wasn`t found [%s]", user_uuid)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
     tags = [review.tag for review in user.owned_rates]
     return tags
