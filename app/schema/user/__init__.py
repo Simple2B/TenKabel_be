@@ -13,4 +13,5 @@ from .user import (
     ChangePassword,
     ForgotPassword,
     PasswordStatus,
+    UserProfile,
 )

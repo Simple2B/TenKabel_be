@@ -22,7 +22,7 @@ from app.controller import (
 user_router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@user_router.get("", status_code=status.HTTP_200_OK, response_model=s.User)
+@user_router.get("", status_code=status.HTTP_200_OK, response_model=s.UserProfile)
 def get_current_user_profile(
     current_user: m.User = Depends(get_current_user),
 ):
@@ -446,7 +446,7 @@ def get_user_postings(
     return s.ListJob(jobs=jobs)
 
 
-@user_router.get("/{user_uuid}", response_model=s.User)
+@user_router.get("/{user_uuid}", response_model=s.UserProfile)
 def get_user_profile(
     user_uuid: str,
     db: Session = Depends(get_db),
@@ -463,7 +463,7 @@ def get_user_profile(
         )
 
     log(log.INFO, "User [%s] info", user.username)
-    return s.User.from_orm(user)
+    return s.UserProfile.from_orm(user)
 
 
 @user_router.patch(

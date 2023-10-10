@@ -13,6 +13,7 @@ from .user import (
     ChangePassword,
     PasswordStatus,
     UserPicture,
+    UserProfile,
 )
 from .token import Token, TokenData, PreValidate
 from .profession import BaseProfession, Profession, ProfessionList
