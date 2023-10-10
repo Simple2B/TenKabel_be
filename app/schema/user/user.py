@@ -74,7 +74,7 @@ class UserNotificationSettingsOut(BaseModel):
 class ProfileJobInfo(BaseModel):
     uuid: str
     id: int
-    attachment: list[str] = []
+    attachments: list[str] = []
     payment: int
     name: str
 
