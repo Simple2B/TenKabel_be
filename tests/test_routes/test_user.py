@@ -650,9 +650,11 @@ def test_get_user_profile(
     assert user.card_name == card_data.card_name
 
 
+# @pytest.mark.skip(reason="Google bucket mock issue")
 def test_update_user(
     client: TestClient,
     db: Session,
+    monkeypatch,
     test_data: TestData,
     authorized_users_tokens: list[s.Token],
     faker,
@@ -674,13 +676,14 @@ def test_update_user(
         )
     )
 
-    request_data: s.UserUpdate = s.UserUpdate(
+    request_data: s.UserUpdateIn = s.UserUpdateIn(
         username=user.email,
         first_name=test_data.test_authorized_users[1].first_name + "A1",
         last_name=test_data.test_authorized_users[1].last_name,
         email=user.email,
         phone=user.phone,
         picture=PICTURE,
+        picture_filename="file.jpeg",
         professions=PROFESSION_IDS,
         locations=LOCATIONS_IDS,
         country_code="IL",
@@ -692,12 +695,10 @@ def test_update_user(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-
     db.refresh(user)
-
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
-    assert user.picture == PICTURE
+    assert user.picture.startswith("https://")
     assert len(user.professions) == len(PROFESSION_IDS)
     for profession in user.professions:
         assert profession.id in PROFESSION_IDS
