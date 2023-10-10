@@ -5,12 +5,9 @@ from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, or_, and_
 
-from app.config import Settings, get_settings
 from app.logger import log
 from app import schema as s
 from app import model as m
-
-settings: Settings = get_settings()
 
 
 def manage_tab_controller(

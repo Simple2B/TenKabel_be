@@ -695,9 +695,7 @@ def test_update_user(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-
     db.refresh(user)
-
     assert user.first_name == request_data.first_name
     assert user.last_name == request_data.last_name
     assert user.picture.startswith("https://")

@@ -13,6 +13,8 @@ from app.dependency.file import get_file_by_uuid
 
 
 class AttachmentController:
+    VALID_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "gif", "bmp", "tiff"]
+
     @staticmethod
     def get_type_by_extension(extension: str) -> s.enums.AttachmentType:
         if extension in [e.value for e in s.enums.ImageExtension]:
@@ -142,15 +144,7 @@ class AttachmentController:
             )
         return blob.public_url
 
-    @staticmethod
-    def is_valid_image_filename(filename: str):
-        # Get the file extension
-        VALID_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "gif", "bmp", "tiff"]
-
+    @classmethod
+    def is_valid_image_filename(cls, filename: str):
         file_extension = filename.split(".")[-1]
-
-        # Check if the file extension is in the list of valid image extensions
-        if file_extension in VALID_IMAGE_EXTENSIONS:
-            return True
-        else:
-            return False
+        return file_extension in cls.VALID_IMAGE_EXTENSIONS
