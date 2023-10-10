@@ -21,9 +21,9 @@ class Tag(db.Model):
     rate: orm.Mapped[s.BaseRate.RateStatus] = orm.mapped_column(
         sa.Enum(s.BaseRate.RateStatus), default=s.BaseRate.RateStatus.NEUTRAL
     )
-    profession_id: orm.Mapped[int] = orm.mapped_column(
-        sa.ForeignKey("professions.id"), nullable=False
-    )
+    # profession_id: orm.Mapped[int] = orm.mapped_column(
+    #     sa.ForeignKey("professions.id"), nullable=False
+    # )
     tag: orm.Mapped[str] = orm.mapped_column(sa.String(100), nullable=False)
 
     @orm.validates("status")
@@ -31,3 +31,6 @@ class Tag(db.Model):
         if self.status != value:
             self.status_changed_at = datetime.utcnow()
         return value
+
+    def __repr__(self):
+        return f"<Tag {self.id} - {self.tag}>"

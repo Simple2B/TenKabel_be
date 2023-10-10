@@ -10,3 +10,4 @@ from .create_rates import create_rates
 from .generate_customer_uid import generate_customer_uid, generate_card_token
 from .create_attachments import create_attachments
 from .create_files import create_files, create_files_for_user
+from .create_reviews import create_reviews

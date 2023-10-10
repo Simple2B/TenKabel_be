@@ -34,6 +34,8 @@ class Settings(BaseSettings):
     VAT_COEFFICIENT: float = 1.17
     COMMISSION_COEFFICIENT: float = 0.009
 
+    POPULAR_TAGS_LIMIT: int = 10
+
     MINIMUM_MOBILE_APP_VERSION: str
 
     class Config:
