@@ -6,6 +6,7 @@ from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 from app.schema.profession import Profession
 from app.schema.location import Location
 from app.config import get_settings
+from app.schema.review import ReviewsOut
 
 settings = get_settings()
 
@@ -70,6 +71,42 @@ class UserNotificationSettingsOut(BaseModel):
     notification_job_status: bool
 
 
+class ProfileJobInfo(BaseModel):
+    uuid: str
+    id: int
+    attachment: list[str] = []
+    payment: int
+    name: str
+
+    class Config:
+        orm_mode = True
+
+
+class UserCollaboration(BaseModel):
+    id: int
+    uuid: str
+    first_name: str
+    last_name: str
+    picture: str
+
+    class Config:
+        orm_mode = True
+
+
+class JobsCollaborationsWorkers(ProfileJobInfo):
+    worker: UserCollaboration | None
+
+    class Config:
+        orm_mode = True
+
+
+class JobsCollaborationsOwners(ProfileJobInfo):
+    owner: UserCollaboration
+
+    class Config:
+        orm_mode = True
+
+
 class User(BaseUser):
     id: int
     uuid: str
@@ -94,6 +131,17 @@ class User(BaseUser):
     notification_locations_flag: bool
     notification_locations: list[Location]
     notification_job_status: bool
+
+    class Config:
+        orm_mode = True
+
+
+class UserProfile(User):
+    owned_rates: list[ReviewsOut]
+    given_rates: list[ReviewsOut]
+
+    jobs_owned: list[JobsCollaborationsWorkers]
+    jobs_to_do: list[JobsCollaborationsOwners]
 
     class Config:
         orm_mode = True

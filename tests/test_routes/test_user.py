@@ -584,7 +584,7 @@ def test_get_user_profile(
         },
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj: s.User = s.User.parse_obj(response.json())
+    resp_obj: s.UserProfile = s.UserProfile.parse_obj(response.json())
     user: m.User = db.scalar(
         select(m.User).filter_by(email=test_data.test_authorized_users[0].email)
     )
@@ -607,7 +607,7 @@ def test_get_user_profile(
         f"api/users/{user.uuid}",
     )
     assert response.status_code == status.HTTP_200_OK
-    resp_obj: s.User = s.User.parse_obj(response.json())
+    resp_obj: s.UserProfile = s.UserProfile.parse_obj(response.json())
     assert resp_obj.uuid == user.uuid
     assert resp_obj.positive_rates_count == user.positive_rates_count
 

@@ -32,6 +32,7 @@ def test_review_methods(
     )
     create_jobs_for_user(db, auth_user.id)
 
+    tags = ["test1", "test2"]
     job: m.Job = auth_user.jobs_owned[0]
     if not job.worker:
         job.worker_id = db.scalars(
@@ -48,7 +49,7 @@ def test_review_methods(
         evaluated_id=job.worker.id,
         evaluates_id=job.owner.id,
         job_uuid=job.uuid,
-        rates=[s.TagIn(rate=s.BaseRate.RateStatus.NEGATIVE, tags=["test1", "test2"])],
+        rates=[s.TagIn(rate=s.BaseRate.RateStatus.NEGATIVE, tags=tags)],
     )
 
     response = client.post(
@@ -57,9 +58,10 @@ def test_review_methods(
         json=request_data.dict(),
     )
     assert response.status_code == status.HTTP_201_CREATED
+    assert job.owner.negative_rates_count == len(tags)
 
     response = client.get(
-        f"api/reviews/review/{job.reviews[0].uuid}",
+        f"api/reviews/{job.reviews[0].uuid}",
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
 
