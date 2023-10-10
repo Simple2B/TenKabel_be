@@ -5,6 +5,9 @@ from pydantic import BaseModel, EmailStr, AnyHttpUrl, constr
 
 from app.schema.profession import Profession
 from app.schema.location import Location
+from app.config import get_settings
+
+settings = get_settings()
 
 phone_field = constr(
     max_length=128,
@@ -81,7 +84,7 @@ class User(BaseUser):
     country_code: str
     is_verified: bool
     professions: list[Profession]
-    picture: str
+    picture: str = settings.DEFAULT_AVATAR_PROFILE_URL
     locations: list[Location]
     is_auth_by_google: bool
     card_name: str | None

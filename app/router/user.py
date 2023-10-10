@@ -84,7 +84,7 @@ def patch_user(
         compressed_image_bytes_io = io.BytesIO()
         image.save(
             compressed_image_bytes_io,
-            format=data.picture_filename.split(".")[-1],
+            format="JPEG",
             optimize=True,
             quality=50,
         )

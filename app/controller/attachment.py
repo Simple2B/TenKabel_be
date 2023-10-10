@@ -145,7 +145,7 @@ class AttachmentController:
     @staticmethod
     def is_valid_image_filename(filename: str):
         # Get the file extension
-        VALID_IMAGE_EXTENSIONS = ["jpeg", "png", "gif", "bmp", "tiff"]
+        VALID_IMAGE_EXTENSIONS = ["jpeg", "jpg", "png", "gif", "bmp", "tiff"]
 
         file_extension = filename.split(".")[-1]
 
