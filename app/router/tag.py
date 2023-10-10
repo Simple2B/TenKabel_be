@@ -1,5 +1,5 @@
 from fastapi import Depends, APIRouter, status
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 import app.model as m
@@ -19,9 +19,9 @@ def get_popular_tags(
     settings: Settings = Depends(get_settings),
 ):
     tags = db.scalars(
-        select(m.Tag)
+        select(m.Tag, func.count(m.Review.tag_id))
         .join(m.Review)
-        .group_by(m.Review.tag_id)
+        .group_by(m.Tag.id)
         .order_by(func.count(m.Review.tag_id).desc())
         .limit(settings.POPULAR_TAGS_LIMIT)
     ).all()
