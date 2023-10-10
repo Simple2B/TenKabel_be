@@ -13,7 +13,7 @@ review_router = APIRouter(prefix="/reviews", tags=["Review"])
 
 
 @review_router.get(
-    "/review/{review_uuid}", status_code=status.HTTP_200_OK, response_model=s.ReviewOut
+    "/{review_uuid}", status_code=status.HTTP_200_OK, response_model=s.ReviewOut
 )
 def get_review(
     review_uuid: str,
@@ -26,7 +26,6 @@ def get_review(
         job_uuid=review.job.uuid,
         tag=s.TagOut(
             rate=review.tag.rate,
-            profession_id=review.tag.profession_id,
             tag=review.tag.tag,
         ),
     )
@@ -97,7 +96,7 @@ def create_reviews(
                 select(m.Tag).where(
                     and_(
                         m.Tag.tag == tag_in,
-                        m.Tag.profession_id == job.profession_id,
+                        # m.Tag.profession_id == job.profession_id,
                         m.Tag.rate == rate.rate,
                     )
                 )
@@ -105,12 +104,12 @@ def create_reviews(
             if not tag:
                 log(
                     log.INFO,
-                    "Creating tag [%s] - [%s] - for profession [%s]",
+                    "Creating tag [%s] - [%s] ",
                     tag_in,
                     rate.rate,
-                    job.profession.name_en,
                 )
-                tag = m.Tag(tag=tag_in, profession_id=job.profession_id, rate=rate.rate)
+                # tag = m.Tag(tag=tag_in, profession_id=job.profession_id, rate=rate.rate)
+                tag = m.Tag(tag=tag_in, rate=rate.rate)
                 db.add(tag)
                 db.commit()
 

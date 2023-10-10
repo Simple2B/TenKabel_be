@@ -14,7 +14,7 @@ class TagIn(BaseModel):
 class TagOut(BaseModel):
     rate: BaseRate.RateStatus
     tag: str
-    profession_id: int
+    # profession_id: int | None
 
     class Config:
         use_enum_values = True
