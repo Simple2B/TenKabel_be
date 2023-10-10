@@ -163,14 +163,14 @@ class Job(db.Model):
     @property
     def owner_review_uuid(self) -> str | None:
         reviews = [
-            review for review in self.reviews if review.worker_id == self.owner_id
+            review for review in self.reviews if review.evaluates_id == self.owner_id
         ]
         return reviews[0].uuid if reviews else None
 
     @property
     def worker_review_uuid(self) -> str | None:
         reviews = [
-            review for review in self.reviews if review.worker_id == self.worker_id
+            review for review in self.reviews if review.evaluates_id == self.worker_id
         ]
         return reviews[0].uuid if reviews else None
 

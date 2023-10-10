@@ -1,8 +1,10 @@
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
+import sqlalchemy as sa
 
 import app.schema as s
+import app.model as m
 from app.config import Settings, get_settings
 
 from tests.fixture import TestData
@@ -17,7 +19,7 @@ from tests.utility import (
 settings: Settings = get_settings()
 
 
-def test_get_popular_tags(
+def test_tags_methods(
     client: TestClient,
     db: Session,
     test_data: TestData,
@@ -34,3 +36,16 @@ def test_get_popular_tags(
 
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == settings.POPULAR_TAGS_LIMIT
+
+    user: m.User = db.scalar(
+        sa.select(m.User).where(
+            m.User.email == test_data.test_authorized_users[0].email
+        )
+    )
+
+    response = client.get(
+        "api/tags/",
+        headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()) == len(user.owned_rates)
