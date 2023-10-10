@@ -146,5 +146,7 @@ class AttachmentController:
 
     @classmethod
     def is_valid_image_filename(cls, filename: str):
+        if not filename:
+            return False
         file_extension = filename.split(".")[-1]
         return file_extension in cls.VALID_IMAGE_EXTENSIONS
