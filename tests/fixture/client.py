@@ -29,6 +29,9 @@ def client(monkeypatch) -> Generator:
         def delete_file_from_google_cloud_storage(*args, **kwargs):
             return
 
+        def upload_user_profile_picture(*args, **kwargs):
+            return "https://storage.googleapis.com/tenkabel-dev/attachments/1"
+
     class PushNotificationMock:
         _is_initialized = False
 
@@ -55,6 +58,11 @@ def client(monkeypatch) -> Generator:
             AttachmentController,
             "delete_file_from_google_cloud_storage",
             GoogleStorageMock.delete_file_from_google_cloud_storage,
+        )
+        monkeypatch.setattr(
+            AttachmentController,
+            "upload_user_profile_picture",
+            GoogleStorageMock.upload_user_profile_picture,
         )
 
         yield c

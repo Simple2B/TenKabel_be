@@ -11,7 +11,7 @@ from PIL import Image
 import app.model as m
 import app.schema as s
 from app.logger import log
-from app.controller import upload_user_profile_picture, is_valid_image_filename
+from app.controller import AttachmentController
 from app.config import get_settings, Settings
 from app.dependency import get_current_user, get_google_storage_client
 from app.database import get_db
@@ -38,6 +38,7 @@ def patch_user(
     data: s.UserUpdateIn,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
+    settings: Settings = Depends(get_settings),
     google_storage_client=Depends(get_google_storage_client),
 ):
     if data.first_name:
@@ -71,7 +72,7 @@ def patch_user(
         current_user.email = data.email
         log(log.INFO, "User [%s] email updated - [%s]", current_user.id, data.email)
     if data.picture:
-        if not is_valid_image_filename(data.picture_filename):
+        if not AttachmentController.is_valid_image_filename(data.picture_filename):
             log(log.ERROR, "Image filename is bad - %", data.picture_filename)
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -88,11 +89,12 @@ def patch_user(
             quality=50,
         )
 
-        image_url = upload_user_profile_picture(
+        image_url = AttachmentController.upload_user_profile_picture(
             filename=f"{data.picture_filename}",
             file=compressed_image_bytes_io.getvalue(),
             destination_filename=f"profile/{current_user.uuid}/{data.picture_filename}",
             google_storage_client=google_storage_client,
+            settings=settings,
         )
         current_user.picture = image_url
         log(log.INFO, "User [%s] picture updated", current_user.id)

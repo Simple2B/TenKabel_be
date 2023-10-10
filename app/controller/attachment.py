@@ -96,8 +96,6 @@ class AttachmentController:
             )
         return attachment
 
-    # /b/tenkabel-dev/o/attachments%2Fa55738b7-2a3c-4fbc-824e-e0c533a0def1%2Ffranko-ivan-iakovych-boryslav-smiietsia625%202.epub
-    # /b/tenkabel-dev/o/attachments%2Fa55738b7-2a3c-4fbc-824e-e0c533a0def1%2Ffranko-ivan-iakovych-boryslav-smiietsia625%202.epub
     @staticmethod
     def delete_file_from_google_cloud_storage(
         filename: str,
@@ -122,3 +120,37 @@ class AttachmentController:
                 )
         else:
             log(log.INFO, "File %s not found in google cloud client", filename)
+
+    @staticmethod
+    def upload_user_profile_picture(
+        filename: str,
+        file: bytes,
+        destination_filename: str,
+        google_storage_client,
+        settings: Settings,
+    ):
+        bucket = google_storage_client.get_bucket(settings.GOOGLE_STORAGE_BUCKET_NAME)
+        blob = bucket.blob(filename)
+        blob = bucket.blob(destination_filename)
+        try:
+            blob.upload_from_string(file)
+        except GoogleCloudError as e:
+            log(log.INFO, "Error while uploading file to google cloud storage:\n%s", e)
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Error while uploading file to google cloud storage",
+            )
+        return blob.public_url
+
+    @staticmethod
+    def is_valid_image_filename(filename: str):
+        # Get the file extension
+        VALID_IMAGE_EXTENSIONS = ["jpeg", "png", "gif", "bmp", "tiff"]
+
+        file_extension = filename.split(".")[-1]
+
+        # Check if the file extension is in the list of valid image extensions
+        if file_extension in VALID_IMAGE_EXTENSIONS:
+            return True
+        else:
+            return False

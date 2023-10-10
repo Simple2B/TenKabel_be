@@ -12,8 +12,6 @@ from .user import (
     manage_tab_controller,
     delete_device,
     delete_user_view,
-    upload_user_profile_picture,
-    is_valid_image_filename,
 )
 from .rate import create_rate_controller
 from .payplus import (

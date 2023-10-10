@@ -4,8 +4,6 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy import select, or_, and_
-from google.cloud.storage import Client
-from google.cloud.exceptions import GoogleCloudError
 
 from app.config import Settings, get_settings
 from app.logger import log
@@ -160,38 +158,3 @@ def delete_user_view(device: s.LogoutIn, current_user: m.User, db: Session):
         )
     log(log.INFO, "User [%s] deleted successfully", current_user.id)
     return current_user
-
-
-def upload_user_profile_picture(
-    filename: str,
-    file: bytes,
-    destination_filename: str,
-    google_storage_client: Client,
-):
-    bucket = google_storage_client.get_bucket(settings.GOOGLE_STORAGE_BUCKET_NAME)
-
-    blob = bucket.blob(filename)
-    blob = bucket.blob(destination_filename)
-    try:
-        blob.upload_from_string(file)
-    except GoogleCloudError as e:
-        log(log.INFO, "Error while uploading file to google cloud storage:\n%s", e)
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Error while uploading file to google cloud storage",
-        )
-
-    return blob.public_url
-
-
-def is_valid_image_filename(filename: str):
-    # Get the file extension
-    VALID_IMAGE_EXTENSIONS = ["jpeg", "png", "gif", "bmp", "tiff"]
-
-    file_extension = filename.split(".")[-1]
-
-    # Check if the file extension is in the list of valid image extensions
-    if file_extension in VALID_IMAGE_EXTENSIONS:
-        return True
-    else:
-        return False
