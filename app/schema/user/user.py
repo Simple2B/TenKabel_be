@@ -88,7 +88,7 @@ class UserCollaboration(BaseModel):
     uuid: str
     first_name: str
     last_name: str
-    picture: str
+    picture: str = settings.DEFAULT_AVATAR_PROFILE_URL
 
     class Config:
         orm_mode = True
@@ -151,7 +151,7 @@ class UserProfile(User):
 class UserPicture(BaseUser):
     id: int
     uuid: str
-    picture: str
+    picture: str = settings.DEFAULT_AVATAR_PROFILE_URL
 
     class Config:
         orm_mode = True
