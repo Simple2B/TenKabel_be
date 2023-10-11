@@ -15,8 +15,8 @@ class AttachmentOut(BaseModel):
     uuid: str
     job_id: int
     user_id: int
-    file_id: int | None
-    file: FileOut | None
+    file_id: int
+    file: FileOut
     created_at: datetime
 
     @validator("created_at", each_item=True)
