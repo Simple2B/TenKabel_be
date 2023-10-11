@@ -8,24 +8,18 @@ on:
 
 jobs:
   tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11"]
-        poetry-version: [1.4.1]
-        os: [Linux]
-    runs-on: ${{ matrix.os }}
+    runs-on: Linux
 
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.11
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
-          poetry-version: ${{ matrix.poetry-version }}
+          poetry-version: 1.6.1
       - name: Install dependencies
         run: |
           poetry install
@@ -36,46 +30,3 @@ jobs:
       - name: Run pytest
         run: |
           poetry run pytest
-  build:
-    needs: tests
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    runs-on: "Linux"
-    steps:
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and Push Docker image
-        uses: docker/build-push-action@v4
-        with:
-          push: true
-          tags: simple2b/tenkabel:latest
-
-  deploy_stage:
-    runs-on: Linux
-    needs: build
-    steps:
-      - name: Deploy api.tenkabel.simple2b.net
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SSH_HOST_IP_DEV }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd ten_kabel; ./up
-      - name: send telegram message on push and pull
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            ${{ github.actor }} updated api.tenkabel.simple2b.net
-            Changes: https://github.com/${{ github.repository }}/commit/${{github.sha}}
