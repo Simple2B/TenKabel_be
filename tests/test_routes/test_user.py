@@ -25,6 +25,7 @@ from tests.utility import (
     create_rates,
     generate_customer_uid,
     create_jobs_for_user,
+    create_attachments_for_user,
 )
 
 
@@ -576,6 +577,7 @@ def test_get_user_profile(
         job.created_at = job.created_at.replace(tzinfo=None)
         assert job.created_at >= datetime.fromtimestamp(start_date)
         assert job.created_at <= datetime.fromtimestamp(end_date)
+    create_attachments_for_user(db, user.id)
 
     response = client.get(
         "api/users",

@@ -7,6 +7,7 @@ from app.schema.profession import Profession
 from app.schema.location import Location
 from app.config import get_settings
 from app.schema.review import ReviewsOut
+from app.schema.attachment import AttachmentOut
 
 settings = get_settings()
 
@@ -74,7 +75,7 @@ class UserNotificationSettingsOut(BaseModel):
 class ProfileJobInfo(BaseModel):
     uuid: str
     id: int
-    attachments: list[str] = []
+    attachments: list[AttachmentOut]
     payment: int
     name: str
 
