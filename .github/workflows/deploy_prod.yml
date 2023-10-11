@@ -10,24 +10,18 @@ on:
 
 jobs:
   tests:
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11"]
-        poetry-version: [1.4.1]
-        runner: [builder]
-    runs-on: ${{ matrix.runner }}
+    runs-on: Linux
 
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.11
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.11
       - name: Setup poetry
         uses: abatilo/actions-poetry@v2.0.0
         with:
-          poetry-version: ${{ matrix.poetry-version }}
+          poetry-version: 1.6.1
       - name: Install dependencies
         run: |
           poetry install
@@ -40,11 +34,7 @@ jobs:
           poetry run pytest
 
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [Linux]
-    runs-on: ${{ matrix.os }}
+    runs-on: Linux
     needs: tests
     steps:
       - name: Set up QEMU
