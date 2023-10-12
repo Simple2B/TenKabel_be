@@ -28,7 +28,7 @@ services:
     restart: always
 
   app:
-    image: simple2b/tenkabel:latest # TODO change tag to actual backend version
+    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
     restart: always
     command: bash ./start_server.sh
     env_file:
@@ -45,7 +45,7 @@ services:
       - db
 
   worker:
-    image: simple2b/tenkabel:latest # TODO change tag to actual backend version
+    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
     restart: always
     env_file:
       - project.env
