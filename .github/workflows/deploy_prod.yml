@@ -103,7 +103,7 @@ jobs:
           username: ${{ env.PROD_USERNAME }}
           key: ${{ env.PROD_SSH_KEY }}
           source: docker-compose.dev.yaml
-          target: ~/car_qr
+          target: /home/runner/tenkabel
       - name: deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
