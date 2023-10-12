@@ -2601,6 +2601,17 @@ docs = ["myst-parser", "pydata-sphinx-theme", "sphinx"]
 test = ["argcomplete (>=2.0)", "pre-commit", "pytest", "pytest-mock"]
 
 [[package]]
+name = "types-passlib"
+version = "1.7.7.13"
+description = "Typing stubs for passlib"
+optional = false
+python-versions = "*"
+files = [
+    {file = "types-passlib-1.7.7.13.tar.gz", hash = "sha256:f152639f1f2103d7f59a56e2aec5f9398a75a80830991d0d68aac5c2b9c32a77"},
+    {file = "types_passlib-1.7.7.13-py3-none-any.whl", hash = "sha256:414b5ee9c88313357c9261cfcf816509b1e8e4673f0796bd61e9ef249f6fe076"},
+]
+
+[[package]]
 name = "types-pillow"
 version = "10.0.0.3"
 description = "Typing stubs for Pillow"
@@ -2720,4 +2731,4 @@ email = ["email-validator"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "aa49933f366bee32fab6ae4289e49dfd27a66de5153c3cbfbf5b55eb2e23631a"
+content-hash = "5f7a5781b7c91c779cb80bed0e6f312122854c07ede02236ddd35af1e3aa6ad1"
