@@ -3,10 +3,14 @@ services:
   redis:
     restart: always
     image: "redis:alpine"
+    env_file:
+      - .env
+    ports:
+      - 127.0.0.1:${REDIS_PORT:-6385}:6379
     environment:
-      REDISCLI_AUTH: ${REDIS_PASSWORD:-redis_pass}
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-password}
     command: >
-      --requirepass ${REDIS_PASSWORD:-redis_pass}
+      --requirepass ${REDIS_PASSWORD:-password}
 
   db:
     image: postgres:14
@@ -27,14 +31,17 @@ services:
     command: bash ./start_server.sh
     env_file:
       - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tenkabel.rule=Host(`tenkabel.com`)"
+      - "traefik.http.routers.tenkabel.tls=true"
+      - "traefik.http.routers.tenkabel.tls.certresolver=myresolver"
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
       SERVER_PORT: ${SERVER_PORT:-8008}
     volumes:
       - ./firebase_credentials.json:/app/firebase_credentials.json
       - ./google_cloud_service_account.json:/app/google_cloud_service_account.json
-    ports:
-      - 127.0.0.1:${SERVER_PORT:-8008}:80
     depends_on:
       - db
 
@@ -53,3 +60,7 @@ services:
 
 volumes:
   db_data:
+
+networks:
+  default:
+    name: tenkabel_network

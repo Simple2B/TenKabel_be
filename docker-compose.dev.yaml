@@ -4,7 +4,7 @@ services:
     restart: always
     image: "redis:alpine"
     env_file:
-      - project.env
+      - .env
     ports:
       - 127.0.0.1:${REDIS_PORT:-6385}:6379
     environment:
@@ -23,8 +23,6 @@ services:
       PGUSER: ${DATABASE_USERNAME:-postgres}
       PGDATABASE: db
       PGPASSWORD: ${DATABASE_PASSWORD:-password}
-    ports:
-      - 127.0.0.1:${DATABASE_LOCAL_PORT:-5433}:5432
     restart: always
 
   app:
@@ -32,15 +30,18 @@ services:
     restart: always
     command: bash ./start_server.sh
     env_file:
-      - project.env
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tenkabel.rule=Host(`tenkabel.com`)"
+      - "traefik.http.routers.tenkabel.tls=true"
+      - "traefik.http.routers.tenkabel.tls.certresolver=myresolver"
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
       SERVER_PORT: ${SERVER_PORT:-8008}
     volumes:
       - ./firebase_credentials.json:/app/firebase_credentials.json
       - ./google_cloud_service_account.json:/app/google_cloud_service_account.json
-    ports:
-      - 127.0.0.1:${SERVER_PORT:-8008}:80
     depends_on:
       - db
 
@@ -48,7 +49,7 @@ services:
     image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
     restart: always
     env_file:
-      - project.env
+      - .env
     command: bash ./start_worker.sh
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
@@ -59,3 +60,7 @@ services:
 
 volumes:
   db_data:
+
+networks:
+  default:
+    name: tenkabel_network
