@@ -29,7 +29,6 @@ services:
 
   app:
     build: .
-    image: simple2b/tenkabel:latest
     restart: always
     command: bash ./start_server.sh
     env_file:
@@ -47,7 +46,6 @@ services:
 
   worker:
     build: .
-    image: simple2b/tenkabel:latest
     restart: always
     env_file:
       - project.env
