@@ -7,9 +7,9 @@ from app.logger import log
 REGIONS = [
     {"en": "Haifa", "hebrew": "חיפה"},
     {"en": "Jerusalem", "hebrew": "ירושלים"},
-    {"en": "North", "hebrew": "צפון"},
-    {"en": "Center", "hebrew": "מרכז"},
-    {"en": "South", "hebrew": "דרום"},
+    {"en": "North", "hebrew": "צָפוֹן"},
+    {"en": "Center", "hebrew": "מֶרְכָּז"},
+    {"en": "South", "hebrew": "דָרוֹם"},
     {"en": "Tel Aviv", "hebrew": "תל אביב"},
     {"en": "Judea", "hebrew": "יהודה"},
 ]
