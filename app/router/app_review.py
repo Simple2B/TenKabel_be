@@ -36,7 +36,7 @@ def get_app_review(
     response_model=s.AppReviewOut,
     status_code=status.HTTP_201_CREATED,
 )
-def upload_file(
+def create_app_review(
     app_review: s.AppReviewIn,
     db: Session = Depends(get_db),
     current_user: m.User = Depends(get_current_user),
