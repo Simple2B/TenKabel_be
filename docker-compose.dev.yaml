@@ -31,11 +31,6 @@ services:
     command: bash ./start_server.sh
     env_file:
       - .env
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.tenkabel.rule=Host(`tenkabel.com`)"
-      - "traefik.http.routers.tenkabel.tls=true"
-      - "traefik.http.routers.tenkabel.tls.certresolver=myresolver"
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
       SERVER_PORT: ${SERVER_PORT:-8008}

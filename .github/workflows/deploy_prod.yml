@@ -8,9 +8,9 @@ on:
 env:
   DOCKER_LOGIN: simple2b
   PROJECT_IMAGE: simple2b/tenkabel
-  PROD_HOST: ${{ secrets.PROD_HOST }}
-  PROD_USERNAME: ${{ secrets.SSH_USER }}
-  PROD_SSH_KEY: ${{ secrets.SSH_KEY }}
+  STAGE_HOST: ${{ secrets.STAGE_HOST }}
+  STAGE_USERNAME: ${{ secrets.SSH_USER }}
+  STAGE_SSH_KEY: ${{ secrets.SSH_KEY }}
   SITE_DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
 jobs:
@@ -99,17 +99,17 @@ jobs:
       - name: update compose file
         uses: appleboy/scp-action@v0.1.4
         with:
-          host: ${{ env.PROD_HOST }}
-          username: ${{ env.PROD_USERNAME }}
-          key: ${{ env.PROD_SSH_KEY }}
+          host: ${{ env.STAGE_HOST }}
+          username: ${{ env.STAGE_USERNAME }}
+          key: ${{ env.STAGE_SSH_KEY }}
           source: docker-compose.dev.yaml
           target: /home/runner/tenkabel
       - name: deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ env.PROD_HOST }}
-          username: ${{ env.PROD_USERNAME }}
-          key: ${{ env.PROD_SSH_KEY }}
+          host: ${{ env.STAGE_HOST }}
+          username: ${{ env.STAGE_USERNAME }}
+          key: ${{ env.STAGE_SSH_KEY }}
           script: |
             cd /home/runner/tenkabel &&
             mv docker-compose.dev.yaml docker-compose.yaml &&
