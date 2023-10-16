@@ -85,3 +85,4 @@ from .payments import (
 )
 from .review import ReviewIn, ReviewOut, ReviewsOut
 from .tag import TagIn, TagOut
+from .app_review import AppReviewIn, AppReviewOut

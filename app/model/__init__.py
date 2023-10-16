@@ -24,6 +24,7 @@ from .commission import Commission
 from .payment import Payment
 from .tag import Tag
 from .review import Review
+from .app_review import AppReview
 
 
 from app.database import db
