@@ -1,5 +1,9 @@
 import jinja2
 import time
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
+
 
 # patch https://jinja.palletsprojects.com/en/3.0.x/changes/
 # pass_context replaces contextfunction and contextfilter.
@@ -30,6 +34,14 @@ admin = Admin(
 sql_admin = Admin(app, engine)
 
 app.include_router(router)
+
+
+templates = Jinja2Templates(directory="app/templates")
+
+
+@app.get("/policy", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
 
 
 @app.middleware("http")
