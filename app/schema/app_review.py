@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 
 
 class AppReviewIn(BaseModel):
-    stars_count: int = Field(None, ge=1, le=5)
+    stars_count: int = Field(None, ge=0, le=5)
     review: str = Field(..., max_length=1000)
 
     class Config:
