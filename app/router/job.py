@@ -53,22 +53,27 @@ def get_jobs(
     query = get_pending_jobs_query_for_user(db, user)
 
     if q:
-        query = query.where(
-            or_(
-                m.Job.name.icontains(f"%{q}%"),
-                m.Job.description.icontains(f"%{q}%"),
-                m.Job.city.icontains(f"%{q}%"),
-                m.Job.regions.any(m.Location.name_en.icontains(f"%{q}%")),
+        if bool(re.match("^[0-9]+$", q.strip())):
+            query = query.where(m.Job.id == int(q))
+            log(
+                log.INFO,
+                "getting job by ID - %s",
             )
-        )
-        log(log.INFO, "Job filtered by [%s] containing", q)
+            return s.ListJobSearch(
+                jobs=db.scalars(query.order_by(m.Job.id.desc())).all()
+            )
+        else:
+            query = query.where(
+                or_(
+                    m.Job.name.icontains(f"%{q}%"),
+                    m.Job.description.icontains(f"%{q}%"),
+                    m.Job.city.icontains(f"%{q}%"),
+                    m.Job.regions.any(m.Location.name_en.icontains(f"%{q}%")),
+                )
+            )
+            log(log.INFO, "Job filtered by [%s] containing", q)
 
-    if (
-        user is None
-        # or user.google_openid_key
-        # or user.apple_uid
-        or any([profession_id, cities, min_price, max_price])
-    ):
+    if user is None or any([profession_id, cities, min_price, max_price]):
         if profession_id:
             query = query.where(m.Job.profession_id == profession_id)
         if cities:
