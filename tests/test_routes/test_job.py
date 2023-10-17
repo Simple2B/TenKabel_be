@@ -311,6 +311,30 @@ def test_search_job(
     response_jobs_list = s.ListJobSearch.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
 
+    # getting job by id in search
+    job: m.Job = db.scalar(
+        select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
+    )
+    assert job
+    response = client.get("api/jobs", params={"q": f"{job.id}"})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) == 1
+    for resp_job in response_jobs_list.jobs:
+        assert resp_job.id == job.id
+
+    # testing with whitespaces
+    response = client.get("api/jobs", params={"q": f"   {job.id}    "})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) == 1
+
+    # testing with text
+    response = client.get("api/jobs", params={"q": f"   {job.id}   some else "})
+    assert response.status_code == status.HTTP_200_OK
+    response_jobs_list = s.ListJobSearch.parse_obj(response.json())
+    assert len(response_jobs_list.jobs) == 0
+
 
 def test_update_job(
     client: TestClient,
