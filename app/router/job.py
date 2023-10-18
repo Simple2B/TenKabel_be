@@ -48,13 +48,15 @@ def get_jobs(
     max_price: int = None,
     db: Session = Depends(get_db),
     user: m.User | None = Depends(get_user),
-    q: str | None = "",
+    q: str | None = Query(default="", strip_whitespace=True),
 ) -> s.ListJobSearch:
     query = get_pending_jobs_query_for_user(db, user)
 
     if q:
-        if bool(re.match("^[0-9]+$", q.strip())):
-            query = query.where(m.Job.id == int(q))
+        id_match = re.search(r".*?#(\d+)", q)
+        if bool(id_match):
+            parsed_id: int = int(id_match.group(1))
+            query = query.where(m.Job.id == parsed_id)
             log(
                 log.INFO,
                 "getting job by ID - %s",

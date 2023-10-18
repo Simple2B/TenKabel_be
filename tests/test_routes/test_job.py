@@ -316,7 +316,7 @@ def test_search_job(
         select(m.Job).where(m.Job.status == s.enums.JobStatus.PENDING)
     )
     assert job
-    response = client.get("api/jobs", params={"q": f"{job.id}"})
+    response = client.get("api/jobs", params={"q": f"#{job.id}"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJobSearch.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 1
@@ -324,13 +324,15 @@ def test_search_job(
         assert resp_job.id == job.id
 
     # testing with whitespaces
-    response = client.get("api/jobs", params={"q": f"   {job.id}    "})
+    response = client.get(
+        "api/jobs", params={"q": f"some test string   #{job.id} else string  "}
+    )
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJobSearch.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 1
 
-    # testing with text
-    response = client.get("api/jobs", params={"q": f"   {job.id}   some else "})
+    # testing without '#' symbol
+    response = client.get("api/jobs", params={"q": f"{job.id}   test test"})
     assert response.status_code == status.HTTP_200_OK
     response_jobs_list = s.ListJobSearch.parse_obj(response.json())
     assert len(response_jobs_list.jobs) == 0
