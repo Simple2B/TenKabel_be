@@ -200,6 +200,13 @@ class JobIn(BaseModel):
         orm_mode = True
         use_enum_values = True
 
+    @validator("frame_time")
+    def validate_frame_time(cls, v, values, **kwargs):
+        if values.get("is_asap") is True:
+            if v is None or len(v) > 36:
+                raise ValueError("Frame time must be not empty and less than 36 chars")
+        return v
+
 
 class JobUpdate(JobIn):
     status: Status
