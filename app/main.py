@@ -1,5 +1,7 @@
-import jinja2
 import time
+import json
+
+import jinja2
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -39,11 +41,6 @@ app.include_router(router)
 templates = Jinja2Templates(directory="app/templates")
 
 
-@app.get("/policy", response_class=HTMLResponse)
-async def read_item(request: Request):
-    return templates.TemplateResponse("privacy.html", {"request": request})
-
-
 @app.middleware("http")
 async def add_process_time_header(request: Request, call_next):
     start_time = time.time()
@@ -52,6 +49,25 @@ async def add_process_time_header(request: Request, call_next):
     response.headers["X-Process-Time"] = str(process_time)
     log(log.INFO, "Time estimated - [%s]", process_time)
     return response
+
+
+@app.get("/policy", response_class=HTMLResponse)
+async def read_item(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+
+@app.get("/.well-known/apple-app-site-association")
+def apple_app_link():
+    with open("apple-app-site-association.json", "r") as file:
+        data = json.load(file)
+    return data
+
+
+@app.get("/.well-known/assetlinks")
+def android_app_link():
+    with open("assetlinks.json", "r") as file:
+        data = json.load(file)
+    return data
 
 
 @app.get("/")
