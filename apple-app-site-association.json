@@ -7,7 +7,7 @@
         "paths": [
            "/job/*",
            "/job_detailed/*",
-           "/JobDetails/*"
+           "/JobDetailed/*"
         ]
         }
      ]
