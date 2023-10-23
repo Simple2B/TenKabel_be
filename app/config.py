@@ -40,6 +40,9 @@ class Settings(BaseSettings):
 
     MINIMUM_MOBILE_APP_VERSION: str
 
+    APP_STORE_LINK: str
+    PLAY_MARKET_LINK: str
+
     class Config:
         env_file = "project.env", ".env"
 

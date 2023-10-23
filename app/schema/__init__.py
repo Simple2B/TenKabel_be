@@ -52,6 +52,7 @@ from .enums import (
     AttachmentType,
     PaymentsTab,
     AdditionalInfoTab,
+    DevicePlatform,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
