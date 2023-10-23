@@ -49,3 +49,35 @@ def test_tags_methods(
     )
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()) == len(user.owned_rates)
+
+
+def test_search_tags(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+    faker,
+):
+    create_locations(db)
+    create_professions(db)
+    fill_test_data(db)
+    create_jobs(db)
+    create_reviews(db)
+
+    tag: m.Tag = db.scalars(sa.select(m.Tag)).first()
+    assert tag
+    response = client.get(
+        "api/tags/search",
+        params={"q": tag.tag[0:2]},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert len(response.json()) > 0
+    resp_obj = s.ListTagOut.parse_obj(response.json())
+    assert resp_obj.items[0].tag[0:2] == tag.tag[0:2]
+
+    response = client.get(
+        "api/tags/search",
+        params={"q": "some random random "},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert s.ListTagOut.parse_obj(response.json()).items == []
