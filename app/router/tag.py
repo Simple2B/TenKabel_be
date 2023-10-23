@@ -20,7 +20,7 @@ tag_router = APIRouter(prefix="/tags", tags=["Tags"])
 def search_tags(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
-    q: str = Query(default=""),
+    q: str = Query(default="", trim_whitespace=True),
 ):
     query = select(m.Tag)
     if q:
