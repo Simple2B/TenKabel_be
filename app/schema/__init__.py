@@ -85,5 +85,5 @@ from .payments import (
     PaymentTabOutList,
 )
 from .review import ReviewIn, ReviewOut, ReviewsOut
-from .tag import TagIn, TagOut
+from .tag import TagIn, TagOut, ListTagOut
 from .app_review import AppReviewIn, AppReviewOut

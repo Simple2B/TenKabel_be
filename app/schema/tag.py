@@ -19,3 +19,7 @@ class TagOut(BaseModel):
     class Config:
         use_enum_values = True
         orm_mode = True
+
+
+class ListTagOut(BaseModel):
+    items: list[TagOut]
