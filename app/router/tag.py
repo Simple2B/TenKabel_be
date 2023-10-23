@@ -24,6 +24,7 @@ def search_tags(
 ):
     query = select(m.Tag)
     if q:
+        log(log.INFO, "search tag query is: - %s", q)
         query = query.where(m.Tag.tag.ilike(f"%{q}%"))
     return s.ListTagOut(
         items=db.scalars(query.distinct().limit(settings.POPULAR_TAGS_LIMIT)).all()
