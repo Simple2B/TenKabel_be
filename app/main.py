@@ -12,7 +12,7 @@ from fastapi.responses import HTMLResponse
 jinja2.contextfunction = jinja2.pass_context
 # flake8: noqa F402
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends
 from fastapi.responses import RedirectResponse
 from sqladmin import Admin
 
@@ -20,7 +20,8 @@ from app.database import get_engine
 from app.router import router
 from app.admin import authentication_backend
 from app.logger import log
-
+from app.schema.enums import DevicePlatform
+from app.config import Settings, get_settings
 
 engine = get_engine()
 
@@ -68,6 +69,17 @@ def android_app_link():
     with open("assetlinks.json", "r") as file:
         data = json.load(file)
     return data
+
+
+@app.get("/JobDetailed/{uuid}")
+def redirect_to_store(
+    uuid: str,
+    platform: str = "",
+    settings: Settings = Depends(get_settings),
+):
+    if platform == DevicePlatform.IOS.value:
+        return RedirectResponse(settings.APP_STORE_LINK)
+    return RedirectResponse(settings.PLAY_MARKET_LINK)
 
 
 @app.get("/")

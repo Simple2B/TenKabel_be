@@ -89,3 +89,8 @@ class ImageExtension(enum.Enum):
     SVG = "svg"
     WEBP = "webp"
     TIFF = "tiff"
+
+
+class DevicePlatform(enum.Enum):
+    IOS = "ios"
+    ANDROID = "android"
