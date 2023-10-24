@@ -94,3 +94,8 @@ class ImageExtension(enum.Enum):
 class DevicePlatform(enum.Enum):
     IOS = "ios"
     ANDROID = "android"
+
+
+class CommissionSymbol(enum.Enum):
+    PERCENT = "%"
+    SHEKEL = "₪"

@@ -7,7 +7,12 @@ from pydantic import BaseModel, validator
 from .user import User, UserPicture
 from .profession import Profession
 from .application import ApplicationOut
-from .enums import JobStatus as Status, PaymentStatus, CommissionStatus
+from .enums import (
+    JobStatus as Status,
+    PaymentStatus,
+    CommissionStatus,
+    CommissionSymbol,
+)
 from .platform_commission import PlatformCommission
 from .attachment import AttachmentOut
 from .location import Location
@@ -88,6 +93,7 @@ class Job(BaseJob):
     worker: User | None
     payment: int | None
     commission: int | None
+    commission_symbol: CommissionSymbol
     customer_first_name: str
     customer_last_name: str
     customer_phone: str
@@ -154,6 +160,7 @@ class SearchJob(BaseJob):
     payment: int | None
     commission: int | None
     customer_first_name: str
+    commission_symbol: CommissionSymbol
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
@@ -183,6 +190,7 @@ class JobIn(BaseModel):
     regions: list[int]
     payment: int
     commission: int
+    commission_symbol: CommissionSymbol
     who_pays: Job.WhoPays | None
     name: str
     description: str

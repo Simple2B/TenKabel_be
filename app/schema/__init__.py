@@ -53,6 +53,7 @@ from .enums import (
     PaymentsTab,
     AdditionalInfoTab,
     DevicePlatform,
+    CommissionSymbol,
 )
 from .push_notification import PushNotificationPayload, PushNotificationMessage
 from .device import DeviceIn, DeviceOut
