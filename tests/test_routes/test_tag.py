@@ -48,7 +48,8 @@ def test_tags_methods(
         headers={"Authorization": f"Bearer {authorized_users_tokens[0].access_token}"},
     )
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.json()) == len(user.owned_rates)
+    assert len(response.json()) == len(user.given_rates)
+
 
 
 def test_search_tags(
