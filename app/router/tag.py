@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, status, HTTPException
+from fastapi import Depends, APIRouter, status, HTTPException, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -10,6 +10,25 @@ from app.dependency import get_current_user
 from app.logger import log
 
 tag_router = APIRouter(prefix="/tags", tags=["Tags"])
+
+
+@tag_router.get(
+    "/search",
+    status_code=status.HTTP_200_OK,
+    response_model=s.ListTagOut,
+)
+def search_tags(
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+    q: str = Query(default="", trim_whitespace=True),
+):
+    query = select(m.Tag)
+    if q:
+        log(log.INFO, "search tag query is: - %s", q)
+        query = query.where(m.Tag.tag.ilike(f"%{q}%"))
+    return s.ListTagOut(
+        items=db.scalars(query.distinct().limit(settings.POPULAR_TAGS_LIMIT)).all()
+    )
 
 
 @tag_router.get(
