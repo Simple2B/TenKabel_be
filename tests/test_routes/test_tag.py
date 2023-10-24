@@ -51,7 +51,6 @@ def test_tags_methods(
     assert len(response.json()) == len(user.given_rates)
 
 
-
 def test_search_tags(
     client: TestClient,
     db: Session,
