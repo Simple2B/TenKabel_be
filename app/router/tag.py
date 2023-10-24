@@ -43,5 +43,5 @@ def get_user_tags(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User not found",
         )
-    tags = [review.tag for review in user.owned_rates]
+    tags = [review.tag for review in user.given_rates]
     return tags
