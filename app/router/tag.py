@@ -22,10 +22,11 @@ def search_tags(
     settings: Settings = Depends(get_settings),
     q: str = Query(default="", trim_whitespace=True),
 ):
-    query = select(m.Tag)
+    query = select(m.Tag, func.max(m.Tag.rate).label("rate")).group_by(m.Tag.tag)
     if q:
         log(log.INFO, "search tag query is: - %s", q)
         query = query.where(m.Tag.tag.ilike(f"%{q}%"))
+    # return list tags with unique tag name (not matter about rate)
     return s.ListTagOut(
         items=db.scalars(query.distinct().limit(settings.POPULAR_TAGS_LIMIT)).all()
     )
