@@ -93,7 +93,7 @@ class Job(BaseJob):
     worker: User | None
     payment: int | None
     commission: int | None
-    commission_symbol: CommissionSymbol
+    commission_symbol: CommissionSymbol | None
     customer_first_name: str
     customer_last_name: str
     customer_phone: str
@@ -190,7 +190,7 @@ class JobIn(BaseModel):
     regions: list[int]
     payment: int
     commission: int
-    commission_symbol: CommissionSymbol
+    commission_symbol: CommissionSymbol | None
     who_pays: Job.WhoPays | None
     name: str
     description: str
