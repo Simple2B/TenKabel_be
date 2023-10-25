@@ -81,3 +81,15 @@ def test_search_tags(
     )
     assert response.status_code == status.HTTP_200_OK
     assert s.ListTagOut.parse_obj(response.json()).items == []
+
+    tag = "test tag search"
+    db.add(m.Tag(tag=tag, rate=s.BaseRate.RateStatus.POSITIVE))
+    db.add(m.Tag(tag=tag, rate=s.BaseRate.RateStatus.NEGATIVE))
+    db.commit()
+
+    response = client.get(
+        "api/tags/search",
+        params={"q": tag},
+    )
+    assert response.status_code == status.HTTP_200_OK
+    assert len(s.ListTagOut.parse_obj(response.json()).items) == 1
