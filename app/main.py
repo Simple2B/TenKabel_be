@@ -71,6 +71,13 @@ def android_app_link():
     return data
 
 
+@app.get("/.well-known/assetlinks.json")
+def android_app_link():
+    with open("assetlinks.json", "r") as file:
+        data = json.load(file)
+    return data
+
+
 @app.get("/JobDetailed/{uuid}")
 def redirect_to_store(
     uuid: str,
