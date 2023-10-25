@@ -68,8 +68,9 @@ class Job(db.Model):
 
     commission_symbol: orm.Mapped[s.enums.CommissionSymbol] = orm.mapped_column(
         sa.Enum(s.enums.CommissionSymbol),
-        default=s.enums.CommissionSymbol.PERCENT,
-        server_default=s.enums.CommissionSymbol.PERCENT.value,
+        nullable=True,
+        default=None,
+        server_default=None,
     )
 
     regions: orm.Mapped[Location] = orm.relationship(

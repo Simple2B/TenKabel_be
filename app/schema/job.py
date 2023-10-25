@@ -83,7 +83,7 @@ class Job(BaseJob):
     id: int
     status: Status
     payment_status: PaymentStatus
-    commission_status: CommissionStatus
+    commission_status: CommissionStatus | None
     platform_commissions: list[PlatformCommission]
     who_pays: WhoPays
     is_deleted: bool
@@ -160,7 +160,7 @@ class SearchJob(BaseJob):
     payment: int | None
     commission: int | None
     customer_first_name: str
-    commission_symbol: CommissionSymbol
+    commission_symbol: CommissionSymbol | None
     customer_last_name: str
     customer_phone: str
     customer_street_address: str
