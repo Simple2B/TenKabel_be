@@ -66,6 +66,12 @@ class Job(db.Model):
     payment: orm.Mapped[int] = orm.mapped_column(sa.Integer, nullable=False)
     commission: orm.Mapped[float] = orm.mapped_column(sa.Float, nullable=False)
 
+    commission_symbol: orm.Mapped[s.enums.CommissionSymbol] = orm.mapped_column(
+        sa.Enum(s.enums.CommissionSymbol),
+        default=s.enums.CommissionSymbol.PERCENT,
+        server_default=s.enums.CommissionSymbol.PERCENT.value,
+    )
+
     regions: orm.Mapped[Location] = orm.relationship(
         "Location", secondary=jobs_locations, viewonly=True
     )

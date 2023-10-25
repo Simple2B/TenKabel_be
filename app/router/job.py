@@ -83,9 +83,15 @@ def get_jobs(
             for city in cities:
                 city_conditions.append(
                     m.Job.regions.any(
-                        m.Location.name_en == re.sub(r"[^a-zA-Z0-9]", "", city)
+                        m.Location.name_hebrew.ilike(city),
                     )
                 )
+                city_conditions.append(
+                    m.Job.regions.any(
+                        m.Location.name_en == re.sub(r"[^a-zA-Z0-9]", "", city),
+                    )
+                )
+
             query = query.where(or_(*city_conditions))
 
         if min_price:
