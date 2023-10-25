@@ -156,6 +156,12 @@ def test_unauth_user_jobs(
     for job in resp_obj.jobs:
         assert test_location.id in [region.id for region in job.regions]
 
+    response = client.get(f"api/jobs?cities={test_location.name_hebrew}")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj = s.ListJobSearch.parse_obj(response.json())
+    for job in resp_obj.jobs:
+        assert test_location.id in [region.id for region in job.regions]
+
     # regex checking
     response = client.get(f"api/jobs?cities=  ){test_location.name_en} & && !*?'  ")
     assert response.status_code == status.HTTP_200_OK
