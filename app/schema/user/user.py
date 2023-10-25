@@ -192,3 +192,7 @@ class PasswordStatus(BaseModel):
         PASSWORD_UPDATED = "Password updated"
 
     status: PasswordStatusEnum
+
+
+class UserExists(BaseModel):
+    exists: bool

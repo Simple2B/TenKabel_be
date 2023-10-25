@@ -651,6 +651,15 @@ def test_get_user_profile(
     assert user.payplus_card_uid is not None
     assert user.card_name == card_data.card_name
 
+    # get user by email
+
+    user = db.scalars(select(m.User).where(m.User.is_deleted.is_(False))).first()
+    assert user
+    response = client.get(f"api/users/{user.email}/email")
+    assert response.status_code == status.HTTP_200_OK
+    resp_obj: s.UserExists = s.UserExists.parse_obj(response.json())
+    assert resp_obj.exists
+
 
 # @pytest.mark.skip(reason="Google bucket mock issue")
 def test_update_user(

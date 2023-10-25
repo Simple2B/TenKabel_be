@@ -497,6 +497,25 @@ def get_user_profile(
     return s.UserProfile.from_orm(user)
 
 
+@user_router.get("/{user_email}/email", response_model=s.UserExists)
+def get_user_profile_by_email(
+    user_email: str,
+    db: Session = Depends(get_db),
+):
+    user: m.User = db.scalars(select(m.User).where(m.User.email == user_email)).first()
+    if user.is_deleted:
+        log(
+            log.ERROR,
+            "User %s not found",
+            user_email,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+    log(log.INFO, "User [%s] info", user.username)
+    return s.UserExists(exists=True if user else False)
+
+
 @user_router.patch(
     "/notification-settings",
     status_code=status.HTTP_200_OK,

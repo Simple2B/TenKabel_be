@@ -15,4 +15,5 @@ from .user import (
     ForgotPassword,
     PasswordStatus,
     UserProfile,
+    UserExists,
 )

@@ -15,6 +15,7 @@ from .user import (
     PasswordStatus,
     UserPicture,
     UserProfile,
+    UserExists,
 )
 from .token import Token, TokenData, PreValidate
 from .profession import BaseProfession, Profession, ProfessionList
