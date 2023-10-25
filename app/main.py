@@ -64,7 +64,7 @@ def apple_app_link():
     return data
 
 
-@app.get("/.well-known/assetlinks")
+@app.get("/.well-known/assetlinks.json")
 def android_app_link():
     with open("assetlinks.json", "r") as file:
         data = json.load(file)
