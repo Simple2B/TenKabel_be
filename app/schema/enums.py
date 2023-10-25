@@ -97,5 +97,5 @@ class DevicePlatform(enum.Enum):
 
 
 class CommissionSymbol(enum.Enum):
-    PERCENT = "%"
-    SHEKEL = "₪"
+    PERCENT = "PERCENT"
+    SHEKEL = "SHEKEL"

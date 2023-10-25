@@ -182,6 +182,7 @@ def create_job(
         description=data.description,
         payment=data.payment,
         commission=data.commission,
+        commission_symbol=data.commission_symbol,
         who_pays=who_pays,
         is_asap=data.is_asap,
         frame_time=data.frame_time,
