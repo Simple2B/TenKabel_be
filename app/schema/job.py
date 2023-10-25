@@ -178,6 +178,8 @@ class SearchJob(BaseJob):
 
 class ListJobSearch(BaseModel):
     jobs: list[SearchJob]
+    professions: list[Profession]
+    locations: list[Location]
 
 
 class ListJob(BaseModel):
