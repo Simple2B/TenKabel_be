@@ -52,6 +52,9 @@ def get_jobs(
 ) -> s.ListJobSearch:
     query = get_pending_jobs_query_for_user(db, user)
 
+    locations = [] if not user else user.locations
+    professions = [] if not user else user.professions
+
     if q:
         id_match = re.search(r".*?#(\d+)", q)
         if bool(id_match):
@@ -62,7 +65,9 @@ def get_jobs(
                 "getting job by ID - %s",
             )
             return s.ListJobSearch(
-                jobs=db.scalars(query.order_by(m.Job.id.desc())).all()
+                jobs=db.scalars(query.order_by(m.Job.id.desc())).all(),
+                locations=locations,
+                professions=professions,
             )
         else:
             query = query.where(
@@ -143,7 +148,9 @@ def get_jobs(
             log(log.INFO, "Job returned with no filters")
 
     jobs: s.ListJobSearch = s.ListJobSearch(
-        jobs=db.scalars(query.order_by(m.Job.id.desc())).all()
+        jobs=db.scalars(query.order_by(m.Job.id.desc())).all(),
+        locations=locations,
+        professions=professions,
     )
     log(log.INFO, "Job [%s] at all got", len(jobs.jobs))
     return jobs
