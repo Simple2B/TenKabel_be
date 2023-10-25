@@ -370,7 +370,7 @@ def test_update_job(
         commission=job.commission,
         payment_status=job.payment_status,
         commission_status=job.commission_status,
-        commission_symbol=s.enums.CommissionSymbol.SHEKEL,
+        # commission_symbol=s.enums.CommissionSymbol.SHEKEL,
         who_pays=job.who_pays,
         is_asap=job.is_asap,
         name=job.name,
