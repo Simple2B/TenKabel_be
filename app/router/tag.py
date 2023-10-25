@@ -36,9 +36,8 @@ def search_tags(
         if len(items) >= settings.POPULAR_TAGS_LIMIT:
             break
 
-        if tag.tag in [item.tag for item in items]:
-            continue
-        items.append(tag)
+        if tag.tag not in [item.tag for item in items]:
+            items.append(tag)
 
     return s.ListTagOut(items=items)
 
