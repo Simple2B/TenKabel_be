@@ -21,15 +21,25 @@ def search_tags(
     db: Session = Depends(get_db),
     settings: Settings = Depends(get_settings),
     q: str = Query(default="", trim_whitespace=True),
+    count_of_rates: int = 3,  # len([_ for _ in s.BaseRate.RateStatus])
 ):
-    query = select(m.Tag, func.max(m.Tag.rate).label("rate")).group_by(m.Tag.tag)
+    query = select(m.Tag)
     if q:
         log(log.INFO, "search tag query is: - %s", q)
         query = query.where(m.Tag.tag.ilike(f"%{q}%"))
-    # return list tags with unique tag name (not matter about rate)
-    return s.ListTagOut(
-        items=db.scalars(query.distinct().limit(settings.POPULAR_TAGS_LIMIT)).all()
-    )
+    tags = db.scalars(
+        query.distinct().limit(settings.POPULAR_TAGS_LIMIT * count_of_rates)
+    ).all()
+
+    items = []
+    for tag in tags:
+        if len(items) >= settings.POPULAR_TAGS_LIMIT:
+            break
+
+        if tag.tag not in [item.tag for item in items]:
+            items.append(tag)
+
+    return s.ListTagOut(items=items)
 
 
 @tag_router.get(
