@@ -1,26 +1,13 @@
 [
   {
-    "relation": ["delegate_permission/common.handle_all_urls"],
-    "target": {
-      "namespace": "android_app",
-      "package_name": "com.tenkabel_fe.debug",
-      "sha256_cert_fingerprints": [
-        "75:93:A7:AE:C2:1B:16:A2:01:D8:E6:1F:19:14:A3:C8:6A:CD:5F:84:C6:42:49:CB:81:5D:B7:1D:76:C3:2D:56",
-        "CB:EC:08:96:60:58:2F:5D:EE:7D:F0:91:A0:1C:E5:17:17:71:DA:DC:00:40:DC:F7:D4:08:2C:61:F0:EA:A5:65",
-        "CC:74:E5:B2:A8:00:C3:5A:7F:3A:A2:DB:7C:85:0A:7B:8E:2B:4F:4C:D5:0A:2B:97:6A:91:D5:62:70:41:86:E6"
-      ]
-    }
-  },
-  {
-    "relation": ["delegate_permission/common.handle_all_urls"],
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
     "target": {
       "namespace": "android_app",
       "package_name": "com.tenkabel_fe",
       "sha256_cert_fingerprints": [
-        "1F:A2:BA:B1:DD:1D:F9:80:37:CC:7C:2F:7B:38:27:08:B6:EA:03:B0:F7:E9:67:C1:E3:E2:18:47:E5:0C:CA:25",
-        "75:93:A7:AE:C2:1B:16:A2:01:D8:E6:1F:19:14:A3:C8:6A:CD:5F:84:C6:42:49:CB:81:5D:B7:1D:76:C3:2D:56",
-        "CC:74:E5:B2:A8:00:C3:5A:7F:3A:A2:DB:7C:85:0A:7B:8E:2B:4F:4C:D5:0A:2B:97:6A:91:D5:62:70:41:86:E6",
-        "CB:EC:08:96:60:58:2F:5D:EE:7D:F0:91:A0:1C:E5:17:17:71:DA:DC:00:40:DC:F7:D4:08:2C:61:F0:EA:A5:65"
+        "1F:A2:BA:B1:DD:1D:F9:80:37:CC:7C:2F:7B:38:27:08:B6:EA:03:B0:F7:E9:67:C1:E3:E2:18:47:E5:0C:CA:25"
       ]
     }
   }

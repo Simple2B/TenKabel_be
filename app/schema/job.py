@@ -83,7 +83,7 @@ class Job(BaseJob):
     id: int
     status: Status
     payment_status: PaymentStatus
-    commission_status: CommissionStatus | None
+    commission_status: CommissionStatus
     platform_commissions: list[PlatformCommission]
     who_pays: WhoPays
     is_deleted: bool
