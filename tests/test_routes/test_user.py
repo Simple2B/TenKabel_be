@@ -251,6 +251,9 @@ def test_google_auth(
 
     monkeypatch.setattr(httpx, "post", mock_post)
 
+    create_professions(db)
+    create_locations(db)
+
     TEST_GOOGLE_MAIL = "somemail@gmail.com"
     request_data = s.GoogleAuthUser(
         email=TEST_GOOGLE_MAIL,
@@ -259,6 +262,10 @@ def test_google_auth(
         photo_url="https://link_to_file/file.jpeg",
         uid="some-rand-uid",
         display_name="John Doe",
+        locations=[1, 2],
+        profession_id=1,
+        country_code="IL",
+        phone="6635798512",
     ).dict()
 
     response = client.post("api/auth/google", json=request_data)
@@ -268,7 +275,7 @@ def test_google_auth(
 
     user: m.User = db.query(m.User).filter_by(email=TEST_GOOGLE_MAIL).first()
     assert user
-
+    assert user.phone == request_data["phone"] and user.locations
     # test sign in
     request_data = s.GoogleAuthUser(
         email=user.email,
@@ -333,12 +340,18 @@ def test_apple_auth(
 
     monkeypatch.setattr(httpx, "post", mock_post)
 
+    create_locations(db)
+    create_professions(db)
+
     TEST_APPLE_MAIL = "somemail@gmail.com"
     request_data = s.AppleAuthUser(
         email=TEST_APPLE_MAIL,
         phone="6635798512",
         uid="some-rand-uid",
         display_name="John Doe",
+        locations=[1, 2],
+        profession_id=1,
+        country_code="IL",
     ).dict()
 
     response = client.post("api/auth/apple", json=request_data)
@@ -348,6 +361,7 @@ def test_apple_auth(
 
     user: m.User = db.query(m.User).filter_by(email=TEST_APPLE_MAIL).first()
     assert user
+    assert user.phone == request_data["phone"] and user.locations
 
     # test sign in
     request_data = s.AppleAuthUser(

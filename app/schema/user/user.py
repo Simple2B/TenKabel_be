@@ -40,13 +40,20 @@ class GoogleAuthUser(BaseModel):
     photo_url: AnyHttpUrl | str | None
     uid: str | None
     display_name: str | None
+    country_code: str = "IL"
+    phone: phone_field | None
+    locations: list[int] | None
+    profession_id: int | None
 
 
 class AppleAuthUser(BaseModel):
     email: EmailStr
     uid: str | None
     display_name: str | None
-    phone: str | None
+    country_code: str = "IL"
+    phone: phone_field | None
+    locations: list[int] | None
+    profession_id: int | None
 
 
 class BaseUser(BaseModel):
