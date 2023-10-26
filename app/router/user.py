@@ -503,17 +503,23 @@ def get_user_profile_by_email(
     db: Session = Depends(get_db),
 ):
     user: m.User = db.scalars(select(m.User).where(m.User.email == user_email)).first()
-    if user.is_deleted:
+    if user:
         log(
             log.ERROR,
-            "User %s not found",
+            "User %s already exists",
             user_email,
         )
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
-        )
-    log(log.INFO, "User [%s] info", user.username)
-    return s.UserExists(exists=True if user else False)
+        if user.is_deleted:
+            log(
+                log.ERROR,
+                "User %s is deleted",
+                user_email,
+            )
+            s.UserExists(exists=False)
+        log(log.INFO, "User [%s] info", user.username)
+        return s.UserExists(exists=True)
+    log(log.ERROR, "User %s not exists", user_email)
+    return s.UserExists(exists=False)
 
 
 @user_router.patch(
