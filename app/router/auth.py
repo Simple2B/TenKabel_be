@@ -258,6 +258,34 @@ def google_auth(
             country_code=country_code,
         )
         db.add(user)
+        db.flush()
+        if data.country_code:
+            user.country_code = data.country_code
+        if data.phone:
+            user.phone = data.phone
+        if data.locations:
+            locations: list[m.Location] = [
+                location
+                for location in db.scalars(
+                    select(m.Location).where(m.Location.id.in_(data.locations))
+                )
+            ]
+            for location in locations:
+                db.add(m.UserLocation(user_id=user.id, location_id=location.id))
+                db.flush()
+        if data.profession_id:
+            profession: m.Profession | None = db.scalar(
+                select(m.Profession).where(m.Profession.id == data.profession_id)
+            )
+            if profession:
+                db.add(
+                    m.UserProfession(
+                        user_id=user.id,
+                        profession_id=profession.id,
+                    )
+                )
+                db.flush()
+
         try:
             db.commit()
         except SQLAlchemyError as e:
