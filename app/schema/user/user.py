@@ -47,7 +47,7 @@ class GoogleAuthUser(BaseModel):
 
 
 class AppleAuthUser(BaseModel):
-    email: EmailStr
+    email: EmailStr | None
     uid: str | None
     display_name: str | None
     country_code: str = "IL"
