@@ -54,6 +54,8 @@ class AppleAuthUser(BaseModel):
     phone: phone_field | None
     locations: list[int] | None
     profession_id: int | None
+    first_name: str = ""
+    last_name: str = ""
 
 
 class BaseUser(BaseModel):
