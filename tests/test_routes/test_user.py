@@ -352,6 +352,8 @@ def test_apple_auth(
         locations=[1, 2],
         profession_id=1,
         country_code="IL",
+        first_name="John2",
+        last_name="Doe2",
     ).dict()
 
     response = client.post("api/auth/apple", json=request_data)
