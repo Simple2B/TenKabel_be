@@ -1,5 +1,6 @@
 from app import schema as s
 from app.model import Application, Job
+from app.logger import log
 
 
 def get_notification_payload(
@@ -19,7 +20,7 @@ def get_notification_payload(
         )
     else:
         worker_name = ""
-
+    log(log.INFO, "Notification type: %s", notification_type)
     return s.PushNotificationPayload(
         notification_type=notification_type,
         job_uuid=job.uuid,
