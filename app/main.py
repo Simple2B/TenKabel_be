@@ -29,9 +29,7 @@ admin: Admin = Admin(
 
 app.include_router(router)
 templates = Jinja2Templates(directory="app/templates")
-views = [
-    pages.UserAdmin,
-]
+views = [pages.UserAdmin, pages.RateAdmin, pages.ProfessionsAdmin]
 for view in views:
     admin.add_view(view)
 

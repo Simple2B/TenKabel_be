@@ -43,6 +43,7 @@ class UserAdmin(ModelView, model=User):
         User.phone,
         User.is_verified,
         User.created_at,
+        User.is_deleted,
     ]
 
     # Details
