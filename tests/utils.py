@@ -11,7 +11,6 @@ def create_test_superuser(db, test_data):
             email=test_data.test_superuser.email,
             username=test_data.test_superuser.email,
             password=test_data.test_superuser.password,
-            country_code=test_data.test_superuser.country_code,
         )
     )
 
