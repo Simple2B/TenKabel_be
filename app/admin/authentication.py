@@ -1,9 +1,14 @@
 from typing import Optional
+from datetime import datetime
+
 
 from sqladmin.authentication import AuthenticationBackend
 from starlette.requests import Request
 from starlette.responses import RedirectResponse
+from sqlalchemy import select, or_
 
+
+from app.logger import log
 from app.config import Settings, get_settings
 from app.database import get_db
 import app.model as m
@@ -21,7 +26,15 @@ db = get_db().__next__()
 class AdminAuth(AuthenticationBackend):
     async def login(self, request: Request) -> bool:
         form = await request.form()
-        email = form["email"]
+        email = form["username"]
+        admin = db.scalar(
+            select(m.SuperUser).where(
+                or_(m.SuperUser.email == email, m.SuperUser.username == email)
+            )
+        )
+        if not admin:
+            log(log.INFO, "%s is not a superuser", email)
+            return RedirectResponse(request.url_for("admin:login"), status_code=302)
         password = form["password"]
         superuser = m.SuperUser.authenticate(db, email, password)
         if not superuser:
@@ -29,7 +42,8 @@ class AdminAuth(AuthenticationBackend):
         session_token = create_access_token(data={"user_id": superuser.id})
         # And update session
         request.session.update({"token": session_token})
-
+        superuser.last_login = datetime.utcnow()
+        db.commit()
         return True
 
     async def logout(self, request: Request) -> bool:

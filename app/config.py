@@ -6,9 +6,6 @@ class Settings(BaseSettings):
     JWT_SECRET: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     DATABASE_URI: str
-    ADMIN_USER: str = "admin"
-    ADMIN_PASS: str = "admin"
-    ADMIN_EMAIL: EmailStr = "admin@admin.com"
     DEFAULT_PAGE_SIZE: int = 10
     DEFAULT_AVATAR_PROFILE_URL: str = (
         "https://storage.googleapis.com/tenkabel-stage/default_profile_image.png"
@@ -41,6 +38,10 @@ class Settings(BaseSettings):
 
     APP_STORE_LINK: str
     PLAY_MARKET_LINK: str
+
+    ADMIN_USERNAME: str | None
+    ADMIN_PASSWORD: str | None
+    ADMIN_EMAIL: EmailStr | None
 
     class Config:
         env_file = "project.env", ".env"

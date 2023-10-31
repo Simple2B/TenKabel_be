@@ -2408,13 +2408,13 @@ files = [
 
 [[package]]
 name = "sqladmin"
-version = "0.10.2"
+version = "0.10.3"
 description = "SQLAlchemy admin for FastAPI and Starlette"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "sqladmin-0.10.2-py3-none-any.whl", hash = "sha256:e7c66468537c3a052e7f392e17efc159b38cd9dcdda3ba14cf858a1016d6775f"},
-    {file = "sqladmin-0.10.2.tar.gz", hash = "sha256:4b72cb3c4efdb6209de10499ef41b1b85bd0134d0b59c482258986e0c5f5a73e"},
+    {file = "sqladmin-0.10.3-py3-none-any.whl", hash = "sha256:84592f68fe89a48db76edc70c7fd07e8d203966e5aedfebbdbbb15843cff0704"},
+    {file = "sqladmin-0.10.3.tar.gz", hash = "sha256:75703df630c35a954b91bac8476cafa8abc65c5aae39c1e7405c0d11b758e925"},
 ]
 
 [package.dependencies]

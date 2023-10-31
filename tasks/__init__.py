@@ -13,3 +13,4 @@ from .job import (
 from .application import create_application, create_application_for_notification
 from .collect_fee import collecting_fee
 from .professions import initialize_professions
+from .superuser import create_superuser
