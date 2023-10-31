@@ -4,8 +4,6 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
-
-
     {
       "name": "Run app",
       "type": "python",
@@ -78,6 +76,14 @@
       "request": "launch",
       "module": "invoke",
       "args": ["collecting-fee"],
+      "justMyCode": true
+    },
+    {
+      "name": "initialize-professions",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["initialize-professions"],
       "justMyCode": true
     }
   ]
