@@ -150,6 +150,20 @@ def handle_job_payment_notification(
     if job.payment_status == s.enums.PaymentStatus.SENT:
         notification_type = s.NotificationType.PAYMENT_SENT
 
+    if job.payment_status == s.enums.PaymentStatus.UNPAID:
+        notification_type = s.NotificationType.PAYMENT_DENIED
+
+    if job.payment_status == s.enums.PaymentStatus.CONFIRM:
+        notification_type = s.NotificationType.JOB_PAID
+
+    if not notification_type:
+        log(
+            log.INFO,
+            "Job [%i] payment status not changed, notification not sended",
+            job.id,
+        )
+        return
+
     notification: m.Notification = m.Notification(
         user_id=user.id,
         entity_id=job.id,
