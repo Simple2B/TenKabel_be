@@ -240,7 +240,7 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         )
         db.flush()
 
-    for profession in user.notification_profession:
+    for profession in user.notification_professions:
         log(log.INFO, "User profession deleted [%s]", profession.name_en)
 
         db.delete(

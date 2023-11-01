@@ -78,18 +78,17 @@ def sign_up(
         )
     log(log.INFO, "User [%s] signed up", user.phone)
 
-    profession: m.Profession | None = db.scalar(
-        select(m.Profession).where(m.Profession.id == data.profession_id)
-    )
-
-    if profession:
-        db.add(
-            m.UserProfession(
-                user_id=user.id,
-                profession_id=profession.id,
+    if data.professions:
+        professions: list[m.Profession] = [
+            profession
+            for profession in db.scalars(
+                select(m.Profession).where(m.Profession.id.in_(data.professions))
             )
-        )
-        log(log.INFO, "User's profession created [%s]", profession.name_en)
+        ]
+        for profession in professions:
+            db.add(m.UserProfession(user_id=user.id, profession_id=profession.id))
+            db.flush()
+            log(log.INFO, "User's profession created [%s]", profession.name_en)
 
     locations: list[m.Location] = [
         location
