@@ -10,7 +10,7 @@ class RateAdmin(ModelView, model=AppReview):
     name = "App review"
     name_plural = "App reviews"
     icon = "fa-solid fa-star"
-
+    # list_template: str = "list.html"
     # Permission
     can_create = False
     can_edit = False
@@ -20,6 +20,7 @@ class RateAdmin(ModelView, model=AppReview):
     column_list = [
         AppReview.id,
         AppReview.stars_count,
+        AppReview.user,
         AppReview.review,
         AppReview.created_at,
     ]
@@ -32,6 +33,7 @@ class RateAdmin(ModelView, model=AppReview):
     column_sortable_list = [
         AppReview.id,
         AppReview.stars_count,
+        AppReview.user_id,
         AppReview.review,
         AppReview.created_at,
     ]

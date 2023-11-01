@@ -156,4 +156,6 @@ class User(db.Model, BaseUser):
         )
 
     def __repr__(self):
-        return f"<{self.id}: {self.first_name} {self.last_name}>"
+        if self.first_name and self.last_name:
+            return f"<{self.id}: {self.first_name} {self.last_name}>"
+        return f"<{self.id}: {self.email}>"

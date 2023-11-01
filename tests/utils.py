@@ -62,5 +62,4 @@ def fill_db_by_test_data(db: Session, test_data: TestData):
                 type=notification.type,
             )
         )
-
     db.commit()
