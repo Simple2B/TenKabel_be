@@ -20,8 +20,8 @@ def check_location_notification(regions: list[m.Location], user: m.User) -> bool
 
 def check_profession_notification(profession: m.Profession, user: m.User) -> bool:
     return user.notification_profession_flag and (
-        (profession in user.notification_profession)
-        or (not user.notification_profession and profession in user.professions)
+        (profession in user.notification_professions)
+        or (not user.notification_professions and profession in user.professions)
     )
 
 
@@ -35,7 +35,7 @@ def job_created_notify(job: m.Job, db: Session) -> None:
         select(m.User).where(
             and_(
                 m.User.notification_locations.any(m.Location.id.in_(regions_ids)),
-                m.User.notification_profession.contains(profession),
+                m.User.notification_professions.contains(profession),
             )
         )
     ).all()
@@ -43,7 +43,7 @@ def job_created_notify(job: m.Job, db: Session) -> None:
         select(m.User).where(
             and_(
                 m.User.notification_locations.any(m.Location.id.in_(regions_ids)),
-                ~m.User.notification_profession.any(),
+                ~m.User.notification_professions.any(),
             )
         )
     ).all()
@@ -51,7 +51,7 @@ def job_created_notify(job: m.Job, db: Session) -> None:
         select(m.User).where(
             and_(
                 ~m.User.notification_locations.any(),
-                m.User.notification_profession.contains(profession),
+                m.User.notification_professions.contains(profession),
             )
         )
     ).all()

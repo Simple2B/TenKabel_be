@@ -40,7 +40,7 @@ class User(db.Model, BaseUser):
     notification_profession_flag: orm.Mapped[bool] = orm.mapped_column(
         sa.Boolean, default=True
     )
-    notification_profession: orm.Mapped[list["Profession"]] = orm.relationship(
+    notification_professions: orm.Mapped[list["Profession"]] = orm.relationship(
         "Profession", secondary=users_notifications_professions, viewonly=True
     )
 
