@@ -263,7 +263,7 @@ def test_google_auth(
         uid="some-rand-uid",
         display_name="John Doe",
         locations=[1, 2],
-        profession_id=1,
+        profession_id=[1, 2],
         country_code="IL",
         phone="6635798512",
     ).dict()
@@ -350,7 +350,7 @@ def test_apple_auth(
         uid="some-rand-uid",
         display_name="John Doe",
         locations=[1, 2],
-        profession_id=1,
+        professions=[1, 2],
         country_code="IL",
         first_name="John2",
         last_name="Doe2",

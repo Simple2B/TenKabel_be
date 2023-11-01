@@ -49,8 +49,6 @@ def patch_user(
             current_user.id,
             data.username,
         )
-
-    if data.first_name:
         current_user.first_name = data.first_name
         log(
             log.INFO,

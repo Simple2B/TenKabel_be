@@ -43,7 +43,7 @@ class GoogleAuthUser(BaseModel):
     country_code: str = "IL"
     phone: phone_field | None
     locations: list[int] | None
-    profession_id: int | None
+    professions: list[int] | None
 
 
 class AppleAuthUser(BaseModel):
@@ -53,7 +53,7 @@ class AppleAuthUser(BaseModel):
     country_code: str = "IL"
     phone: phone_field | None
     locations: list[int] | None
-    profession_id: int | None
+    professions: list[int] | None
     first_name: str = ""
     last_name: str = ""
 
