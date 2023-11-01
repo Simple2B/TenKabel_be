@@ -535,9 +535,7 @@ def patch_user_notification_settings(
             notification_settings.notification_job_status
         )
 
-    if notification_settings.notification_professions is not None and len(
-        notification_settings.notification_professions
-    ):
+    if notification_settings.notification_professions is not None:
         for profession in current_user.notification_professions:
             profession_obj: m.UserNotificationsProfessions = db.scalar(
                 select(m.UserNotificationsProfessions).where(
@@ -558,9 +556,7 @@ def patch_user_notification_settings(
             notification_settings.notification_profession_flag
         )
 
-    if notification_settings.notification_locations is not None and len(
-        notification_settings.notification_locations
-    ):
+    if notification_settings.notification_locations is not None:
         for location in current_user.notification_locations:
             location_obj: m.UserNotificationLocation = db.scalar(
                 select(m.UserNotificationLocation).where(
