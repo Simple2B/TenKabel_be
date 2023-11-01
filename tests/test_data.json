@@ -72,72 +72,75 @@
     "phone": "267788111",
     "google_openid_key": "1234567890abc",
     "picture": "http://test",
-    "rates": [{
-      "rate": "POSITIVE",
-      "owner_id": 5
-    },
-    {"rate": "NEGATIVE",
-      "owner_id": 3
-    }]
+    "rates": [
+      {
+        "rate": "POSITIVE",
+        "owner_id": 5
+      },
+      { "rate": "NEGATIVE", "owner_id": 3 }
+    ]
   },
   "test_superuser": {
-    "username": "test_superuser",
     "email": "test_superuser@gmail.com",
-    "phone": "267788100",
+    "username": "test_superuser",
     "password": "1234"
   },
-  "test_rates":[{
-    "owner_id": 1,
-    "worker_id": 2,
-    "rate": "NEGATIVE"
-  }],
-  "test_rate":{
+  "test_rates": [
+    {
+      "owner_id": 1,
+      "worker_id": 2,
+      "rate": "NEGATIVE"
+    }
+  ],
+  "test_rate": {
     "uuid": "test_uuid_for_rate",
     "owner_id": 3,
     "worker_id": 1,
     "rate": "POSITIVE"
   },
-  "test_application":{
+  "test_application": {
     "job_id": 3
   },
-  "test_applications":[{
-    "job_id": 2
-  },{
-    "job_id": 1
-  }
-],
-"test_notifications_jobs":[
-  {
-    "user_id": 4,
-    "entity_id": 3,
-    "type": "JOB_CANCELED"
-  },
-  {
-    "user_id": 4,
-    "entity_id": 3,
-    "type": "JOB_DONE"
-  },
-  {
-    "user_id": 4,
-    "entity_id": 2,
-    "type": "JOB_STARTED"
-  }
-],
-"test_notifications_applications":[
-  {
-    "user_id": 4,
-    "entity_id": 3,
-    "type": "APPLICATION_ACCEPTED"
-  },
-  {
-    "user_id": 4,
-    "entity_id": 4,
-    "type": "APPLICATION_ACCEPTED"
-  },
-  {
-    "user_id": 4,
-    "entity_id": 2,
-    "type": "APPLICATION_REJECTED"
-  }
-]
+  "test_applications": [
+    {
+      "job_id": 2
+    },
+    {
+      "job_id": 1
+    }
+  ],
+  "test_notifications_jobs": [
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "JOB_CANCELED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "JOB_DONE"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 2,
+      "type": "JOB_STARTED"
+    }
+  ],
+  "test_notifications_applications": [
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "APPLICATION_ACCEPTED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 4,
+      "type": "APPLICATION_ACCEPTED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 2,
+      "type": "APPLICATION_REJECTED"
+    }
+  ]
 }

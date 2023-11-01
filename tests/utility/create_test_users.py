@@ -8,6 +8,7 @@ from app import model as m
 from app.logger import log
 from app.utility import generate_uuid
 
+
 NUM_TEST_USERS = 100
 TEST_IMAGES = []
 
@@ -19,7 +20,9 @@ for num in range(1, 6):
         TEST_IMAGES.append(picture)
 
 
-def fill_test_data(db: Session):
+def fill_test_data(
+    db: Session,
+):
     profession_ids = [profession.id for profession in db.scalars(select(m.Profession))]
     location_ids = [location.id for location in db.scalars(select(m.Location))]
     rates_num_total = 0
@@ -39,7 +42,6 @@ def fill_test_data(db: Session):
 
     log(log.INFO, "Users [%d] were created", NUM_TEST_USERS)
     db.flush()
-
     users: list[m.User] = db.scalars(select(m.User)).all()
     for user in users:
         if profession_ids:

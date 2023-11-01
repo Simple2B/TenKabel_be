@@ -20,6 +20,14 @@ class TestUser(BaseModel):
     rates: list | None
 
 
+class TestSuperUser(BaseModel):
+    __test__ = False
+
+    email: str
+    username: str
+    password: str
+
+
 class TestRate(BaseModel):
     __test__ = False
 
@@ -65,7 +73,7 @@ class TestData(BaseModel):
 
     # authorized
     test_authorized_users: list[TestUser]
-    test_superuser: TestUser | None
+    test_superuser: TestSuperUser | None
 
 
 @pytest.fixture
