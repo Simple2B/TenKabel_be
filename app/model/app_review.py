@@ -27,3 +27,7 @@ class AppReview(db.Model):
     created_at: orm.Mapped[datetime] = orm.mapped_column(
         sa.DateTime, default=datetime.utcnow
     )
+    user = orm.relationship("User")
+
+    def __str__(self) -> str:
+        return f"User[{self.user_id}] - [{self.stars_count}] stars"

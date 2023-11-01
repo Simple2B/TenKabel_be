@@ -23,7 +23,7 @@ admin: Admin = Admin(
     app=app,
     authentication_backend=authentication_backend,
     engine=engine,
-    # templates_dir="app/templates/admin",
+    templates_dir="app/admin/pages/templates",
 )
 
 
