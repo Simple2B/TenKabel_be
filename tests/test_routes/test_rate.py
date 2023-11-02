@@ -1,3 +1,4 @@
+import pytest
 from fastapi import status
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
@@ -15,6 +16,7 @@ from tests.utility import (
 )
 
 
+@pytest.mark.skip(reason="Rate model is not needed no more")
 def test_rate_methods(
     client: TestClient,
     db: Session,
@@ -22,8 +24,6 @@ def test_rate_methods(
     authorized_users_tokens: list[s.Token],
     faker,
 ):
-    return
-    # TODO: remove rates model
     create_professions(db)
     fill_test_data(db)
 
