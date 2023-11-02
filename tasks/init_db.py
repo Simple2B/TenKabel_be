@@ -93,8 +93,8 @@ def init_db(_, test_data=False):
 
     if not db.scalar(select(User).where(User.email == settings.ADMIN_EMAIL)):
         admin = User(
-            username=settings.ADMIN_USER,
-            password=settings.ADMIN_PASS,
+            username=settings.ADMIN_USERNAME,
+            password=settings.ADMIN_PASSWORD,
             email=settings.ADMIN_EMAIL,
             phone="+972 54 000 00000",
             is_verified=True,

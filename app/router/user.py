@@ -49,8 +49,6 @@ def patch_user(
             current_user.id,
             data.username,
         )
-
-    if data.first_name:
         current_user.first_name = data.first_name
         log(
             log.INFO,
@@ -537,10 +535,8 @@ def patch_user_notification_settings(
             notification_settings.notification_job_status
         )
 
-    if notification_settings.notification_profession is not None and len(
-        notification_settings.notification_profession
-    ):
-        for profession in current_user.notification_profession:
+    if notification_settings.notification_professions is not None:
+        for profession in current_user.notification_professions:
             profession_obj: m.UserNotificationsProfessions = db.scalar(
                 select(m.UserNotificationsProfessions).where(
                     m.UserNotificationsProfessions.user_id == current_user.id,
@@ -548,7 +544,7 @@ def patch_user_notification_settings(
                 )
             )
             db.delete(profession_obj)
-        for profession_id in notification_settings.notification_profession:
+        for profession_id in notification_settings.notification_professions:
             db.add(
                 m.UserNotificationsProfessions(
                     user_id=current_user.id, profession_id=profession_id
@@ -560,9 +556,7 @@ def patch_user_notification_settings(
             notification_settings.notification_profession_flag
         )
 
-    if notification_settings.notification_locations is not None and len(
-        notification_settings.notification_locations
-    ):
+    if notification_settings.notification_locations is not None:
         for location in current_user.notification_locations:
             location_obj: m.UserNotificationLocation = db.scalar(
                 select(m.UserNotificationLocation).where(

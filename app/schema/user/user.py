@@ -27,7 +27,7 @@ class AuthUser(BaseModel):
 class UserSignUp(AuthUser):
     first_name: str
     last_name: str
-    profession_id: int | None
+    professions: list[int] | None
     locations: list[int] | None
     country_code: str
     email: EmailStr
@@ -43,7 +43,7 @@ class GoogleAuthUser(BaseModel):
     country_code: str = "IL"
     phone: phone_field | None
     locations: list[int] | None
-    profession_id: int | None
+    professions: list[int] | None
 
 
 class AppleAuthUser(BaseModel):
@@ -53,7 +53,7 @@ class AppleAuthUser(BaseModel):
     country_code: str = "IL"
     phone: phone_field | None
     locations: list[int] | None
-    profession_id: int | None
+    professions: list[int] | None
     first_name: str = ""
     last_name: str = ""
 
@@ -67,7 +67,7 @@ class BaseUser(BaseModel):
 
 class UserNotificationSettingsIn(BaseModel):
     notification_profession_flag: bool | None
-    notification_profession: list[int] | None
+    notification_professions: list[int] | None
     notification_locations_flag: bool | None
     notification_locations: list[int] | None
     notification_job_status: bool | None
@@ -75,7 +75,7 @@ class UserNotificationSettingsIn(BaseModel):
 
 class UserNotificationSettingsOut(BaseModel):
     notification_profession_flag: bool
-    notification_profession: list[int]
+    notification_professions: list[int]
     notification_locations_flag: bool
     notification_locations: list[int]
     notification_job_status: bool
@@ -137,7 +137,7 @@ class User(BaseUser):
     card_name: str | None
 
     notification_profession_flag: bool
-    notification_profession: list[Profession]
+    notification_professions: list[Profession]
     notification_locations_flag: bool
     notification_locations: list[Location]
     notification_job_status: bool

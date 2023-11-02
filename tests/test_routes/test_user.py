@@ -106,7 +106,7 @@ def test_signup(
             last_name=test_data.test_user.last_name,
             password=test_data.test_user.password,
             phone=TEST_PHONE_WRONG_NUMBER_LETTERS,
-            profession_id=2,
+            professions=[1, 2],
             locations=[2, 3],
             country_code="IL",
         )
@@ -121,7 +121,7 @@ def test_signup(
         last_name=test_data.test_user.last_name,
         password=test_data.test_user.password,
         phone=TEST_PHONE_NUMBER,
-        profession_id=2,
+        professions=[1, 2],
         locations=[2, 3],
         country_code="IL",
     )
@@ -139,7 +139,7 @@ def test_signup(
             last_name=test_data.test_user.last_name,
             password=test_data.test_user.password,
             phone=TEST_PHONE_WRONG_NUMBER,
-            profession_id=2,
+            professions=[1, 2],
             locations=[2, 3],
             country_code="IL",
         )
@@ -154,7 +154,7 @@ def test_signup(
         last_name=test_data.test_user.last_name + "1",
         password=test_data.test_user.password + "1",
         phone=TEST_PHONE_NUMBER[:-1] + "5",
-        profession_id=2,
+        professions=[1, 2],
         locations=[2, 3],
         country_code="IL",
     )
@@ -166,7 +166,7 @@ def test_signup(
     assert user
     assert user.payplus_customer_uid
 
-    assert user.professions[0].id == request_data.profession_id
+    assert user.professions[0].id == request_data.professions[0]
     assert [location.id for location in user.locations] == request_data.locations
 
     # FINISH VERIFY
@@ -263,7 +263,7 @@ def test_google_auth(
         uid="some-rand-uid",
         display_name="John Doe",
         locations=[1, 2],
-        profession_id=1,
+        profession_id=[1, 2],
         country_code="IL",
         phone="6635798512",
     ).dict()
@@ -350,7 +350,7 @@ def test_apple_auth(
         uid="some-rand-uid",
         display_name="John Doe",
         locations=[1, 2],
-        profession_id=1,
+        professions=[1, 2],
         country_code="IL",
         first_name="John2",
         last_name="Doe2",
@@ -749,7 +749,7 @@ def test_notifications_user(
     )
 
     request_data: s.UserNotificationSettingsIn = s.UserNotificationSettingsIn(
-        notification_profession=[1],
+        notification_professions=[1],
         notification_locations=[1, 3],
         notification_job_status=False,
     )
@@ -764,8 +764,8 @@ def test_notifications_user(
     db.refresh(user)
     assert user.notification_job_status == request_data.notification_job_status
     assert [
-        profession.id for profession in user.notification_profession
-    ] == request_data.notification_profession
+        profession.id for profession in user.notification_professions
+    ] == request_data.notification_professions
     assert [
         location.id for location in user.notification_locations
     ] == request_data.notification_locations
