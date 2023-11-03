@@ -64,13 +64,15 @@ services:
       - db
     volumes:
       - ./backup:/backup
+    env_file:
+      - .env
     environment:
       # scheduler for every 3 days
       SCHEDULE_DAY: ${SCHEDULE_DAY:-3}
       POSTGRES_DATABASE: db
       POSTGRES_HOST: db
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-passwd}
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-passwd}
       POSTGRES_EXTRA_OPTS: "--schema=public --blobs"
       DAYS_HISTORY: 7
       S3_REGION: ${S3_REGION:-**None**}
