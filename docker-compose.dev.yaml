@@ -87,4 +87,4 @@ volumes:
 
 networks:
   default:
-    name: tenkabel_network
+    name: tenkabel_default
