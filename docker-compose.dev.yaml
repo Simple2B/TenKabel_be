@@ -59,7 +59,7 @@ services:
       - redis
 
   backup:
-    image: simple2b/pg-backup:1.0 # set version
+    image: simple2b/pg-backup:1.1 # set version
     links:
       - db
     volumes:
