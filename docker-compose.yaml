@@ -1,5 +1,17 @@
 version: "3.8"
 services:
+  redis:
+    restart: always
+    image: "redis:alpine"
+    env_file:
+      - project.env
+    ports:
+      - 127.0.0.1:${REDIS_PORT:-6385}:6379
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-password}
+    command: >
+      --requirepass ${REDIS_PASSWORD:-password}
+
   db:
     image: postgres:14
     volumes:
@@ -12,20 +24,38 @@ services:
       PGDATABASE: db
       PGPASSWORD: ${DATABASE_PASSWORD:-password}
     ports:
-      - 127.0.0.1:${DATABASE_LOCAL_PORT:-5432}:5432
+      - 127.0.0.1:${DATABASE_LOCAL_PORT:-5433}:5432
     restart: always
 
   app:
     build: .
-    image: simple2b/tenkabel-be:latest
     restart: always
     command: bash ./start_server.sh
+    env_file:
+      - project.env
     environment:
       DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      SERVER_PORT: ${SERVER_PORT:-8008}
+    volumes:
+      - ./firebase_credentials.json:/app/firebase_credentials.json
+      - ./google_cloud_service_account.json:/app/google_cloud_service_account.json
     ports:
-      - 127.0.0.1:8008:80
+      - 127.0.0.1:${SERVER_PORT:-8008}:80
     depends_on:
       - db
+
+  worker:
+    build: .
+    restart: always
+    env_file:
+      - project.env
+    command: bash ./start_worker.sh
+    environment:
+      DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      REDIS_URL: redis://:${REDIS_PASSWORD:-password}@redis
+      REDIS_PORT: ${REDIS_PORT:-6385}
+    depends_on:
+      - redis
 
 volumes:
   db_data:

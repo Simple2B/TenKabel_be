@@ -3,18 +3,24 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "cSpell.words": [
+    "backref",
+    "dotenv",
     "fastapi",
+    "httpx",
+    "ilike",
+    "mmyy",
+    "payplus",
     "pydantic",
     "sqladmin",
     "sqlalchemy",
     "starlette",
+    "uselist",
     "viewonly"
   ],
-  "python.formatting.provider": "black",
+  "python.formatting.provider": "none",
   "editor.formatOnSave": true,
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter"
   },
-  "editor.defaultFormatter": null,
-  "python.terminal.activateEnvironment": true
+  "editor.defaultFormatter": null
 }

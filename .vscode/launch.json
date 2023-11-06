@@ -20,6 +20,71 @@
       "module": "pytest",
       "console": "integratedTerminal",
       "justMyCode": false
+    },
+    {
+      "name": "Python: time measurement",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "console": "integratedTerminal",
+      "args": ["test-time-response"],
+      "justMyCode": false
+    },
+    {
+      "name": "create-user",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["create-user"],
+      "justMyCode": true
+    },
+    {
+      "name": "login-user",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["login-user"],
+      "justMyCode": true
+    },
+    {
+      "name": "create-jobs",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["create-jobs"],
+      "justMyCode": true
+    },
+    {
+      "name": "create-job-for-notification",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["create-job-for-notification"],
+      "justMyCode": true
+    },
+    {
+      "name": "patch-job-status",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["patch-job-status"],
+      "justMyCode": true
+    },
+    {
+      "name": "collect-fee",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["collecting-fee"],
+      "justMyCode": true
+    },
+    {
+      "name": "initialize-professions",
+      "type": "python",
+      "request": "launch",
+      "module": "invoke",
+      "args": ["initialize-professions"],
+      "justMyCode": true
     }
   ]
 }

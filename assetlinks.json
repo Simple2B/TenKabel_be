@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.tenkabel_fe",
+      "sha256_cert_fingerprints": [
+        "1F:A2:BA:B1:DD:1D:F9:80:37:CC:7C:2F:7B:38:27:08:B6:EA:03:B0:F7:E9:67:C1:E3:E2:18:47:E5:0C:CA:25"
+      ]
+    }
+  }
+]

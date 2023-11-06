@@ -1,0 +1,92 @@
+version: "3.8"
+services:
+  redis:
+    restart: always
+    image: "redis:alpine"
+    env_file:
+      - .env
+    ports:
+      - 127.0.0.1:${REDIS_PORT:-6385}:6379
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:-password}
+    command: >
+      --requirepass ${REDIS_PASSWORD:-password}
+
+  db:
+    image: postgres:14
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-password}
+      POSTGRES_DB: db
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      PGUSER: ${DATABASE_USERNAME:-postgres}
+      PGDATABASE: db
+      PGPASSWORD: ${DATABASE_PASSWORD:-password}
+    restart: always
+
+  app:
+    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
+    restart: always
+    command: bash ./start_server.sh
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tenkabel.rule=Host(`tenkabel.simple2b.net`)"
+      - "traefik.http.routers.tenkabel.tls=true"
+      - "traefik.http.routers.tenkabel.tls.certresolver=myresolver"
+    environment:
+      DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      SERVER_PORT: ${SERVER_PORT:-8008}
+    volumes:
+      - ./firebase_credentials.json:/app/firebase_credentials.json
+      - ./google_cloud_service_account.json:/app/google_cloud_service_account.json
+    depends_on:
+      - db
+
+  worker:
+    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
+    restart: always
+    env_file:
+      - .env
+    command: bash ./start_worker.sh
+    environment:
+      DATABASE_URI: postgresql://${DATABASE_USERNAME:-postgres}:${DATABASE_PASSWORD:-password}@db/db
+      REDIS_URL: redis://:${REDIS_PASSWORD:-password}@redis
+      REDIS_PORT: ${REDIS_PORT:-6385}
+    depends_on:
+      - redis
+
+  backup:
+    image: simple2b/pg-backup:1.1 # set version
+    links:
+      - db
+    volumes:
+      - ./backup:/backup
+    env_file:
+      - .env
+    environment:
+      # scheduler for every 3 days
+      SCHEDULE_DAY: ${SCHEDULE_DAY:-3}
+      POSTGRES_DATABASE: db
+      POSTGRES_HOST: db
+      POSTGRES_USER: ${DATABASE_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-passwd}
+      POSTGRES_EXTRA_OPTS: "--schema=public --blobs"
+      DAYS_HISTORY: 7
+      S3_REGION: ${S3_REGION:-**None**}
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-**None**}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-**None**}
+      S3_BUCKET: ${S3_BUCKET:-**None**}
+      S3_PREFIX: ${S3_PREFIX:-**None**}
+      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-**None**}
+      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-**None**}
+      AWS_DEFAULT_REGION: ${S3_REGION:-**None**}
+
+volumes:
+  db_data:
+
+networks:
+  default:
+    name: tenkabel_default

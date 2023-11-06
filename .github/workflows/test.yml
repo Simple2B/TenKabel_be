@@ -1,0 +1,31 @@
+name: Test TenKabel backend
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: Linux
+    steps:
+      - uses: actions/checkout@v3.5.2
+        with:
+          submodules: true
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
+      - name: Setup poetry
+        uses: abatilo/actions-poetry@v2.0.0
+        with:
+          poetry-version: 1.5.0
+      - name: Install dependencies
+        run: |
+          poetry install
+      - name: Lint with flake8
+        run: |
+          poetry run flake8 . --count --show-source --statistics
+          poetry run flake8 . --count --exit-zero --max-complexity=10 --statistics
+      - name: Run pytest
+        run: |
+          poetry run pytest

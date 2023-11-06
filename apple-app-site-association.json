@@ -1,0 +1,15 @@
+{
+  "applinks": {
+     "apps": [],
+     "details": [
+        {
+        "appIDs": [ "VN5A7246ZU.com.tenkabel"],
+        "paths": [
+           "/job/*",
+           "/job_detailed/*",
+           "/JobDetailed/*"
+        ]
+        }
+     ]
+  }
+  }

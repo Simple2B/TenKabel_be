@@ -3,58 +3,144 @@
     {
       "username": "testuser1",
       "email": "testemail1@gmail.com",
+      "first_name": "test_first_name1",
+      "last_name": "test_last_name",
       "password": "1234",
-      "is_verified": true,
-      "phone": "123321"
+      "is_verified": false,
+      "phone": "367788755",
+      "google_openid_key": "1234567890abcdef",
+      "picture": "http://test.com"
     },
     {
       "username": "testuser2",
+      "first_name": "test_first_name2",
+      "last_name": "test_second_name2",
       "email": "testemail2@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "111111"
+      "phone": "367788751",
+      "google_openid_key": "abcdef123321"
     },
     {
       "username": "testuser3",
+      "first_name": "test_first_name3",
+      "last_name": "test_second_name3",
       "email": "testemail3@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "222222"
+      "phone": "367788733"
     }
   ],
   "test_authorized_users": [
     {
       "username": "test_authorized_user1",
+      "first_name": "test_auth_first_name1",
+      "last_name": "test_auth_second_name1",
       "email": "test_authorized_email1@gmail.com",
       "password": "1234",
-      "is_verified": true,
-      "phone": "734432234"
+      "is_verified": false,
+      "phone": "367788722"
     },
     {
       "username": "test_authorized_user2",
+      "first_name": "test_auth_first_name2",
+      "last_name": "test_auth_second_name2",
       "email": "test_authorized_email2@gmail.com",
       "password": "1233",
       "is_verified": true,
-      "phone": "877632"
+      "phone": "367788700",
+      "google_openid_key": "abcdef123321",
+      "picture": "367788333"
     },
     {
       "username": "test_authorized_user3",
+      "first_name": "test_auth_first_name3",
+      "last_name": "test_auth_second_name3",
       "email": "test_authorized_email3@gmail.com",
       "password": "1234",
       "is_verified": true,
-      "phone": "999999"
+      "phone": "367788255"
     }
   ],
   "test_user": {
     "email": "test@gmail.com",
     "username": "test_username",
+    "first_name": "test_user_first_name",
+    "last_name": "test_user_last_name",
     "password": "test_password",
     "is_verified": true,
-    "phone": "000000000"
+    "phone": "267788111",
+    "google_openid_key": "1234567890abc",
+    "picture": "http://test",
+    "rates": [
+      {
+        "rate": "POSITIVE",
+        "owner_id": 5
+      },
+      { "rate": "NEGATIVE", "owner_id": 3 }
+    ]
   },
   "test_superuser": {
-    "username": "test_superuser",
     "email": "test_superuser@gmail.com",
+    "username": "test_superuser",
     "password": "1234"
-  }
+  },
+  "test_rates": [
+    {
+      "owner_id": 1,
+      "worker_id": 2,
+      "rate": "NEGATIVE"
+    }
+  ],
+  "test_rate": {
+    "uuid": "test_uuid_for_rate",
+    "owner_id": 3,
+    "worker_id": 1,
+    "rate": "POSITIVE"
+  },
+  "test_application": {
+    "job_id": 3
+  },
+  "test_applications": [
+    {
+      "job_id": 2
+    },
+    {
+      "job_id": 1
+    }
+  ],
+  "test_notifications_jobs": [
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "JOB_CANCELED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "JOB_DONE"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 2,
+      "type": "JOB_STARTED"
+    }
+  ],
+  "test_notifications_applications": [
+    {
+      "user_id": 4,
+      "entity_id": 3,
+      "type": "APPLICATION_ACCEPTED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 4,
+      "type": "APPLICATION_ACCEPTED"
+    },
+    {
+      "user_id": 4,
+      "entity_id": 2,
+      "type": "APPLICATION_REJECTED"
+    }
+  ]
 }

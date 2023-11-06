@@ -4,8 +4,14 @@ from invoke import task
 from app.config import Settings, get_settings
 from app.model import User, Profession, Job
 from app.logger import log
-from app.utility import create_locations, create_professions
-from app.utility.create_test_users import fill_test_data
+from tests.utility import (
+    create_locations as cl,
+    create_professions as cp,
+    create_jobs as cj,
+    create_applications as ca,
+    create_applications_for_user as cafu,
+)
+from tests.utility.create_test_users import fill_test_data
 
 settings: Settings = get_settings()
 
@@ -39,6 +45,38 @@ TEST_TIMES = [
 
 
 @task
+def create_locations(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cl(db)
+
+
+@task
+def create_professions(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cp(db)
+
+
+@task
+def create_applications(_):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    ca(db)
+
+
+@task
+def create_applications_for_user(_, user_id: int):
+    from app.database import db as dbo
+
+    db = dbo.Session()
+    cafu(db, user_id)
+
+
+@task
 def init_db(_, test_data=False):
     """Initialization database
 
@@ -48,20 +86,26 @@ def init_db(_, test_data=False):
     from app.database import db as dbo
 
     db = dbo.Session()
-    create_professions(db)
-    create_locations(db)
+    cp(db)
+    cl(db)
     # add admin user
-    admin = User(
-        username=settings.ADMIN_USER,
-        password=settings.ADMIN_PASS,
-        email=settings.ADMIN_EMAIL,
-        phone="972 54 000 00000",
-        is_verified=True,
-    )
-    db.add(admin)
+    from sqlalchemy import select
+
+    if not db.scalar(select(User).where(User.email == settings.ADMIN_EMAIL)):
+        admin = User(
+            username=settings.ADMIN_USERNAME,
+            password=settings.ADMIN_PASSWORD,
+            email=settings.ADMIN_EMAIL,
+            phone="+972 54 000 00000",
+            is_verified=True,
+            country_code="IL",
+        )
+        db.add(admin)
+
     if test_data:
-        # Add test data
         fill_test_data(db)
+        cj(db)
+        ca(db)
 
     db.commit()
 
