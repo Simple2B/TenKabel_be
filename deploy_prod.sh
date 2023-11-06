@@ -5,7 +5,7 @@ CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 if [ "$CURRENT_BRANCH" != "main" ]; thens
   git checkout main
 fi
-
+git merge develop
 git pull origin main
 
 git add .
