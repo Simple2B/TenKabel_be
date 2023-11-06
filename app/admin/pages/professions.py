@@ -3,7 +3,7 @@ from sqladmin import ModelView
 from app.model import Profession
 
 
-class ProfessionsAdmin(ModelView, model=Profession):
+class ProfessionAdmin(ModelView, model=Profession):
     """Class for setting up the Admin panel for the User model"""
 
     # Metadata

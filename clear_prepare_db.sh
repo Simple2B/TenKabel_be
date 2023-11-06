@@ -10,3 +10,5 @@ echo Creating data
 #inv create-verified-user
 echo init db
 inv init-db --test-data
+echo creating superuser
+inv create-superuser
