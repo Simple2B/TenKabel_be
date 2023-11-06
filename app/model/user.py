@@ -71,7 +71,8 @@ class User(db.Model, BaseUser):
     )
 
     applications: orm.WriteOnlyMapped["Application"] = orm.relationship(
-        foreign_keys="Application.owner_id"
+        foreign_keys="Application.owner_id",
+        passive_deletes=True,
     )
 
     files: orm.Mapped["File"] = orm.relationship(  # noqa: F821

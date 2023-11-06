@@ -1,5 +1,6 @@
 from invoke import task
 from sqlalchemy import select, and_
+from sqlalchemy.exc import SQLAlchemyError
 from fastapi import status
 
 
@@ -260,11 +261,10 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         db.delete(device)
         db.flush()
 
-    applications = db.scalars(
-        select(Application).where(Application.worker_id == user.id)
-    ).all()
-    applications += db.scalars(
-        select(Application).where(Application.owner_id == user.id)
+    applications: list[Application] = db.scalars(
+        select(Application).where(
+            and_(Application.worker_id == user.id, Application.owner_id == user.id)
+        )
     ).all()
 
     for application in applications:
@@ -277,7 +277,11 @@ def delete_user(_, phone: str = TEST_USER_PHONE, email: str | None = None):
         db.delete(notification)
         db.flush()
 
-    db.commit()
-    log(log.INFO, "User %s deleted", phone)
+    db.flush()
     db.delete(user)
-    db.commit()
+    try:
+        db.commit()
+    except SQLAlchemyError as e:
+        log(log.INFO, "Error while deleting user:\n%s", e)
+        exit(1)
+    log(log.INFO, "User %s deleted", phone)
