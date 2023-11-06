@@ -6,13 +6,15 @@ on:
       - "v*.*.*"
 
 env:
-  DOCKER_LOGIN: simple2b
-  PROJECT_IMAGE: simple2b/tenkabel
+  # stage creds
   STAGE_HOST: ${{ secrets.STAGE_HOST }}
   STAGE_PORT: ${{ secrets.STAGE_PORT }}
   STAGE_USERNAME: ${{ secrets.SSH_USER }}
   STAGE_SSH_KEY: ${{ secrets.SSH_KEY }}
+  # dockerhub env
   SITE_DOCKER_ACCESS_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+  DOCKER_LOGIN: simple2b
+  PROJECT_IMAGE: simple2b/tenkabel
 
 jobs:
   on-develop-branch-check:
@@ -88,7 +90,7 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.project_meta.outputs.tags }}
           labels: ${{ steps.project_meta.outputs.labels }}
-  deploy:
+  deploy_stage:
     name: Deploy to staging
     runs-on: Linux
     needs:

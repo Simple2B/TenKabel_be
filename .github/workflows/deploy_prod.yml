@@ -1,0 +1,42 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  # prod creds
+  PROD_HOST: ${{ secrets.PROD_HOST }}
+  PROD_PORT: ${{ secrets.PROD_PORT }}
+  PROD_USERNAME: ${{ secrets.PROD_USERNAME }}
+  PROD_SSH_KEY: ${{ secrets.PROD_SSH_KEY }}
+
+jobs:
+  deploy_prod:
+    name: Deploy to production
+    runs-on: Linux
+    steps:
+      - uses: actions/checkout@v3
+      - name: update compose file
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ env.PROD_HOST }}
+          username: ${{ env.PROD_USERNAME }}
+          port: ${{env.PROD_PORT}}
+          key: ${{ env.PROD_SSH_KEY }}
+          source: docker-compose.prod.yaml
+          target: /home/runner/tenkabel
+      - name: deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.PROD_HOST }}
+          username: ${{ env.PROD_USERNAME }}
+          port: ${{env.PROD_PORT}}
+          key: ${{ env.PROD_SSH_KEY }}
+          script: |
+            cd /home/runner/tenkabel &&
+            mv docker-compose.prod.yaml docker-compose.yaml &&
+            docker compose pull &&
+            docker compose up -d &&
+            docker system prune -f
