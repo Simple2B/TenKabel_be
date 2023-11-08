@@ -926,3 +926,19 @@ def test_payments_tab(
         assert db.scalar(select(m.Job.name).where(m.Job.id == payment_data.job_id)) == (
             payment_data.job_name
         )
+
+
+def test_is_new_user(
+    client: TestClient,
+    db: Session,
+    test_data: TestData,
+    authorized_users_tokens: list[s.Token],
+    faker,
+):
+    fill_test_data(db)
+    user: m.User = db.scalar(select(m.User).where(m.User.is_deleted.is_(False)))
+    assert user
+    assert user.is_new_user
+    user.created_at = datetime.now() - timedelta(days=92)
+    db.commit()
+    assert not user.is_new_user

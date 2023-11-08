@@ -1,11 +1,14 @@
 from typing import Self, TYPE_CHECKING
+from datetime import datetime, timedelta
+
 import sqlalchemy as sa
 from sqlalchemy import orm
-from app.hash_utils import hash_verify
 
+from app.hash_utils import hash_verify
 from app.database import db
 from app import schema as s
 from app.logger import log
+from app.config import get_settings, Settings
 
 from .user_profession import users_professions
 from .user_location import users_locations
@@ -155,6 +158,17 @@ class User(db.Model, BaseUser):
         return sum(
             [rate.rate == s.BaseRate.RateStatus.NEUTRAL for rate in self.owned_rates]
         )
+
+    @property
+    def is_new_user(self) -> bool:
+        settings: Settings = get_settings()
+        # check how many days ago user was created
+        if (
+            datetime.now() - timedelta(days=settings.NEW_USER_TERM_DAYS)
+            < self.created_at
+        ):
+            return True
+        return False
 
     def __repr__(self):
         if self.first_name and self.last_name:
