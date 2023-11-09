@@ -142,6 +142,8 @@ class User(BaseUser):
     notification_locations: list[Location]
     notification_job_status: bool
 
+    is_new_user: bool
+
     class Config:
         orm_mode = True
 

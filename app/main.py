@@ -1,5 +1,6 @@
 import time
 import json
+import tomllib as toml
 
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
@@ -76,4 +77,12 @@ def redirect_to_store(
 
 @app.get("/")
 def root():
+    backend_version: str = toml.load(open("pyproject.toml", "rb"))["tool"]["poetry"][
+        "version"
+    ]
+    log(
+        log.INFO,
+        "\tVersion is [%s]\n",
+        backend_version,
+    )
     return RedirectResponse("/docs")

@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy to Stage
 
 on:
   push:
@@ -32,6 +32,8 @@ jobs:
           tag: "${{ github.ref }}"
   test:
     runs-on: Linux
+    needs: on-develop-branch-check
+    if: ${{ needs.on-develop-branch-check.outputs.on_develop == 'true' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -95,6 +97,7 @@ jobs:
     runs-on: Linux
     needs:
       - on-develop-branch-check
+      - test
       - build
     if: ${{ needs.on-develop-branch-check.outputs.on_develop == 'true' }}
     steps:

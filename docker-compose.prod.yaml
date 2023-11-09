@@ -26,7 +26,7 @@ services:
     restart: always
 
   app:
-    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
+    image: simple2b/tenkabel:0.2
     restart: always
     command: bash ./start_server.sh
     env_file:
@@ -46,7 +46,7 @@ services:
       - db
 
   worker:
-    image: simple2b/tenkabel:0.1 # TODO change tag to actual backend version
+    image: simple2b/tenkabel:0.2
     restart: always
     env_file:
       - .env
@@ -59,28 +59,23 @@ services:
       - redis
 
   backup:
-    image: simple2b/pg-backup:1.0 # set version
+    image: simple2b/pg-backup:1.1
     links:
       - db
     volumes:
       - ./backup:/backup
     environment:
       # scheduler for every 3 days
-      SCHEDULE_DAY: ${SCHEDULE_DAY:-3}
+      SCHEDULE_MINUTE: 0
+      SCHEDULE_HOUR: 1
       POSTGRES_DATABASE: db
       POSTGRES_HOST: db
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-passwd}
+      POSTGRES_USER: ${DATABASE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-passwd}
       POSTGRES_EXTRA_OPTS: "--schema=public --blobs"
       DAYS_HISTORY: 7
-      S3_REGION: ${S3_REGION:-**None**}
-      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-**None**}
-      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-**None**}
-      S3_BUCKET: ${S3_BUCKET:-**None**}
-      S3_PREFIX: ${S3_PREFIX:-**None**}
-      AWS_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-**None**}
-      AWS_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-**None**}
-      AWS_DEFAULT_REGION: ${S3_REGION:-**None**}
+      GCS_BUCKET: ${GCS_BUCKET:-**None**}
+      GCS_PREFIX: ${GCS_PREFIX:-backup}
 
 volumes:
   db_data:
