@@ -58,8 +58,7 @@ jobs:
           poetry run pytest
             - name: Run alembic check
       - name: Run alembic check
-        run: |
-          poetry run alembic check
+        run: poetry run alembic check
   build:
     runs-on: Linux
     needs: test
