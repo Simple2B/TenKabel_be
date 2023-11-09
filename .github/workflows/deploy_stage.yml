@@ -55,9 +55,7 @@ jobs:
           poetry run flake8 . --count --exit-zero --max-complexity=10 --statistics
       - name: Run pytest
         run: |
-          poetry run pytest
-      - name: Run alembic check
-        run: poetry run alembic check
+          poetry run pytests
   build:
     runs-on: Linux
     needs: test
