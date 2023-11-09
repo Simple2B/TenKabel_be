@@ -207,3 +207,4 @@ class PasswordStatus(BaseModel):
 
 class UserExists(BaseModel):
     exists: bool
+    is_new_user: bool | None

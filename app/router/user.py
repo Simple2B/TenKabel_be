@@ -513,11 +513,19 @@ def get_user_profile_by_email(
                 "User %s is deleted",
                 user_email,
             )
-            s.UserExists(exists=False)
+            s.UserExists(
+                exists=False,
+            )
         log(log.INFO, "User [%s] info", user.username)
-        return s.UserExists(exists=True)
+        return s.UserExists(
+            exists=True,
+            is_new_user=user.is_new_user,
+        )
     log(log.ERROR, "User %s not exists", user_email)
-    return s.UserExists(exists=False)
+    return s.UserExists(
+        exists=False,
+        is_new_user=user.is_new_user,
+    )
 
 
 @user_router.patch(
