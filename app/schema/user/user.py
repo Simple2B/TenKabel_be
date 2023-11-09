@@ -163,6 +163,7 @@ class UserPicture(BaseUser):
     id: int
     uuid: str
     picture: str = settings.DEFAULT_AVATAR_PROFILE_URL
+    is_new_user: bool | None
 
     class Config:
         orm_mode = True
