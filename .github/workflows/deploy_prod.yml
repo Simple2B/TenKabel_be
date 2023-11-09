@@ -1,4 +1,4 @@
-name: Build and Deploy
+name: Build and Deploy to Production
 
 on:
   push:
@@ -33,6 +33,7 @@ jobs:
   test:
     runs-on: Linux
     needs: on-main-branch-check
+    if: ${{ needs.on-main-branch-check.outputs.on_main == 'true' }}
     steps:
       - uses: actions/checkout@v3
         with:
