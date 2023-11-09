@@ -501,29 +501,22 @@ def get_user_profile_by_email(
     db: Session = Depends(get_db),
 ):
     user: m.User = db.scalars(select(m.User).where(m.User.email == user_email)).first()
-    if user:
+    if not user:
+        log(log.ERROR, "User %s not exists", user_email)
+        return s.UserExists(
+            exists=False,
+        )
+    if user.is_deleted:
         log(
             log.ERROR,
-            "User %s already exists",
+            "User %s is deleted",
             user_email,
         )
-        if user.is_deleted:
-            log(
-                log.ERROR,
-                "User %s is deleted",
-                user_email,
-            )
-            s.UserExists(
-                exists=False,
-            )
-        log(log.INFO, "User [%s] info", user.username)
-        return s.UserExists(
-            exists=True,
-            is_new_user=user.is_new_user,
+        s.UserExists(
+            exists=False,
         )
-    log(log.ERROR, "User %s not exists", user_email)
     return s.UserExists(
-        exists=False,
+        exists=True,
         is_new_user=user.is_new_user,
     )
 
