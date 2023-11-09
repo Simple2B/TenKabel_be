@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Tenkabel Backend"
-version = "0.3.11"
+version = "0.3.12"
 description = ""
 authors = ["Nikolay <nchernov@gmail.com>"]
 
