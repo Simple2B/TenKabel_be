@@ -43,6 +43,8 @@ class Settings(BaseSettings):
     ADMIN_PASSWORD: str | None
     ADMIN_EMAIL: EmailStr | None
 
+    NEW_USER_TERM_DAYS: int = 90
+
     class Config:
         env_file = "project.env", ".env"
 
