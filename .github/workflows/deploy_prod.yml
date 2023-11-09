@@ -97,6 +97,10 @@ jobs:
 
   deploy_prod:
     name: Deploy to production
+    needs:
+      - on-main-branch-check
+      - test
+      - build
     runs-on: Linux
     steps:
       - uses: actions/checkout@v3

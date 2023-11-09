@@ -97,6 +97,7 @@ jobs:
     runs-on: Linux
     needs:
       - on-develop-branch-check
+      - test
       - build
     if: ${{ needs.on-develop-branch-check.outputs.on_develop == 'true' }}
     steps:
