@@ -49,10 +49,6 @@ jobs:
       - name: Install dependencies
         run: |
           poetry install
-      - name: Lint with flake8
-        run: |
-          poetry run flake8 . --count --show-source --statistics
-          poetry run flake8 . --count --exit-zero --max-complexity=10 --statistics
       - name: Run pytest
         run: poetry run pytest
   build:
