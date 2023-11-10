@@ -7,9 +7,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int
     DATABASE_URI: str
     DEFAULT_PAGE_SIZE: int = 10
-    DEFAULT_AVATAR_PROFILE_URL: (
-        str
-    ) = "https://storage.googleapis.com/tenkabel-stage/default_profile_image.png"
+    DEFAULT_AVATAR_PROFILE_URL: str = (
+        "https://storage.googleapis.com/tenkabel-stage/default_profile_image.png"
+    )
     # PayPlus
     PAY_PLUS_API_KEY: str = ""
     PAY_PLUS_SECRET_KEY: str = ""

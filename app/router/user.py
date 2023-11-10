@@ -402,7 +402,8 @@ def get_user_applications(
 @user_router.get("/jobs", status_code=status.HTTP_200_OK, response_model=s.ListJob)
 def get_user_jobs(
     manage_tab: s.Job.TabFilter | None = None,
-    start_date: int | None = Query(
+    start_date: int
+    | None = Query(
         None,
         ge=0,
     ),
