@@ -11,7 +11,7 @@ REGIONS = [
     {"en": "Center", "hebrew": "מרכז"},
     {"en": "South", "hebrew": "דרום"},
     {"en": "Tel Aviv", "hebrew": "תל אביב"},
-    {"en": "Judea", "hebrew": "יהודה"},
+    {"en": "Ye”sh", "hebrew": "יו”ש"},
 ]
 
 
