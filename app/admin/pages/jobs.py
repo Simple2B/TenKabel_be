@@ -1,4 +1,5 @@
-from sqladmin import ModelView
+from sqladmin import ModelView, action
+from fastapi.responses import RedirectResponse
 
 from app.model import Job
 
@@ -78,3 +79,25 @@ class JobAdmin(ModelView, model=Job):
     # Pagination
     page_size = 25
     page_size_options = [25, 50, 100, 200]
+
+    @action(
+        name="delete_job",
+        label="Mark as deleted",
+        add_in_detail=True,
+        add_in_list=True,
+    )
+    async def delete_job(self, request) -> None:
+        """set job.is_deleted to True and don't delete the job"""
+        pks = request.query_params.get("pks", "").split(",")
+        for pk in pks:
+            model: Job = await self.get_object_for_edit(pk)
+            model.is_deleted = True
+
+        session = self.session_maker()
+        session.add(model)
+        session.commit()
+
+        referer = request.headers.get("Referer")
+        if referer:
+            return RedirectResponse(referer)
+        return RedirectResponse(request.url_for("admin:list", identity=self.identity))

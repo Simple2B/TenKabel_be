@@ -16,7 +16,9 @@ profession_router = APIRouter(prefix="/professions", tags=["Jobs"])
 )
 def get_professions(db: Session = Depends(get_db)):
     professions: list[m.Profession] = db.scalars(
-        select(m.Profession).order_by(m.Profession.id)
+        select(m.Profession)
+        .where(m.Profession.is_deleted == False)  # noqa E712
+        .order_by(m.Profession.id)
     ).all()
     log(log.INFO, "Professions list (%s) returned", len(professions))
     return s.ProfessionList(professions=professions)
