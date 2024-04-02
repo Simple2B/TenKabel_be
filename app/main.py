@@ -49,6 +49,9 @@ async def add_process_time_header(request: Request, call_next):
 async def read_item(request: Request):
     return templates.TemplateResponse("privacy.html", {"request": request})
 
+@app.get("/request-to-remove-user", response_class=HTMLResponse)
+def request_to_remove_user(request: Request):
+    return templates.TemplateResponse("delete_user.html", {"request": request})
 
 @app.get("/.well-known/apple-app-site-association")
 def apple_app_link():
